@@ -2,7 +2,7 @@
 
 > "You are whatever your wallet is. Forget who you are online."
 
-Shadow is a Tor-inspired, wallet-only pseudonymous web platform built on Solana. Users and developers can create profiles, build and deploy sites and dApps that live forever, all identified solely by Solana wallets — no emails, no usernames, no real-world linkage.
+Shadow is a Tor-inspired, wallet-only pseudonymous web platform built on Solana, inspired by Greek mythology. Users and developers can create profiles, build and deploy sites and dApps that live forever, all identified solely by Solana wallets — no emails, no usernames, no real-world linkage. Like the shadows in Hades, your identity exists only as your wallet address.
 
 ## Tech Stack
 
@@ -10,6 +10,7 @@ Shadow is a Tor-inspired, wallet-only pseudonymous web platform built on Solana.
 - **On-chain Programs**: Rust + Anchor
 - **Backend**: Rust (Actix-Web + Actix-WS)
 - **Frontend**: Next.js 15 (App Router) + shadcn/ui + Tailwind CSS
+- **Standalone App**: Vite + React + Tauri/Capacitor (cross-platform)
 - **Database**: MongoDB
 - **Storage**: IPFS (Pinata) + Arweave (Bundlr)
 - **Auth**: Privy (Google login → Solana wallet)
@@ -78,13 +79,14 @@ docker-compose up
 
 ```
 /shadow
-  /programs          # Anchor Rust programs (registry + profiles)
-  /backend           # Rust Actix-Web server
-  /frontend          # Next.js app (the Shadow browser)
-    /components/ui   # shadcn components + apple-spotlight.tsx
-    /app             # Pages
-  /sdk               # shadow-sdk CLI (TypeScript)
-  /migrations        # SQLx database migrations
+  /zeus              # Anchor Rust programs (king of gods - on-chain programs)
+  /hephaestus         # Rust Actix-Web server (god of forge - backend)
+  /apollo             # Next.js app (god of light - frontend)
+    /components/ui    # shadcn components + apple-spotlight.tsx
+    /app              # Pages
+  /olympus            # Standalone app (home of gods - Vite React app)
+  /hermes             # SDK CLI (messenger god - TypeScript)
+  /migrations         # Database migrations
   docker-compose.yml
   Dockerfile
   railway.toml
@@ -112,13 +114,19 @@ docker-compose up
 
 The `railway.toml` handles the multi-stage build automatically.
 
-## SDK Usage
+## Hermes SDK Usage
 
-Deploy a site using the Shadow SDK:
+Deploy a site using the Hermes SDK (messenger of the gods):
 
 ```bash
-npx shadow-sdk init my-site
+npx hermes-sdk init my-site
 cd my-site
+npx hermes-sdk deploy
+```
+
+Or use the legacy name:
+```bash
+npx shadow-sdk init my-site
 npx shadow-sdk deploy
 ```
 

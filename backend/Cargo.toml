@@ -26,6 +26,9 @@ uuid = { version = "1.6", features = ["v4"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 async-trait = "0.1"
+sha2 = "0.10"
+dashmap = "5.5"
+ed25519-dalek = "1.0"
 
 [profile.release]
 opt-level = 3

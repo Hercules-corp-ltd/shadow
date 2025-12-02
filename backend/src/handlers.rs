@@ -1,8 +1,12 @@
-use actix_web::{web, HttpResponse, Result as ActixResult};
+use actix_web::{web, HttpRequest, HttpResponse, Result as ActixResult};
 use crate::db;
 use crate::error::ShadowError;
 use crate::storage::{PinataStorage, BundlrStorage};
 use crate::solana::SolanaClient;
+use crate::ares::{AresAuth, AuthHeader};
+use crate::apollo::ApolloValidator;
+use crate::artemis::ArtemisRateLimiter;
+use crate::olympus::OlympusCA;
 use serde::{Deserialize, Serialize};
 use mongodb::Database;
 
@@ -30,8 +34,21 @@ pub struct ProfileResponse {
 pub async fn search_profiles(
     db: web::Data<Database>,
     query: web::Query<SearchQuery>,
+    apollo: web::Data<ApolloValidator>,
+    artemis: web::Data<ArtemisRateLimiter>,
+    req: HttpRequest,
 ) -> ActixResult<HttpResponse, ShadowError> {
-    let users = db::search_users(&db, &query.q, query.limit.unwrap_or(10))
+    // Rate limiting
+    let client_ip = req.peer_addr().map(|a| a.ip().to_string());
+    let key = ArtemisRateLimiter::get_client_key(client_ip.as_deref(), None);
+    artemis.check_rate_limit(&key)
+        .map_err(|e| ShadowError::BadRequest(e))?;
+
+    // Validation
+    ApolloValidator::validate_search_query(&query.q)?;
+    let limit = ApolloValidator::validate_limit(query.limit)?;
+
+    let users = db::search_users(&db, &query.q, limit)
         .await?;
 
     Ok(HttpResponse::Ok().json(users))
@@ -67,7 +84,29 @@ pub async fn get_profile(
 pub async fn create_profile_route(
     db: web::Data<Database>,
     body: web::Json<CreateProfileRequest>,
+    ares: web::Data<AresAuth>,
+    apollo: web::Data<ApolloValidator>,
+    req: HttpRequest,
 ) -> ActixResult<HttpResponse, ShadowError> {
+    // Validate wallet address
+    ApolloValidator::validate_pubkey(&body.wallet)?;
+    
+    // Validate CID
+    ApolloValidator::validate_ipfs_cid(&body.profile_cid)?;
+
+    // Verify authentication
+    if let Some(auth_header) = req.headers().get("X-Shadow-Auth") {
+        if let Ok(auth_str) = auth_header.to_str() {
+            if let Ok(auth) = AuthHeader::from_header(auth_str) {
+                if auth.wallet != body.wallet {
+                    return Err(ShadowError::Unauthorized.into());
+                }
+                auth.verify(&ares)
+                    .map_err(|e| ShadowError::Unauthorized)?;
+            }
+        }
+    }
+
     db::create_or_update_user(
         &db,
         &body.wallet,
@@ -85,11 +124,36 @@ pub async fn update_profile(
     db: web::Data<Database>,
     path: web::Path<String>,
     body: web::Json<UpdateProfileRequest>,
+    ares: web::Data<AresAuth>,
+    apollo: web::Data<ApolloValidator>,
+    req: HttpRequest,
 ) -> ActixResult<HttpResponse, ShadowError> {
     let wallet = path.into_inner();
     
+    // Validate wallet
+    ApolloValidator::validate_pubkey(&wallet)?;
+
+    // Verify authentication - must own the profile
+    let auth_header = req.headers().get("X-Shadow-Auth")
+        .ok_or_else(|| ShadowError::Unauthorized)?
+        .to_str()
+        .map_err(|_| ShadowError::Unauthorized)?;
+    
+    let auth = AuthHeader::from_header(auth_header)?;
+    if auth.wallet != wallet {
+        return Err(ShadowError::Unauthorized.into());
+    }
+    
+    auth.verify(&ares)
+        .map_err(|_| ShadowError::Unauthorized)?;
+    
     let user = db::get_user(&db, &wallet).await?
         .ok_or_else(|| ShadowError::NotFound("Profile not found".to_string()))?;
+
+    // Validate CID if provided
+    if let Some(ref cid) = body.profile_cid {
+        ApolloValidator::validate_ipfs_cid(cid)?;
+    }
 
     let profile_cid = body.profile_cid.as_ref().map(|s| s.as_str()).or(user.profile_cid.as_deref());
     let is_public = body.is_public.unwrap_or(user.is_public);
@@ -141,9 +205,35 @@ pub async fn get_site(
 pub async fn register_site(
     db: web::Data<Database>,
     body: web::Json<RegisterSiteRequest>,
+    solana_rpc: web::Data<String>,
+    ares: web::Data<AresAuth>,
+    apollo: web::Data<ApolloValidator>,
+    req: HttpRequest,
 ) -> ActixResult<HttpResponse, ShadowError> {
-    // In production, verify program_address exists on-chain
-    let program_address = format!("{}", uuid::Uuid::new_v4()); // Placeholder
+    // Validate inputs
+    ApolloValidator::validate_pubkey(&body.owner_pubkey)?;
+    ApolloValidator::validate_ipfs_cid(&body.storage_cid)?;
+
+    // Verify authentication
+    let auth_header = req.headers().get("X-Shadow-Auth")
+        .ok_or_else(|| ShadowError::Unauthorized)?
+        .to_str()
+        .map_err(|_| ShadowError::Unauthorized)?;
+    
+    let auth = AuthHeader::from_header(auth_header)?;
+    if auth.wallet != body.owner_pubkey {
+        return Err(ShadowError::Unauthorized.into());
+    }
+    
+    auth.verify(&ares)
+        .map_err(|_| ShadowError::Unauthorized)?;
+
+    // Verify program address exists on-chain
+    let client = SolanaClient::new(solana_rpc.to_string());
+    let program_address = match client.search_program(&body.owner_pubkey) {
+        Ok(Some(_)) => body.owner_pubkey.clone(),
+        _ => return Err(ShadowError::BadRequest("Program address not found on-chain".to_string()).into()),
+    };
     
     db::create_or_update_site(
         &db,
@@ -261,4 +351,175 @@ pub async fn search_solana(
         "type": "none",
         "data": null
     })))
+}
+
+// ========== Olympus Domain Handlers ==========
+
+#[derive(Deserialize)]
+pub struct RegisterDomainRequest {
+    pub domain: String,
+    pub program_address: String,
+    pub owner_pubkey: String,
+}
+
+pub async fn register_domain(
+    olympus: web::Data<OlympusCA>,
+    body: web::Json<RegisterDomainRequest>,
+    ares: web::Data<AresAuth>,
+    apollo: web::Data<ApolloValidator>,
+    req: HttpRequest,
+) -> ActixResult<HttpResponse, ShadowError> {
+    // Validate inputs
+    ApolloValidator::validate_domain(&body.domain)?;
+    ApolloValidator::validate_pubkey(&body.owner_pubkey)?;
+    ApolloValidator::validate_pubkey(&body.program_address)?;
+
+    // Verify authentication
+    let auth_header = req.headers().get("X-Shadow-Auth")
+        .ok_or_else(|| ShadowError::Unauthorized)?
+        .to_str()
+        .map_err(|_| ShadowError::Unauthorized)?;
+    
+    let auth = AuthHeader::from_header(auth_header)?;
+    if auth.wallet != body.owner_pubkey {
+        return Err(ShadowError::Unauthorized.into());
+    }
+    
+    auth.verify(&ares)
+        .map_err(|_| ShadowError::Unauthorized)?;
+
+    // Register domain
+    olympus.register_domain(
+        &body.domain,
+        &body.owner_pubkey,
+        &body.program_address,
+    ).await
+    .map_err(|e| ShadowError::BadRequest(e))?;
+
+    Ok(HttpResponse::Created().json(serde_json::json!({
+        "success": true,
+        "domain": body.domain
+    })))
+}
+
+pub async fn get_domain(
+    olympus: web::Data<OlympusCA>,
+    path: web::Path<String>,
+) -> ActixResult<HttpResponse, ShadowError> {
+    let domain = path.into_inner();
+    
+    let domain_data = olympus.get_domain(&domain).await
+        .map_err(|e| ShadowError::BadRequest(e))?
+        .ok_or_else(|| ShadowError::NotFound("Domain not found".to_string()))?;
+
+    Ok(HttpResponse::Ok().json(domain_data))
+}
+
+pub async fn search_domains(
+    olympus: web::Data<OlympusCA>,
+    query: web::Query<SearchQuery>,
+    apollo: web::Data<ApolloValidator>,
+) -> ActixResult<HttpResponse, ShadowError> {
+    ApolloValidator::validate_search_query(&query.q)?;
+    let limit = ApolloValidator::validate_limit(query.limit)?;
+
+    let domains = olympus.search_domains(&query.q, limit).await
+        .map_err(|e| ShadowError::BadRequest(e))?;
+
+    Ok(HttpResponse::Ok().json(domains))
+}
+
+pub async fn update_domain(
+    olympus: web::Data<OlympusCA>,
+    path: web::Path<String>,
+    body: web::Json<RegisterDomainRequest>,
+    ares: web::Data<AresAuth>,
+    apollo: web::Data<ApolloValidator>,
+    req: HttpRequest,
+) -> ActixResult<HttpResponse, ShadowError> {
+    let domain = path.into_inner();
+    
+    // Validate
+    ApolloValidator::validate_domain(&domain)?;
+    ApolloValidator::validate_pubkey(&body.program_address)?;
+
+    // Verify ownership
+    let domain_data = olympus.get_domain(&domain).await
+        .map_err(|e| ShadowError::BadRequest(e))?
+        .ok_or_else(|| ShadowError::NotFound("Domain not found".to_string()))?;
+
+    // Verify authentication
+    let auth_header = req.headers().get("X-Shadow-Auth")
+        .ok_or_else(|| ShadowError::Unauthorized)?
+        .to_str()
+        .map_err(|_| ShadowError::Unauthorized)?;
+    
+    let auth = AuthHeader::from_header(auth_header)?;
+    if auth.wallet != domain_data.owner_pubkey {
+        return Err(ShadowError::Unauthorized.into());
+    }
+    
+    auth.verify(&ares)
+        .map_err(|_| ShadowError::Unauthorized)?;
+
+    // Update domain
+    olympus.register_domain(
+        &domain,
+        &domain_data.owner_pubkey,
+        &body.program_address,
+    ).await
+    .map_err(|e| ShadowError::BadRequest(e))?;
+
+    Ok(HttpResponse::Ok().json(serde_json::json!({
+        "success": true
+    })))
+}
+
+pub async fn verify_domain(
+    olympus: web::Data<OlympusCA>,
+    path: web::Path<String>,
+    ares: web::Data<AresAuth>,
+    req: HttpRequest,
+) -> ActixResult<HttpResponse, ShadowError> {
+    let domain = path.into_inner();
+    
+    // Verify ownership
+    let domain_data = olympus.get_domain(&domain).await
+        .map_err(|e| ShadowError::BadRequest(e))?
+        .ok_or_else(|| ShadowError::NotFound("Domain not found".to_string()))?;
+
+    // Verify authentication
+    let auth_header = req.headers().get("X-Shadow-Auth")
+        .ok_or_else(|| ShadowError::Unauthorized)?
+        .to_str()
+        .map_err(|_| ShadowError::Unauthorized)?;
+    
+    let auth = AuthHeader::from_header(auth_header)?;
+    if auth.wallet != domain_data.owner_pubkey {
+        return Err(ShadowError::Unauthorized.into());
+    }
+    
+    auth.verify(&ares)
+        .map_err(|_| ShadowError::Unauthorized)?;
+
+    // Mark as verified (after on-chain verification)
+    olympus.verify_domain(&domain).await
+        .map_err(|e| ShadowError::BadRequest(e))?;
+
+    Ok(HttpResponse::Ok().json(serde_json::json!({
+        "success": true,
+        "verified": true
+    })))
+}
+
+pub async fn list_owner_domains(
+    olympus: web::Data<OlympusCA>,
+    path: web::Path<String>,
+) -> ActixResult<HttpResponse, ShadowError> {
+    let wallet = path.into_inner();
+    
+    let domains = olympus.list_owner_domains(&wallet).await
+        .map_err(|e| ShadowError::BadRequest(e))?;
+
+    Ok(HttpResponse::Ok().json(domains))
 }

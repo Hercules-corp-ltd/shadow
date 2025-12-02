@@ -67,3 +67,9 @@ impl From<mongodb::error::Error> for ShadowError {
     }
 }
 
+impl From<String> for ShadowError {
+    fn from(err: String) -> Self {
+        ShadowError::BadRequest(err)
+    }
+}
+

@@ -5,6 +5,10 @@ mod handlers;
 mod storage;
 mod websocket;
 mod solana;
+mod ares;
+mod olympus;
+mod apollo;
+mod artemis;
 
 use actix_web::{web, App, HttpServer, middleware::Logger};
 use actix_cors::Cors;
@@ -40,6 +44,18 @@ async fn main() -> anyhow::Result<()> {
         .keys(mongodb::bson::doc! { "created_at": -1 })
         .build();
     sites_collection.create_index(sites_index, None).await?;
+    
+    // Create indexes for Olympus domains
+    let domains_collection = db.collection::<olympus::Domain>("domains");
+    let domains_index = IndexModel::builder()
+        .keys(mongodb::bson::doc! { "owner_pubkey": 1, "verified": 1 })
+        .build();
+    domains_collection.create_index(domains_index, None).await?;
+    
+    let domains_program_index = IndexModel::builder()
+        .keys(mongodb::bson::doc! { "program_address": 1 })
+        .build();
+    domains_collection.create_index(domains_program_index, None).await?;
 
     let solana_rpc_url = env::var("SOLANA_RPC_URL")
         .unwrap_or_else(|_| "https://api.devnet.solana.com".to_string());
@@ -57,6 +73,18 @@ async fn main() -> anyhow::Result<()> {
     let solana_rpc_clone = solana_rpc_url.clone();
     let solana_ws_clone = solana_ws_url.clone();
     
+    // Initialize Olympus CA (domain system)
+    let olympus = olympus::OlympusCA::new((*db_clone).clone());
+    
+    // Initialize Ares (authentication)
+    let ares = Arc::new(ares::AresAuth::new());
+    
+    // Initialize Artemis (rate limiting)
+    let artemis = Arc::new(artemis::ArtemisRateLimiter::new(60)); // 60 requests per minute
+    
+    // Initialize Apollo (validation)
+    let apollo = Arc::new(apollo::ApolloValidator::new());
+    
     HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
@@ -72,6 +100,10 @@ async fn main() -> anyhow::Result<()> {
             .app_data(web::Data::new(solana_ws_clone.clone()))
             .app_data(web::Data::new(storage::PinataStorage::new()))
             .app_data(web::Data::new(storage::BundlrStorage::new()))
+            .app_data(web::Data::from(Arc::clone(&ares)))
+            .app_data(web::Data::from(Arc::clone(&artemis)))
+            .app_data(web::Data::from(Arc::clone(&apollo)))
+            .app_data(web::Data::new(olympus::OlympusCA::new((*db_clone).clone())))
             .service(
                 web::scope("/api")
                     .route("/health", web::get().to(api::health))
@@ -87,6 +119,13 @@ async fn main() -> anyhow::Result<()> {
                     .route("/upload/ipfs", web::post().to(handlers::upload_ipfs))
                     .route("/upload/arweave", web::post().to(handlers::upload_arweave))
                     .route("/solana/search", web::get().to(handlers::search_solana))
+                    // Olympus domain endpoints
+                    .route("/domains/search", web::get().to(handlers::search_domains))
+                    .route("/domains/{domain}", web::get().to(handlers::get_domain))
+                    .route("/domains", web::post().to(handlers::register_domain))
+                    .route("/domains/{domain}", web::put().to(handlers::update_domain))
+                    .route("/domains/{domain}/verify", web::post().to(handlers::verify_domain))
+                    .route("/domains/owner/{wallet}", web::get().to(handlers::list_owner_domains))
                     .route("/ws", web::get().to(websocket::ws_handler))
             )
     })
