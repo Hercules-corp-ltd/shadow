@@ -116,3 +116,4 @@ export async function searchDomains(query: string, limit: number = 10): Promise<
   return response.data
 }
 
+

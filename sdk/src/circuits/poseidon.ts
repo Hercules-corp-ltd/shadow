@@ -75,3 +75,4 @@ export async function getFromArweave(txId: string): Promise<Buffer> {
   return Buffer.from(response.data)
 }
 
+

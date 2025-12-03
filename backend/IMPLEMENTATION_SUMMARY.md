@@ -147,3 +147,4 @@ Previously used UUID placeholder. Now:
 - Domain names must be valid and end with `.shadow`
 - Authentication uses Solana's standard message signing format
 
+
