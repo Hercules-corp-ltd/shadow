@@ -5,6 +5,7 @@ import { init } from "./commands/init"
 import { initFull } from "./commands/init-full"
 import { deploy } from "./commands/deploy"
 import { deployFull } from "./commands/deploy-full"
+import { convertSite } from "./commands/convert"
 import chalk from "chalk"
 
 const program = new Command()
@@ -52,6 +53,27 @@ program
           options.mintToken
         )
       }
+    } catch (error) {
+      console.error(chalk.red("Error:"), error)
+      process.exit(1)
+    }
+  })
+
+program
+  .command("convert")
+  .description("Convert existing site to Shadow-compatible format (mints token, uploads assets)")
+  .argument("[path]", "Path to site directory", ".")
+  .option("-n, --network <network>", "Network (devnet|mainnet-beta)", "devnet")
+  .option("-s, --storage <storage>", "Storage provider (ipfs|arweave)", "ipfs")
+  .option("--no-mint-token", "Skip token minting (not recommended)")
+  .action(async (sitePath, options) => {
+    try {
+      await convertSite(
+        sitePath,
+        options.network,
+        options.storage,
+        options.mintToken !== false
+      )
     } catch (error) {
       console.error(chalk.red("Error:"), error)
       process.exit(1)

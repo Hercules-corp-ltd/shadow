@@ -173,7 +173,7 @@ Visit [Shadow Docs](https://shadow.xyz/docs) for more information.
 }
 
 async function createBasicAnchorStructure(dir: string, name: string) {
-  const programsDir = path.join(dir, "programs", name)
+  const programsDir = path.join(dir, "programs", name, "src")
   await fs.mkdirp(programsDir)
 
   // Create basic Anchor program
@@ -195,7 +195,7 @@ pub mod ${name.replace(/-/g, "_")} {
 pub struct Initialize {}
 `
 
-  await fs.writeFile(path.join(programsDir, "src", "lib.rs"), libRs)
+  await fs.writeFile(path.join(programsDir, "lib.rs"), libRs)
 
   // Create Anchor.toml
   const anchorToml = `[features]
