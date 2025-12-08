@@ -22,8 +22,8 @@ import {
   TOKEN_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,
 } from "@solana/spl-token"
-import { uploadToIPFS, uploadToArweave } from "../circuits/poseidon"
-import { registerDomain, verifyProgram } from "../circuits/olympus"
+import { uploadToIPFS, uploadToArweave, uploadDirectoryToIPFS } from "../circuits/poseidon-node"
+import { registerDomain } from "../circuits/olympus"
 import { createAuthHeader } from "../circuits/ares"
 import { validateDomain } from "../circuits/apollo"
 
@@ -48,22 +48,22 @@ async function deploySolanaProgram(
   const spinner = ora("Compiling Solana program...").start()
 
   try {
-    const programPath = config.programPath || path.join(process.cwd(), "programs")
-    const anchorToml = path.join(programPath, "Anchor.toml")
+    // Anchor.toml is in the root directory, not in programs/
+    const anchorToml = path.join(process.cwd(), "Anchor.toml")
 
     if (!(await fs.pathExists(anchorToml))) {
       spinner.fail("Anchor.toml not found. Run 'anchor init' first.")
       throw new Error("No Anchor program found")
     }
 
-    // Build the program
+    // Build the program (Anchor.toml should be in current directory)
     spinner.text = "Building Anchor program..."
-    execSync("anchor build", { cwd: programPath, stdio: "inherit" })
+    execSync("anchor build", { cwd: process.cwd(), stdio: "inherit" })
 
     // Deploy the program
     spinner.text = `Deploying to ${network}...`
     const deployOutput = execSync("anchor deploy", {
-      cwd: programPath,
+      cwd: process.cwd(),
       encoding: "utf-8",
     })
 
@@ -122,15 +122,19 @@ async function uploadAssets(
     // Use Poseidon circuit for storage
     let cid: string
     if (storage === "ipfs") {
-      // For IPFS, we need to bundle files
-      // In production, use proper IPFS directory upload
-      const firstFile = files[0]
-      const content = await fs.readFile(firstFile)
-      cid = await uploadToIPFS(Buffer.from(content), path.basename(firstFile))
+      // Upload all files as a directory
+      const fileContents = await Promise.all(
+        files.map(async (file) => ({
+          path: file,
+          content: await fs.readFile(file),
+        }))
+      )
+      cid = await uploadDirectoryToIPFS(fileContents)
     } else {
+      // For Arweave, upload first file (or bundle in production)
       const firstFile = files[0]
       const content = await fs.readFile(firstFile)
-      cid = await uploadToArweave(Buffer.from(content), path.basename(firstFile))
+      cid = await uploadToArweave(content, path.basename(firstFile))
     }
 
     spinner.succeed(`Assets uploaded: ${cid}`)
