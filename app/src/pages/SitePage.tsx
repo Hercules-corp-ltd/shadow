@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 
@@ -50,29 +49,25 @@ export default function SitePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center safe-area-inset">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background safe-area-inset">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <Button
           variant="ghost"
           onClick={() => navigate(-1)}
-          className="mb-6 touch-manipulation min-h-[44px]"
+          className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto"
-        >
+        <div className="max-w-4xl mx-auto">
           {site && (
             <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 mb-6">
               <h1 className="text-2xl sm:text-3xl font-bold mb-2 break-words">
@@ -94,9 +89,8 @@ export default function SitePage() {
               No content available
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
     </div>
   )
 }
-
