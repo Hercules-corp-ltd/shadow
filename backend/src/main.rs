@@ -14,6 +14,9 @@ mod chronos;
 mod prometheus;
 mod hephaestus;
 mod utils;
+mod middleware;
+mod config;
+mod metrics;
 
 use actix_web::{web, App, HttpServer, middleware::Logger};
 use actix_cors::Cors;
@@ -101,6 +104,13 @@ async fn main() -> anyhow::Result<()> {
     // Initialize Hephaestus (caching)
     let hephaestus = Arc::new(hephaestus::HephaestusCache::new(512, 3600)); // 512MB cache, 1hr TTL
     
+    // Initialize metrics collector
+    let metrics = Arc::new(metrics::MetricsCollector::new());
+    
+    // Load configuration
+    let config = config::ShadowConfig::from_env()
+        .map_err(|e| anyhow::anyhow!("Config error: {}", e))?;
+    
     HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
@@ -124,6 +134,8 @@ async fn main() -> anyhow::Result<()> {
             .app_data(web::Data::from(Arc::clone(&chronos)))
             .app_data(web::Data::from(Arc::clone(&prometheus)))
             .app_data(web::Data::from(Arc::clone(&hephaestus)))
+            .app_data(web::Data::from(Arc::clone(&metrics)))
+            .app_data(web::Data::new(config.clone()))
             .service(
                 web::scope("/api")
                     .route("/health", web::get().to(api::health))

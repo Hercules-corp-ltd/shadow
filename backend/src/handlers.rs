@@ -11,6 +11,7 @@ use crate::athena::AthenaIndexer;
 use crate::chronos::ChronosManager;
 use crate::prometheus::PrometheusAnalytics;
 use crate::hephaestus::HephaestusCache;
+use crate::metrics::MetricsCollector;
 use serde::{Deserialize, Serialize};
 use mongodb::Database;
 use std::time::Duration;
@@ -868,4 +869,13 @@ pub async fn clear_cache(
     Ok(HttpResponse::Ok().json(serde_json::json!({
         "success": true
     })))
+}
+
+// ========== Metrics Handler ==========
+
+pub async fn get_metrics(
+    metrics: web::Data<MetricsCollector>,
+) -> ActixResult<HttpResponse, ShadowError> {
+    let metrics_data = metrics.get_metrics();
+    Ok(HttpResponse::Ok().json(metrics_data))
 }
