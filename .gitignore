@@ -47,3 +47,7 @@ Cargo.lock
 # TypeScript
 *.tsbuildinfo
 
+# Documentation (keep only README.md)
+*.md
+!README.md
+
