@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../providers/domains_provider.dart';
 import '../../services/domain_service.dart';
-import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/shadow_button.dart';

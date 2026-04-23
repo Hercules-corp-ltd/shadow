@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../providers/wallet_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_spacing.dart';
 import '../../theme/shadow_typography.dart';

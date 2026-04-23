@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/settings_provider.dart';
-import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/shadow_scaffold.dart';

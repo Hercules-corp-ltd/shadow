@@ -2,12 +2,12 @@
 // Named after Hermes (Messenger God) for wallet operations
 
 import 'dart:convert';
-import 'dart:typed_data';
-import 'package:solana/solana.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pointycastle/export.dart';
-import 'package:crypto/crypto.dart';
 import 'dart:math';
+import 'dart:typed_data';
+
+import 'package:pointycastle/export.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:solana/solana.dart';
 
 class WalletService {
   static const String _walletStorageKey = 'shadow_wallet_encrypted';
@@ -18,12 +18,7 @@ class WalletService {
 
   /// Generate a new Solana keypair
   Future<Ed25519HDKeyPair> generateWallet() async {
-    final random = Random.secure();
-    final seed = Uint8List(32);
-    for (int i = 0; i < 32; i++) {
-      seed[i] = random.nextInt(256);
-    }
-    return await Ed25519HDKeyPair.fromSeed(seed);
+    return Ed25519HDKeyPair.random();
   }
 
   /// Derive encryption key from password using PBKDF2
@@ -120,10 +115,10 @@ class WalletService {
   Future<void> storeWallet(Ed25519HDKeyPair keypair, String password) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final secretKey = keypair.privateKey.bytes;
-      final address = keypair.publicKey.toBase58();
-      
-      // Encrypt wallet
+      final data = await keypair.extract();
+      final secretKey = Uint8List.fromList(data.bytes);
+      final address = keypair.address;
+
       final encrypted = await _encrypt(secretKey, password, null, null);
       
       // Store in SharedPreferences
@@ -151,8 +146,9 @@ class WalletService {
       // Decrypt wallet
       final secretKey = await _decrypt(encrypted, password, salt, iv);
       
-      // Recreate keypair from secret key
-      return await Ed25519HDKeyPair.fromSeed(secretKey);
+      return await Ed25519HDKeyPair.fromPrivateKeyBytes(
+        privateKey: secretKey,
+      );
     } catch (e) {
       throw Exception('Failed to load wallet: $e');
     }

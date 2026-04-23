@@ -130,7 +130,11 @@ class _WalletOption extends StatelessWidget {
   }
 }
 
-enum _PasswordMode { create, unlock }
+enum _PasswordMode {
+  create,
+  // ignore: unused_field
+  unlock,
+}
 
 Future<String?> _askPassword(
   BuildContext context, {
@@ -139,7 +143,6 @@ Future<String?> _askPassword(
   final controller = TextEditingController();
   final confirm = TextEditingController();
   final formKey = GlobalKey<FormState>();
-  String? error;
 
   return showModalBottomSheet<String>(
     context: context,
@@ -196,12 +199,6 @@ Future<String?> _askPassword(
                       validator: (v) =>
                           v != controller.text ? 'Passwords do not match' : null,
                     ),
-                  ],
-                  if (error != null) ...[
-                    const SizedBox(height: 8),
-                    Text(error!,
-                        style: ShadowTypography.bodySm
-                            .copyWith(color: ShadowColors.error)),
                   ],
                   const SizedBox(height: 20),
                   ShadowButton(

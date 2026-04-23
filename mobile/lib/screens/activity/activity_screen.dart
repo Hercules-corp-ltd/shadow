@@ -6,10 +6,8 @@ import 'package:provider/provider.dart';
 import '../../models/activity.dart';
 import '../../providers/activity_provider.dart';
 import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/list_item_card.dart';
-import '../../widgets/shadow_button.dart';
 import '../../widgets/shadow_scaffold.dart';
 
 class ActivityScreen extends StatefulWidget {

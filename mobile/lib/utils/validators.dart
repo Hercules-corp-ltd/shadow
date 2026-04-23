@@ -39,7 +39,7 @@ class Validators {
     }
     
     // No special characters that could cause issues
-    final invalidChars = RegExp(r'[<>"\']');
+    final invalidChars = RegExp("[<>\"']");
     return !invalidChars.hasMatch(query);
   }
   

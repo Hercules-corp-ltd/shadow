@@ -1,10 +1,17 @@
+//! MongoDB-dependent integration tests.
+//!
+//! These are marked `#[ignore]` so `cargo test` skips them by default. To
+//! run them, start MongoDB locally, set `DATABASE_URL`, and invoke:
+//!     cargo test -p shadow-backend --test test_db -- --ignored
+
 #[cfg(test)]
 mod tests {
     use mongodb::{Client, options::ClientOptions};
+    use shadow_backend::db;
     use std::env;
-    use crate::db;
 
     #[tokio::test]
+    #[ignore = "requires MongoDB + DATABASE_URL env var"]
     async fn test_database_connection() {
         dotenv::dotenv().ok();
         
@@ -28,6 +35,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "requires MongoDB + DATABASE_URL env var"]
     async fn test_create_user() {
         dotenv::dotenv().ok();
         
@@ -71,6 +79,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "requires MongoDB + DATABASE_URL env var"]
     async fn test_create_site() {
         dotenv::dotenv().ok();
         
@@ -119,6 +128,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "requires MongoDB + DATABASE_URL env var"]
     async fn test_search_users() {
         dotenv::dotenv().ok();
         

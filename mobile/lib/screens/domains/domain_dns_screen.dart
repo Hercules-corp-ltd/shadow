@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../../models/domain.dart';
-import '../../providers/domains_provider.dart';
 import '../../services/domain_service.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';

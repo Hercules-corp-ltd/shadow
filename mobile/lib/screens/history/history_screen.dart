@@ -9,7 +9,6 @@ import '../../theme/shadow_typography.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/list_item_card.dart';
 import '../../widgets/search_field.dart';
-import '../../widgets/shadow_button.dart';
 import '../../widgets/shadow_scaffold.dart';
 
 class HistoryScreen extends StatefulWidget {

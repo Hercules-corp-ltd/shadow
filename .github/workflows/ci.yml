@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ----------------------------------------------------------------------
+  # Rust backend: format check + clippy + tests (DB tests are #[ignore]d)
+  # ----------------------------------------------------------------------
+  backend:
+    name: Backend (Rust)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            .
+            crates/hermes-cli
+            crates/hermes-client
+
+      - name: cargo fmt --check
+        run: cargo fmt --all -- --check
+        # fmt is advisory for now — repo isn't fully formatted yet.
+        continue-on-error: true
+
+      - name: cargo clippy
+        run: cargo clippy -p shadow-backend --all-targets
+        continue-on-error: true
+
+      - name: cargo build
+        run: cargo build -p shadow-backend --verbose
+
+      - name: cargo test
+        run: cargo test -p shadow-backend --verbose
+
+  # ----------------------------------------------------------------------
+  # Flutter mobile: pub get + analyze + unit/widget tests
+  # ----------------------------------------------------------------------
+  mobile:
+    name: Mobile (Flutter)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.3"
+          channel: stable
+          cache: true
+
+      - name: flutter --version
+        run: flutter --version
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      - name: flutter analyze
+        run: flutter analyze
+
+      - name: flutter test
+        run: flutter test --reporter=expanded
