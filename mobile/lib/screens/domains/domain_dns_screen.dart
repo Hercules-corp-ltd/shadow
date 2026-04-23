@@ -1,0 +1,242 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../models/domain.dart';
+import '../../providers/domains_provider.dart';
+import '../../services/domain_service.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
+import '../../widgets/empty_state.dart';
+import '../../widgets/glass_card.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
+
+class DomainDnsScreen extends StatefulWidget {
+  const DomainDnsScreen({super.key, required this.domain});
+  final String domain;
+
+  @override
+  State<DomainDnsScreen> createState() => _DomainDnsScreenState();
+}
+
+class _DomainDnsScreenState extends State<DomainDnsScreen> {
+  final _service = DomainService();
+  List<DnsRecord> _records = const [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      _records = await _service.dnsRecords(widget.domain);
+    } catch (_) {
+      _records = const [];
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ShadowScaffold(
+      title: 'DNS Records',
+      subtitle: widget.domain,
+      body: Column(
+        children: [
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _records.isEmpty
+                    ? EmptyState(
+                        icon: Icons.dns_rounded,
+                        title: 'No DNS records',
+                        message:
+                            'Add records to resolve subdomains, mail, or verification TXTs.',
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        itemBuilder: (_, i) {
+                          final r = _records[i];
+                          return GlassCard(
+                            padding: const EdgeInsets.all(14),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: ShadowColors.primarySoft,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(r.type,
+                                      style: ShadowTypography.caption.copyWith(
+                                        color: ShadowColors.primary,
+                                        fontWeight: FontWeight.w700,
+                                      )),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(r.name,
+                                          style: ShadowTypography.body),
+                                      Text(r.value,
+                                          style: ShadowTypography.caption,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis),
+                                    ],
+                                  ),
+                                ),
+                                Text('${r.ttl}s',
+                                    style: ShadowTypography.caption),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline_rounded,
+                                      color: ShadowColors.error),
+                                  onPressed: () async {
+                                    await _service.deleteDnsRecord(
+                                        widget.domain, r.id);
+                                    _load();
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemCount: _records.length,
+                      ),
+          ),
+          const SizedBox(height: 12),
+          ShadowButton(
+            label: 'Add record',
+            leading: Icons.add_rounded,
+            onPressed: () => _showAddSheet(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAddSheet(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: ShadowColors.surfaceElevated,
+      builder: (_) => _AddDnsSheet(
+        domain: widget.domain,
+        onSave: _load,
+      ),
+    );
+  }
+}
+
+class _AddDnsSheet extends StatefulWidget {
+  const _AddDnsSheet({required this.domain, required this.onSave});
+  final String domain;
+  final VoidCallback onSave;
+
+  @override
+  State<_AddDnsSheet> createState() => _AddDnsSheetState();
+}
+
+class _AddDnsSheetState extends State<_AddDnsSheet> {
+  final _nameCtrl = TextEditingController(text: '@');
+  final _valueCtrl = TextEditingController();
+  String _type = 'A';
+  int _ttl = 3600;
+  final _service = DomainService();
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _valueCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.of(context).viewInsets.bottom;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Add DNS record', style: ShadowTypography.h3),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            children: [
+              for (final t in const ['A', 'AAAA', 'CNAME', 'TXT', 'MX'])
+                ChoiceChip(
+                  label: Text(t),
+                  selected: _type == t,
+                  onSelected: (_) => setState(() => _type = t),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _nameCtrl,
+            decoration: const InputDecoration(hintText: 'Name (@, www, ...)'),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _valueCtrl,
+            decoration: const InputDecoration(hintText: 'Value'),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Text('TTL'),
+              const SizedBox(width: 12),
+              for (final t in const [300, 3600, 86400])
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text('${t}s'),
+                    selected: _ttl == t,
+                    onSelected: (_) => setState(() => _ttl = t),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ShadowButton(
+            label: _saving ? 'Saving...' : 'Save record',
+            isLoading: _saving,
+            onPressed: _saving ? null : _save,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    try {
+      await _service.upsertDnsRecord(
+        widget.domain,
+        DnsRecord(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          type: _type,
+          name: _nameCtrl.text.trim(),
+          value: _valueCtrl.text.trim(),
+          ttl: _ttl,
+        ),
+      );
+      if (mounted) Navigator.of(context).pop();
+      widget.onSave();
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+}

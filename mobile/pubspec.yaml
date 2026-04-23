@@ -9,29 +9,48 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+
   # Solana
   solana: ^0.2.0
   ed25519_edwards: ^0.2.0
-  
+  bs58: ^1.0.2
+
   # Crypto & Storage
   pointycastle: ^3.7.3
   crypto: ^3.0.3
   shared_preferences: ^2.2.2
-  
+  flutter_secure_storage: ^9.2.2
+
   # State Management
   provider: ^6.1.1
-  
+
+  # Routing
+  go_router: ^14.2.7
+
   # UI
   cupertino_icons: ^1.0.6
   flutter_animate: ^4.3.0
-  
+  flutter_svg: ^2.0.10+1
+  google_fonts: ^6.2.1
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  percent_indicator: ^4.2.3
+  qr_flutter: ^4.1.0
+
   # Networking
   http: ^1.1.2
   dio: ^5.4.0
-  
+  web_socket_channel: ^2.4.0
+
+  # File picking (deploy website)
+  file_picker: ^8.0.6
+
   # Additional utilities
   intl: ^0.19.0
+  logger: ^2.3.0
+  json_annotation: ^4.9.0
+  equatable: ^2.0.5
+  collection: ^1.18.0
 
 dev_dependencies:
   flutter_test:
@@ -41,3 +60,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  assets:
+    - assets/icons/
+    - assets/illustrations/
+    - assets/gods/
