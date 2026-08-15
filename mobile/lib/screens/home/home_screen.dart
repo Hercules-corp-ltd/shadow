@@ -181,7 +181,7 @@ class _ConvertCta extends StatelessWidget {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
+                        color: Colors.white.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(ShadowRadius.sm),
                         border: Border.all(color: Colors.white24),
                       ),
@@ -202,7 +202,7 @@ class _ConvertCta extends StatelessWidget {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
+                  color: Colors.white.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(ShadowRadius.md),
                 ),
                 child: const Icon(Icons.public_rounded,
@@ -222,23 +222,23 @@ class _FeatureGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tiles = <_Feature>[
-      _Feature('Identity', Icons.fingerprint_rounded, ShadowColors.tileRed,
+      const _Feature('Identity', Icons.fingerprint_rounded, ShadowColors.tileRed,
           '/identity'),
-      _Feature('Wallet', Icons.account_balance_wallet_rounded,
+      const _Feature('Wallet', Icons.account_balance_wallet_rounded,
           ShadowColors.tileBlue, '/wallet'),
-      _Feature('Domains', Icons.language_rounded, ShadowColors.tilePurple,
+      const _Feature('Domains', Icons.language_rounded, ShadowColors.tilePurple,
           '/domains'),
-      _Feature('Deploy', Icons.rocket_launch_rounded, ShadowColors.tileGreen,
+      const _Feature('Deploy', Icons.rocket_launch_rounded, ShadowColors.tileGreen,
           '/deploy'),
-      _Feature('Resolve', Icons.link_rounded, ShadowColors.tileOrange,
+      const _Feature('Resolve', Icons.link_rounded, ShadowColors.tileOrange,
           '/resolve'),
-      _Feature('Tokens', Icons.monetization_on_rounded,
+      const _Feature('Tokens', Icons.monetization_on_rounded,
           ShadowColors.tileAmber, '/tokens'),
-      _Feature(
+      const _Feature(
           'Activity', Icons.pie_chart_rounded, ShadowColors.tilePink, '/activity'),
-      _Feature('Settings', Icons.settings_rounded, ShadowColors.tileGray,
+      const _Feature('Settings', Icons.settings_rounded, ShadowColors.tileGray,
           '/settings'),
-      _Feature('History', Icons.history_rounded, ShadowColors.tileCyan,
+      const _Feature('History', Icons.history_rounded, ShadowColors.tileCyan,
           '/history'),
     ];
 

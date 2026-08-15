@@ -70,7 +70,7 @@ class _DeployUploadScreenState extends State<DeployUploadScreen> {
                 Container(
                   width: 72,
                   height: 72,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: ShadowColors.primarySoft,
                     shape: BoxShape.circle,
                   ),

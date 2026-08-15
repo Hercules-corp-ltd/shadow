@@ -25,7 +25,7 @@ class DeployChooseConfigScreen extends StatelessWidget {
             onTap: () => context.push('/deploy/upload'),
           ),
           const SizedBox(height: 8),
-          ListItemCard(
+          const ListItemCard(
             title: 'Import from a public repository',
             subtitle: 'Clone a GitHub / GitLab repository (coming soon)',
             leadingIcon: Icons.source_rounded,

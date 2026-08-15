@@ -36,7 +36,7 @@ class DeployDeployedScreen extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: ShadowColors.primary.withOpacity(0.4),
+                    color: ShadowColors.primary.withValues(alpha: 0.4),
                     blurRadius: 40,
                     spreadRadius: 4,
                   ),

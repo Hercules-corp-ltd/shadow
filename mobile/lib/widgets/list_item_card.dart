@@ -55,7 +55,7 @@ class ListItemCard extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     color: (leadingColor ?? ShadowColors.primary)
-                        .withOpacity(0.2),
+                        .withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(ShadowRadius.sm),
                   ),
                   child: Icon(

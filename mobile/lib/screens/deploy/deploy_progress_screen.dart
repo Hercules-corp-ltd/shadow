@@ -116,9 +116,9 @@ class _DeployProgressScreenState extends State<DeployProgressScreen> {
             const SizedBox(height: 20),
             GlassCard(
               padding: const EdgeInsets.all(16),
-              color: Colors.red.withOpacity(0.08),
+              color: Colors.red.withValues(alpha: 0.08),
               border: Border.all(
-                  color: ShadowColors.error.withOpacity(0.4), width: 1),
+                  color: ShadowColors.error.withValues(alpha: 0.4), width: 1),
               child: Text(
                 provider.error!,
                 style: ShadowTypography.body

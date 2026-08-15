@@ -119,9 +119,9 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
                         ],
                       ),
                     );
-                    if (confirm == true) {
+                    if (confirm == true && context.mounted) {
                       await context.read<WalletProvider>().deleteWallet();
-                      if (mounted) context.go('/welcome');
+                      if (context.mounted) context.go('/welcome');
                     }
                   },
                   child: const Text('Forgot password? Delete wallet'),

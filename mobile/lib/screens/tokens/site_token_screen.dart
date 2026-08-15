@@ -82,7 +82,7 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
             child: p.isLoading && tokens.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : tokens.isEmpty
-                    ? EmptyState(
+                    ? const EmptyState(
                         icon: Icons.token_rounded,
                         title: 'No tokens yet',
                         message:
@@ -100,7 +100,7 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
                                 Container(
                                   width: 44,
                                   height: 44,
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     gradient: ShadowColors.goldGradient,
                                     shape: BoxShape.circle,
                                   ),

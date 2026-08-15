@@ -88,7 +88,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
         children: [
           Text('Total balance',
               style: ShadowTypography.label
-                  .copyWith(color: Colors.white.withOpacity(0.9))),
+                  .copyWith(color: Colors.white.withValues(alpha: 0.9))),
           const SizedBox(height: 8),
           Text(
             portfolio == null

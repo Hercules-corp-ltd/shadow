@@ -65,7 +65,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
       body: p.isLoading && p.items.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : p.items.isEmpty
-              ? EmptyState(
+              ? const EmptyState(
                   icon: Icons.download_rounded,
                   title: 'No downloads yet',
                   message:
@@ -85,7 +85,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                             height: 48,
                             decoration: BoxDecoration(
                               color:
-                                  ShadowColors.primary.withOpacity(0.18),
+                                  ShadowColors.primary.withValues(alpha: 0.18),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(_iconFor(d.type),

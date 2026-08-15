@@ -83,7 +83,7 @@ class _DomainFindScreenState extends State<DomainFindScreen> {
               child: CircularProgressIndicator(),
             ))
           else if (p.myDomains.isEmpty)
-            EmptyState(
+            const EmptyState(
               icon: Icons.language_rounded,
               title: 'No domains yet',
               message:

@@ -101,7 +101,7 @@ class _WalletSendScreenState extends State<WalletSendScreen> {
                 Text('Asset', style: ShadowTypography.label),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: _selectedMint,
+                  initialValue: _selectedMint,
                   items: allMints
                       .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                       .toList(),

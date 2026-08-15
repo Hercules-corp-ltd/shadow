@@ -20,7 +20,7 @@ class ShadowTheme {
   static ThemeData build() {
     final base = ThemeData.dark(useMaterial3: true);
 
-    final colorScheme = const ColorScheme.dark(
+    const colorScheme = ColorScheme.dark(
       brightness: Brightness.dark,
       primary: ShadowColors.primary,
       onPrimary: Colors.white,

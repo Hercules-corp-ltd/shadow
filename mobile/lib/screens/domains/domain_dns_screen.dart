@@ -50,7 +50,7 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _records.isEmpty
-                    ? EmptyState(
+                    ? const EmptyState(
                         icon: Icons.dns_rounded,
                         title: 'No DNS records',
                         message:

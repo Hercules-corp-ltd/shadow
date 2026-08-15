@@ -46,7 +46,7 @@ class DomainResultsScreen extends StatelessWidget {
                               color: (available
                                       ? ShadowColors.success
                                       : ShadowColors.textTertiary)
-                                  .withOpacity(0.2),
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(

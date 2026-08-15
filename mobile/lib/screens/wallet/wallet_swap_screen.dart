@@ -24,7 +24,7 @@ class _WalletSwapScreenState extends State<WalletSwapScreen> {
   @override
   Widget build(BuildContext context) {
     final tokens = context.watch<TokensProvider>();
-    final mints = ['SOL', ...tokens.tokens.map((t) => t.symbol)].toSet().toList();
+    final mints = {'SOL', ...tokens.tokens.map((t) => t.symbol)}.toList();
     if (!mints.contains(_to)) _to = 'USDC';
 
     return ShadowScaffold(

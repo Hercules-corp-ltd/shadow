@@ -45,7 +45,7 @@ class IconTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(ShadowRadius.md),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.35),
+                      color: color.withValues(alpha: 0.35),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),

@@ -43,7 +43,7 @@ class _ExtensionsScreenState extends State<ExtensionsScreen> {
       body: p.isLoading && p.items.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : p.items.isEmpty
-              ? EmptyState(
+              ? const EmptyState(
                   icon: Icons.extension_rounded,
                   title: 'No extensions yet',
                   message:
@@ -61,7 +61,7 @@ class _ExtensionsScreenState extends State<ExtensionsScreen> {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: ShadowColors.tilePurple.withOpacity(0.18),
+                              color: ShadowColors.tilePurple.withValues(alpha: 0.18),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.extension_rounded,

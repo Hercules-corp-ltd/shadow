@@ -60,7 +60,7 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
             child: p.isLoading && p.logs.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : p.logs.isEmpty
-                    ? EmptyState(
+                    ? const EmptyState(
                         icon: Icons.article_rounded,
                         title: 'No logs',
                         message: 'Logs matching this filter will appear here.',
@@ -85,7 +85,7 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: color.withOpacity(0.15),
+                                    color: color.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(

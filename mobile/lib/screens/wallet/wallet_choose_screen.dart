@@ -15,7 +15,7 @@ class WalletChooseScreen extends StatelessWidget {
 
   Future<void> _createNewWallet(BuildContext context) async {
     final password = await _askPassword(context, mode: _PasswordMode.create);
-    if (password == null) return;
+    if (password == null || !context.mounted) return;
     try {
       await context.read<WalletProvider>().createNewWallet(password);
       if (context.mounted) context.go('/home');
@@ -106,7 +106,7 @@ class _WalletOption extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.18),
+              color: color.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(ShadowRadius.sm),
             ),
             child: Icon(icon, color: color),

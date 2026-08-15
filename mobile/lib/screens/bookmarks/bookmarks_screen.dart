@@ -75,7 +75,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
             child: p.isLoading && p.bookmarks.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : p.bookmarks.isEmpty
-                    ? EmptyState(
+                    ? const EmptyState(
                         icon: Icons.bookmark_border_rounded,
                         title: 'No bookmarks yet',
                         message:

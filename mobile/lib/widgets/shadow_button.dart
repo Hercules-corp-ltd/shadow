@@ -122,7 +122,7 @@ class ShadowButton extends StatelessWidget {
               boxShadow: variant == ShadowButtonVariant.primary
                   ? [
                       BoxShadow(
-                        color: ShadowColors.primary.withOpacity(0.35),
+                        color: ShadowColors.primary.withValues(alpha: 0.35),
                         blurRadius: 24,
                         offset: const Offset(0, 6),
                       ),

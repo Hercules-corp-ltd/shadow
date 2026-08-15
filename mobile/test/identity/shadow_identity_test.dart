@@ -277,7 +277,7 @@ void main() {
       for (var i = 0; i < draws; i++) {
         counts[stream.nextInt(100)]++;
       }
-      final expectedPerBucket = draws / 100;
+      const expectedPerBucket = draws / 100;
       for (final count in counts) {
         expect(count, greaterThan(expectedPerBucket * 0.6));
         expect(count, lessThan(expectedPerBucket * 1.4));

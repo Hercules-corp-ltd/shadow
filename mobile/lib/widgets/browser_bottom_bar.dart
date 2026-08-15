@@ -49,7 +49,7 @@ class BrowserBottomBar extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
         child: Container(
           decoration: BoxDecoration(
-            color: ShadowColors.surfaceElevated.withOpacity(0.85),
+            color: ShadowColors.surfaceElevated.withValues(alpha: 0.85),
             border: const Border(
               top: BorderSide(color: ShadowColors.border),
             ),

@@ -45,7 +45,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Container(
                   width: 56,
                   height: 56,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     gradient: ShadowColors.primaryGradient,
                     shape: BoxShape.circle,
                   ),

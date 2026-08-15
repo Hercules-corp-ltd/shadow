@@ -45,21 +45,27 @@ class _HistoryClearScreenState extends State<HistoryClearScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                for (final r in const [
-                  ['all', 'All time'],
-                  ['today', 'Today'],
-                  ['yesterday', 'Yesterday'],
-                  ['7d', 'Last 7 days'],
-                  ['30d', 'Last 30 days'],
-                ])
-                  RadioListTile<String>(
-                    value: r[0],
-                    groupValue: _range,
-                    onChanged: (v) => setState(() => _range = v ?? 'all'),
-                    title: Text(r[1], style: ShadowTypography.body),
-                    activeColor: ShadowColors.primary,
-                    contentPadding: EdgeInsets.zero,
+                RadioGroup<String>(
+                  groupValue: _range,
+                  onChanged: (v) => setState(() => _range = v ?? 'all'),
+                  child: Column(
+                    children: <Widget>[
+                      for (final r in const [
+                        ['all', 'All time'],
+                        ['today', 'Today'],
+                        ['yesterday', 'Yesterday'],
+                        ['7d', 'Last 7 days'],
+                        ['30d', 'Last 30 days'],
+                      ])
+                        RadioListTile<String>(
+                          value: r[0],
+                          title: Text(r[1], style: ShadowTypography.body),
+                          activeColor: ShadowColors.primary,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                    ],
                   ),
+                ),
               ],
             ),
           ),
@@ -70,7 +76,7 @@ class _HistoryClearScreenState extends State<HistoryClearScreen> {
             size: ShadowButtonSize.lg,
             onPressed: () async {
               await context.read<HistoryProvider>().clear();
-              if (!mounted) return;
+              if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('History cleared')),
               );

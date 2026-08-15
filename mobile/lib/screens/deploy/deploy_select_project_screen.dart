@@ -104,7 +104,7 @@ class _HeroCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: ShadowColors.primary.withOpacity(0.2),
+              color: ShadowColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.cloud_upload_rounded,

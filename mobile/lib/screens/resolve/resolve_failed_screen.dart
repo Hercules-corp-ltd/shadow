@@ -24,7 +24,7 @@ class ResolveFailedScreen extends StatelessWidget {
               width: 112,
               height: 112,
               decoration: BoxDecoration(
-                color: ShadowColors.error.withOpacity(0.12),
+                color: ShadowColors.error.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.sentiment_dissatisfied_rounded,

@@ -55,7 +55,7 @@ class _ResolveResolvingScreenState extends State<ResolveResolvingScreen> {
             child: Container(
               width: 120,
               height: 120,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: ShadowColors.primarySoft,
                 shape: BoxShape.circle,
               ),
@@ -68,7 +68,7 @@ class _ResolveResolvingScreenState extends State<ResolveResolvingScreen> {
               ),
             ).animate(onPlay: (c) => c.repeat()).shimmer(
                   duration: 1500.ms,
-                  color: ShadowColors.primary.withOpacity(0.25),
+                  color: ShadowColors.primary.withValues(alpha: 0.25),
                 ),
           ),
           const SizedBox(height: 32),
