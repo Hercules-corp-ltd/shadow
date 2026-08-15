@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/activity.dart';
 import '../../providers/activity_provider.dart';
+import '../../providers/browser_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_spacing.dart';
 import '../../theme/shadow_typography.dart';
@@ -79,8 +80,16 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 20),
         ShadowSearchField(
           onSubmitted: (q) {
-            if (q.trim().isEmpty) return;
-            context.push('/resolve?id=${Uri.encodeComponent(q.trim())}');
+            final query = q.trim();
+            if (query.isEmpty) return;
+            // Shadow-native identifiers go to the resolver; everything else is
+            // ordinary web browsing. Sending a plain search to the resolver
+            // was the old behaviour and it dead-ended on an empty text box.
+            if (_isShadowIdentifier(query)) {
+              context.push('/resolve/resolving?id=${Uri.encodeComponent(query)}');
+            } else {
+              context.push('/browse?url=${Uri.encodeComponent(query)}');
+            }
           },
         ),
         const SizedBox(height: 20),
@@ -106,6 +115,24 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (_) => _HomeMenuSheet(),
     );
   }
+}
+
+/// True for things only Shadow can resolve: a .shadow domain, an IPFS or
+/// Arweave content id, or a bare base58 program address.
+bool _isShadowIdentifier(String query) {
+  final value = query.toLowerCase();
+  if (value.endsWith('.shadow')) return true;
+  if (value.startsWith('shadow://')) return true;
+  if (RegExp(r'^(qm[1-9a-hj-np-z]{44}|bafy[a-z2-7]{50,})$').hasMatch(value)) {
+    return true;
+  }
+  // A bare base58 address: no dots, no spaces, Solana-pubkey length.
+  if (!query.contains('.') &&
+      !query.contains(' ') &&
+      RegExp(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$').hasMatch(query)) {
+    return true;
+  }
+  return false;
 }
 
 class _ShadowLogoHeader extends StatelessWidget {
@@ -365,15 +392,33 @@ class _HomeBrowserBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const BrowserBottomBar(
-      tabs: [
-        BrowserTab(
-            title: 'Olympus Home', url: 'olympus://home', icon: Icons.home_rounded),
-        BrowserTab(
-            title: 'Web3 Portal', url: 'olympus://web3', icon: Icons.bolt_rounded),
-      ],
-      activeIndex: 0,
-      currentUrl: 'olympus://home',
+    final browser = context.watch<BrowserProvider>();
+    final tab = browser.activeTab;
+
+    return BrowserBottomBar(
+      tabs: browser.hasTabs
+          ? [
+              for (final t in browser.tabs)
+                BrowserTab(title: t.title, url: t.displayUrl),
+            ]
+          : const [
+              BrowserTab(
+                title: 'New tab',
+                url: 'Tap to browse',
+                icon: Icons.home_rounded,
+              ),
+            ],
+      activeIndex: browser.hasTabs ? browser.activeIndex : 0,
+      currentUrl: tab?.displayUrl ?? 'Tap to browse',
+      isSecure: tab?.isSecure ?? false,
+      onTapUrl: () => context.push('/browse'),
+      onAddTab: () => context.push('/browse'),
+      onSelectTab: (index) {
+        browser.selectTab(index);
+        context.push('/browse');
+      },
+      onCloseTab: browser.hasTabs ? browser.closeTab : null,
+      onRefresh: browser.hasTabs ? browser.reload : null,
     );
   }
 }

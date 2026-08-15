@@ -23,6 +23,8 @@ class BrowserBottomBar extends StatelessWidget {
     required this.tabs,
     required this.activeIndex,
     required this.currentUrl,
+    this.isSecure = false,
+    this.onTapUrl,
     this.onSelectTab,
     this.onCloseTab,
     this.onAddTab,
@@ -34,6 +36,13 @@ class BrowserBottomBar extends StatelessWidget {
   final List<BrowserTab> tabs;
   final int activeIndex;
   final String currentUrl;
+
+  /// Whether the current page is actually served over HTTPS. This drives the
+  /// padlock, which previously read "Secure" unconditionally — a badge that
+  /// lies is worse than no badge, because users act on it.
+  final bool isSecure;
+
+  final VoidCallback? onTapUrl;
   final ValueChanged<int>? onSelectTab;
   final ValueChanged<int>? onCloseTab;
   final VoidCallback? onAddTab;
@@ -115,40 +124,37 @@ class BrowserBottomBar extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Container(
-              height: 36,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: ShadowColors.surface,
-                borderRadius: BorderRadius.circular(ShadowRadius.sm),
-                border: Border.all(color: ShadowColors.border),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.bolt_rounded,
-                    size: 14,
-                    color: ShadowColors.primary,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Secure',
-                    style: ShadowTypography.caption.copyWith(
-                      color: ShadowColors.success,
-                      fontWeight: FontWeight.w600,
+            child: GestureDetector(
+              onTap: onTapUrl,
+              child: Container(
+                height: 36,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: ShadowColors.surface,
+                  borderRadius: BorderRadius.circular(ShadowRadius.sm),
+                  border: Border.all(color: ShadowColors.border),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isSecure ? Icons.lock_rounded : Icons.lock_open_rounded,
+                      size: 13,
+                      color: isSecure
+                          ? ShadowColors.success
+                          : ShadowColors.warning,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      currentUrl,
-                      style: ShadowTypography.label.copyWith(
-                        fontFamily: 'monospace',
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        currentUrl,
+                        style: ShadowTypography.label.copyWith(
+                          fontFamily: 'monospace',
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

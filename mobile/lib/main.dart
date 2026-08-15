@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import 'providers/browser_provider.dart';
 import 'providers/identity_provider.dart';
 import 'providers/activity_provider.dart';
 import 'providers/bookmarks_provider.dart';
@@ -40,6 +41,7 @@ class ShadowApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ActivityProvider()),
         ChangeNotifierProvider(create: (_) => DeployProvider()),
         ChangeNotifierProvider(create: (_) => IdentityProvider()),
+        ChangeNotifierProvider(create: (_) => BrowserProvider()),
       ],
       child: Builder(
         builder: (ctx) {

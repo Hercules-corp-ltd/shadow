@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/wallet_provider.dart';
+import '../screens/browser/browser_screen.dart';
 import '../screens/identity/identity_screen.dart';
 import '../screens/identity/identity_phrase_screen.dart';
 import '../screens/activity/activity_logs_screen.dart';
@@ -97,6 +98,11 @@ class AppRouter {
       routes: [
         GoRoute(path: '/', builder: (_, __) => const SplashScreen()),
         GoRoute(path: '/welcome', builder: (_, __) => const WelcomeScreen()),
+        GoRoute(
+          path: '/browse',
+          builder: (_, state) =>
+              BrowserScreen(initialUrl: state.uri.queryParameters['url']),
+        ),
         GoRoute(
           path: '/identity',
           builder: (_, __) => const IdentityScreen(),
