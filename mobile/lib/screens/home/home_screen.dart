@@ -222,6 +222,8 @@ class _FeatureGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tiles = <_Feature>[
+      _Feature('Identity', Icons.fingerprint_rounded, ShadowColors.tileRed,
+          '/identity'),
       _Feature('Wallet', Icons.account_balance_wallet_rounded,
           ShadowColors.tileBlue, '/wallet'),
       _Feature('Domains', Icons.language_rounded, ShadowColors.tilePurple,
