@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/wallet_provider.dart';
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class WalletImportScreen extends StatefulWidget {
   const WalletImportScreen({super.key});
@@ -65,7 +65,7 @@ class _WalletImportScreenState extends State<WalletImportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Import existing\nwallet',
       subtitle: 'Enter your 12-word recovery phrase',
       body: ListView(
@@ -87,11 +87,11 @@ class _WalletImportScreenState extends State<WalletImportScreen> {
                 controller: _controllers[i],
                 textInputAction:
                     i == 11 ? TextInputAction.done : TextInputAction.next,
-                style: BlindTypography.body,
+                style: ShadowTypography.body,
                 decoration: InputDecoration(
                   hintText: '${i + 1}.',
-                  hintStyle: BlindTypography.body
-                      .copyWith(color: BlindColors.textTertiary),
+                  hintStyle: ShadowTypography.body
+                      .copyWith(color: ShadowColors.textTertiary),
                   contentPadding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 8),
                   isDense: true,
@@ -100,7 +100,7 @@ class _WalletImportScreenState extends State<WalletImportScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Text('Password', style: BlindTypography.label),
+          Text('Password', style: ShadowTypography.label),
           const SizedBox(height: 8),
           TextField(
             controller: _password,
@@ -112,15 +112,15 @@ class _WalletImportScreenState extends State<WalletImportScreen> {
           if (_error != null) ...[
             const SizedBox(height: 12),
             Text(_error!,
-                style: BlindTypography.bodySm
-                    .copyWith(color: BlindColors.error)),
+                style: ShadowTypography.bodySm
+                    .copyWith(color: ShadowColors.error)),
           ],
           const SizedBox(height: 24),
-          BlindButton(
+          ShadowButton(
             label: 'Import Wallet',
             isLoading: _submitting,
             onPressed: _submitting ? null : _submit,
-            size: BlindButtonSize.lg,
+            size: ShadowButtonSize.lg,
           ),
         ],
       ),

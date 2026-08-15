@@ -4,14 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../models/site.dart';
 import '../../services/resolve_service.dart';
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class ResolveResolvingScreen extends StatefulWidget {
-  const ResolveResolvingScreen({super.key, required this.blindId});
-  final String blindId;
+  const ResolveResolvingScreen({super.key, required this.shadowId});
+  final String shadowId;
 
   @override
   State<ResolveResolvingScreen> createState() => _ResolveResolvingScreenState();
@@ -28,8 +28,8 @@ class _ResolveResolvingScreenState extends State<ResolveResolvingScreen> {
 
   Future<void> _resolve() async {
     Site? site;
-    final id = widget.blindId;
-    if (id.endsWith('.blind')) {
+    final id = widget.shadowId;
+    if (id.endsWith('.shadow')) {
       site = await _service.resolveDomain(id);
     } else {
       site = await _service.resolveById(id);
@@ -44,9 +44,9 @@ class _ResolveResolvingScreenState extends State<ResolveResolvingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Resolving...',
-      subtitle: widget.blindId,
+      subtitle: widget.shadowId,
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
@@ -56,19 +56,19 @@ class _ResolveResolvingScreenState extends State<ResolveResolvingScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: BlindColors.primarySoft,
+                color: ShadowColors.primarySoft,
                 shape: BoxShape.circle,
               ),
               child: const Padding(
                 padding: EdgeInsets.all(32),
                 child: CircularProgressIndicator(
                   strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation(BlindColors.primary),
+                  valueColor: AlwaysStoppedAnimation(ShadowColors.primary),
                 ),
               ),
             ).animate(onPlay: (c) => c.repeat()).shimmer(
                   duration: 1500.ms,
-                  color: BlindColors.primary.withOpacity(0.25),
+                  color: ShadowColors.primary.withOpacity(0.25),
                 ),
           ),
           const SizedBox(height: 32),
@@ -77,13 +77,13 @@ class _ResolveResolvingScreenState extends State<ResolveResolvingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Looking up registry...', style: BlindTypography.body),
+                Text('Looking up registry...', style: ShadowTypography.body),
                 const SizedBox(height: 8),
                 Text('Fetching content pointer from Solana',
-                    style: BlindTypography.caption),
+                    style: ShadowTypography.caption),
                 const SizedBox(height: 8),
                 Text('Loading from decentralized storage',
-                    style: BlindTypography.caption),
+                    style: ShadowTypography.caption),
               ],
             ),
           ),

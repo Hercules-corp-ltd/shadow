@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../models/domain.dart';
 import '../../services/domain_service.dart';
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class DomainDnsScreen extends StatefulWidget {
   const DomainDnsScreen({super.key, required this.domain});
@@ -41,7 +41,7 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'DNS Records',
       subtitle: widget.domain,
       body: Column(
@@ -68,12 +68,12 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: BlindColors.primarySoft,
+                                    color: ShadowColors.primarySoft,
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(r.type,
-                                      style: BlindTypography.caption.copyWith(
-                                        color: BlindColors.primary,
+                                      style: ShadowTypography.caption.copyWith(
+                                        color: ShadowColors.primary,
                                         fontWeight: FontWeight.w700,
                                       )),
                                 ),
@@ -84,19 +84,19 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(r.name,
-                                          style: BlindTypography.body),
+                                          style: ShadowTypography.body),
                                       Text(r.value,
-                                          style: BlindTypography.caption,
+                                          style: ShadowTypography.caption,
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis),
                                     ],
                                   ),
                                 ),
                                 Text('${r.ttl}s',
-                                    style: BlindTypography.caption),
+                                    style: ShadowTypography.caption),
                                 IconButton(
                                   icon: const Icon(Icons.delete_outline_rounded,
-                                      color: BlindColors.error),
+                                      color: ShadowColors.error),
                                   onPressed: () async {
                                     await _service.deleteDnsRecord(
                                         widget.domain, r.id);
@@ -112,7 +112,7 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
                       ),
           ),
           const SizedBox(height: 12),
-          BlindButton(
+          ShadowButton(
             label: 'Add record',
             leading: Icons.add_rounded,
             onPressed: () => _showAddSheet(context),
@@ -126,7 +126,7 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: BlindColors.surfaceElevated,
+      backgroundColor: ShadowColors.surfaceElevated,
       builder: (_) => _AddDnsSheet(
         domain: widget.domain,
         onSave: _load,
@@ -168,7 +168,7 @@ class _AddDnsSheetState extends State<_AddDnsSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Add DNS record', style: BlindTypography.h3),
+          Text('Add DNS record', style: ShadowTypography.h3),
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,
@@ -208,7 +208,7 @@ class _AddDnsSheetState extends State<_AddDnsSheet> {
             ],
           ),
           const SizedBox(height: 16),
-          BlindButton(
+          ShadowButton(
             label: _saving ? 'Saving...' : 'Save record',
             isLoading: _saving,
             onPressed: _saving ? null : _save,

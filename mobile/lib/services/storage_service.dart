@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 import 'api_client.dart';
 
 /// Poseidon / decentralized storage — uploads bytes to IPFS/Arweave through
-/// the Blind backend and retrieves content by CID.
+/// the Shadow backend and retrieves content by CID.
 class StorageService {
   final ApiClient _api = ApiClient.instance;
 

@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:bip39/bip39.dart' as bip39;
 
-import 'blind_kdf.dart';
+import 'shadow_kdf.dart';
 import 'handle_shaper.dart';
 import 'password_policy.dart';
 import 'password_shaper.dart';
@@ -34,14 +34,14 @@ import 'site_identity.dart';
 /// every account the user owns. There is no revocation primitive here: a
 /// leaked root is total and permanent identity loss, and separation is the
 /// only mitigation available.
-class BlindIdentity {
-  BlindIdentity._(this._branchKey);
+class ShadowIdentity {
+  ShadowIdentity._(this._branchKey);
 
   /// Bumping this re-derives every credential for every site, so it changes
   /// only if the construction below is found to be unsound.
   static const String schemeVersion = 'cred/v1';
 
-  static const String _rootSalt = 'blind.identity.v1';
+  static const String _rootSalt = 'shadow.identity.v1';
   static const String _branchInfo = 'credential-branch';
 
   final Uint8List _branchKey;
@@ -51,7 +51,7 @@ class BlindIdentity {
   /// Throws [FormatException] if the phrase fails its checksum, which catches
   /// the overwhelmingly common failure of a mistyped or misremembered word
   /// before it silently produces a wrong, unrecoverable identity.
-  factory BlindIdentity.fromMnemonic(String mnemonic, {String passphrase = ''}) {
+  factory ShadowIdentity.fromMnemonic(String mnemonic, {String passphrase = ''}) {
     final normalized = mnemonic.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
     if (!bip39.validateMnemonic(normalized)) {
       throw const FormatException(
@@ -59,13 +59,13 @@ class BlindIdentity {
       );
     }
     final seed = bip39.mnemonicToSeed(normalized, passphrase: passphrase);
-    final branchKey = BlindKdf.derive(
+    final branchKey = ShadowKdf.derive(
       inputKeyMaterial: seed,
       salt: _rootSalt,
       info: _branchInfo,
       length: 32,
     );
-    return BlindIdentity._(branchKey);
+    return ShadowIdentity._(branchKey);
   }
 
   /// Generates a fresh 12-word recovery phrase (128 bits of entropy).
@@ -113,7 +113,7 @@ class BlindIdentity {
 
     // One derivation, split three ways, so the password cannot be recovered
     // from the alias or the handle even if either is public.
-    final material = BlindKdf.derive(
+    final material = ShadowKdf.derive(
       inputKeyMaterial: _branchKey,
       salt: domain,
       info: '$schemeVersion|$domain|$accountIndex|$version',

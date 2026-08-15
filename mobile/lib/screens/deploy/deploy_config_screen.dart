@@ -4,10 +4,10 @@ import 'package:provider/provider.dart';
 
 import '../../models/deploy_project.dart';
 import '../../providers/deploy_provider.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class DeployConfigScreen extends StatefulWidget {
   const DeployConfigScreen({super.key});
@@ -41,7 +41,7 @@ class _DeployConfigScreenState extends State<DeployConfigScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Configure Project',
       subtitle: 'Set basic details before upload',
       body: ListView(
@@ -52,7 +52,7 @@ class _DeployConfigScreenState extends State<DeployConfigScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Project name', style: BlindTypography.h4),
+                Text('Project name', style: ShadowTypography.h4),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _nameCtrl,
@@ -61,21 +61,21 @@ class _DeployConfigScreenState extends State<DeployConfigScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text('Blind domain (optional)', style: BlindTypography.h4),
+                Text('Shadow domain (optional)', style: ShadowTypography.h4),
                 const SizedBox(height: 6),
                 Text(
                   'Leave blank to deploy with a generated ID first.',
-                  style: BlindTypography.caption,
+                  style: ShadowTypography.caption,
                 ),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _domainCtrl,
                   decoration: const InputDecoration(
-                    hintText: 'myname.blind',
+                    hintText: 'myname.shadow',
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text('Framework', style: BlindTypography.h4),
+                Text('Framework', style: ShadowTypography.h4),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -93,9 +93,9 @@ class _DeployConfigScreenState extends State<DeployConfigScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          BlindButton(
+          ShadowButton(
             label: 'Continue',
-            size: BlindButtonSize.lg,
+            size: ShadowButtonSize.lg,
             trailing: Icons.arrow_forward_rounded,
             onPressed: _nameCtrl.text.trim().isEmpty
                 ? null

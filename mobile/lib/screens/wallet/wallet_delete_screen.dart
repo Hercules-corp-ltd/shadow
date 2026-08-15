@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/wallet_provider.dart';
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class WalletDeleteScreen extends StatefulWidget {
   const WalletDeleteScreen({super.key});
@@ -22,7 +22,7 @@ class _WalletDeleteScreenState extends State<WalletDeleteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Delete wallet',
       body: Column(
         children: [
@@ -31,18 +31,18 @@ class _WalletDeleteScreenState extends State<WalletDeleteScreen> {
             padding: const EdgeInsets.all(20),
             color: Colors.red.withOpacity(0.08),
             border:
-                Border.all(color: BlindColors.error.withOpacity(0.4), width: 1),
+                Border.all(color: ShadowColors.error.withOpacity(0.4), width: 1),
             child: Column(
               children: [
                 const Icon(Icons.warning_amber_rounded,
-                    size: 48, color: BlindColors.error),
+                    size: 48, color: ShadowColors.error),
                 const SizedBox(height: 16),
                 Text('This cannot be undone',
-                    style: BlindTypography.h3, textAlign: TextAlign.center),
+                    style: ShadowTypography.h3, textAlign: TextAlign.center),
                 const SizedBox(height: 8),
                 Text(
                   'Deleting your wallet removes the encrypted key material from this device. You can restore it using your 12-word seed phrase.',
-                  style: BlindTypography.bodySm,
+                  style: ShadowTypography.bodySm,
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -54,17 +54,17 @@ class _WalletDeleteScreenState extends State<WalletDeleteScreen> {
             onChanged: (v) => setState(() => _acknowledged = v ?? false),
             title: Text(
               'I have backed up my seed phrase',
-              style: BlindTypography.body,
+              style: ShadowTypography.body,
             ),
-            activeColor: BlindColors.primary,
+            activeColor: ShadowColors.primary,
             controlAffinity: ListTileControlAffinity.leading,
             contentPadding: EdgeInsets.zero,
           ),
           const Spacer(),
-          BlindButton(
+          ShadowButton(
             label: 'Delete wallet',
-            variant: BlindButtonVariant.danger,
-            size: BlindButtonSize.lg,
+            variant: ShadowButtonVariant.danger,
+            size: ShadowButtonSize.lg,
             isLoading: _loading,
             onPressed: !_acknowledged || _loading
                 ? null
@@ -76,9 +76,9 @@ class _WalletDeleteScreenState extends State<WalletDeleteScreen> {
                   },
           ),
           const SizedBox(height: 12),
-          BlindButton(
+          ShadowButton(
             label: 'Cancel',
-            variant: BlindButtonVariant.ghost,
+            variant: ShadowButtonVariant.ghost,
             onPressed: () => context.pop(),
           ),
           const SizedBox(height: 16),

@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/deploy_provider.dart';
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class DeployFilesAddedScreen extends StatelessWidget {
   const DeployFilesAddedScreen({super.key});
@@ -19,7 +19,7 @@ class DeployFilesAddedScreen extends StatelessWidget {
     final files = project?.files ?? const [];
     final total = files.fold<int>(0, (a, b) => a + b.sizeBytes);
 
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Review Files',
       subtitle: '${files.length} files · ${_fmtBytes(total)}',
       body: Column(
@@ -29,7 +29,7 @@ class DeployFilesAddedScreen extends StatelessWidget {
                 ? Center(
                     child: Text(
                       'No files added yet',
-                      style: BlindTypography.bodySm,
+                      style: ShadowTypography.bodySm,
                     ),
                   )
                 : ListView.separated(
@@ -41,24 +41,24 @@ class DeployFilesAddedScreen extends StatelessWidget {
                         child: Row(
                           children: [
                             const Icon(Icons.insert_drive_file_rounded,
-                                color: BlindColors.textSecondary),
+                                color: ShadowColors.textSecondary),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(f.path,
-                                      style: BlindTypography.body,
+                                      style: ShadowTypography.body,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis),
                                   Text(_fmtBytes(f.sizeBytes),
-                                      style: BlindTypography.caption),
+                                      style: ShadowTypography.caption),
                                 ],
                               ),
                             ),
                             IconButton(
                               icon: const Icon(Icons.close_rounded,
-                                  color: BlindColors.textTertiary),
+                                  color: ShadowColors.textTertiary),
                               onPressed: () {
                                 final updated = [...files]..removeAt(i);
                                 context
@@ -75,18 +75,18 @@ class DeployFilesAddedScreen extends StatelessWidget {
                   ),
           ),
           const SizedBox(height: 12),
-          BlindButton(
-            label: 'Deploy to Blind',
-            size: BlindButtonSize.lg,
+          ShadowButton(
+            label: 'Deploy to Shadow',
+            size: ShadowButtonSize.lg,
             trailing: Icons.rocket_launch_rounded,
             onPressed: files.isEmpty
                 ? null
                 : () => context.push('/deploy/progress'),
           ),
           const SizedBox(height: 8),
-          BlindButton(
+          ShadowButton(
             label: 'Add more files',
-            variant: BlindButtonVariant.ghost,
+            variant: ShadowButtonVariant.ghost,
             leading: Icons.add_rounded,
             onPressed: () => context.pop(),
           ),

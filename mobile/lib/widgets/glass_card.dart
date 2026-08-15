@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../theme/blind_colors.dart';
-import '../theme/blind_spacing.dart';
+import '../theme/shadow_colors.dart';
+import '../theme/shadow_spacing.dart';
 
 /// Translucent card with subtle border and blur, matching the Figma
 /// "Overlay+Border+OverlayBlur" motif.
@@ -11,8 +11,8 @@ class GlassCard extends StatelessWidget {
   const GlassCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(BlindSpacing.cardPadding),
-    this.radius = BlindRadius.lg,
+    this.padding = const EdgeInsets.all(ShadowSpacing.cardPadding),
+    this.radius = ShadowRadius.lg,
     this.onTap,
     this.gradient,
     this.color,
@@ -37,11 +37,11 @@ class GlassCard extends StatelessWidget {
     final content = Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: color ?? (gradient == null ? BlindColors.surfaceGlass : null),
+        color: color ?? (gradient == null ? ShadowColors.surfaceGlass : null),
         gradient: gradient,
         borderRadius: borderRadius,
         border: border ??
-            Border.all(color: BlindColors.surfaceGlassBorder, width: 1),
+            Border.all(color: ShadowColors.surfaceGlassBorder, width: 1),
       ),
       child: child,
     );

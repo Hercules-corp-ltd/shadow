@@ -5,7 +5,7 @@ import '../utils/constants.dart';
 
 /// Singleton Dio-based HTTP client for the Rust backend (Pantheon API).
 ///
-/// Adds `X-Blind-Auth` automatically when a session token is available
+/// Adds `X-Shadow-Auth` automatically when a session token is available
 /// and exposes helpers used by all service classes.
 class ApiClient {
   ApiClient._() {
@@ -23,7 +23,7 @@ class ApiClient {
         onRequest: (options, handler) async {
           final token = await _readToken();
           if (token != null && token.isNotEmpty) {
-            options.headers['X-Blind-Auth'] = token;
+            options.headers['X-Shadow-Auth'] = token;
           }
           handler.next(options);
         },
@@ -33,7 +33,7 @@ class ApiClient {
 
   static final ApiClient instance = ApiClient._();
 
-  static String _baseUrl = BlindConstants.defaultApiUrl;
+  static String _baseUrl = ShadowConstants.defaultApiUrl;
   late final Dio _dio;
 
   Dio get raw => _dio;
@@ -45,15 +45,15 @@ class ApiClient {
 
   Future<String?> _readToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(BlindConstants.authTokenKey);
+    return prefs.getString(ShadowConstants.authTokenKey);
   }
 
   Future<void> setAuthToken(String? token) async {
     final prefs = await SharedPreferences.getInstance();
     if (token == null) {
-      await prefs.remove(BlindConstants.authTokenKey);
+      await prefs.remove(ShadowConstants.authTokenKey);
     } else {
-      await prefs.setString(BlindConstants.authTokenKey, token);
+      await prefs.setString(ShadowConstants.authTokenKey, token);
     }
   }
 

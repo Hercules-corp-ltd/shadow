@@ -8,8 +8,8 @@ import 'package:crypto/crypto.dart';
 /// Implemented here rather than pulled from a package so the identity core
 /// stays pure Dart with no platform channels — it runs identically on iOS,
 /// Android and in unit tests, and adds nothing to the CocoaPods graph.
-class BlindKdf {
-  BlindKdf._();
+class ShadowKdf {
+  ShadowKdf._();
 
   static const int _hashLength = 64; // SHA-512
 

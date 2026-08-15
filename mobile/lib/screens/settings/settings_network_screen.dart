@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/settings_provider.dart';
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class SettingsNetworkScreen extends StatefulWidget {
   const SettingsNetworkScreen({super.key});
@@ -36,7 +36,7 @@ class _SettingsNetworkScreenState extends State<SettingsNetworkScreen> {
     final provider = context.watch<SettingsProvider>();
     final s = provider.settings;
 
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Network',
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
@@ -46,7 +46,7 @@ class _SettingsNetworkScreenState extends State<SettingsNetworkScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Solana cluster', style: BlindTypography.h4),
+                Text('Solana cluster', style: ShadowTypography.h4),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -61,7 +61,7 @@ class _SettingsNetworkScreenState extends State<SettingsNetworkScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                Text('RPC URL', style: BlindTypography.h4),
+                Text('RPC URL', style: ShadowTypography.h4),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _rpcCtrl,
@@ -81,27 +81,27 @@ class _SettingsNetworkScreenState extends State<SettingsNetworkScreen> {
                 SwitchListTile(
                   value: s.useTor,
                   title: Text('Route traffic through Tor',
-                      style: BlindTypography.body),
+                      style: ShadowTypography.body),
                   subtitle: Text('Slower but more private',
-                      style: BlindTypography.bodySm),
+                      style: ShadowTypography.bodySm),
                   onChanged: (v) => provider.update(s.copyWith(useTor: v)),
                 ),
-                const Divider(height: 1, color: BlindColors.border),
+                const Divider(height: 1, color: ShadowColors.border),
                 SwitchListTile(
                   value: s.ipfsEnabled,
-                  title: Text('IPFS gateway', style: BlindTypography.body),
+                  title: Text('IPFS gateway', style: ShadowTypography.body),
                   subtitle: Text('Fetch content from IPFS pins',
-                      style: BlindTypography.bodySm),
+                      style: ShadowTypography.bodySm),
                   onChanged: (v) =>
                       provider.update(s.copyWith(ipfsEnabled: v)),
                 ),
-                const Divider(height: 1, color: BlindColors.border),
+                const Divider(height: 1, color: ShadowColors.border),
                 SwitchListTile(
                   value: s.arweaveEnabled,
                   title: Text('Arweave permaweb',
-                      style: BlindTypography.body),
+                      style: ShadowTypography.body),
                   subtitle: Text('Fetch content from Arweave',
-                      style: BlindTypography.bodySm),
+                      style: ShadowTypography.bodySm),
                   onChanged: (v) =>
                       provider.update(s.copyWith(arweaveEnabled: v)),
                 ),

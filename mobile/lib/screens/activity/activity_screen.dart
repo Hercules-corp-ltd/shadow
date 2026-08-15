@@ -5,10 +5,10 @@ import 'package:provider/provider.dart';
 
 import '../../models/activity.dart';
 import '../../providers/activity_provider.dart';
-import '../../theme/blind_colors.dart';
+import '../../theme/shadow_colors.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/list_item_card.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
@@ -35,21 +35,21 @@ class _ActivityScreenState extends State<ActivityScreen> {
       };
 
   Color _colorFor(ActivityKind k) => switch (k) {
-        ActivityKind.deploy => BlindColors.tileBlue,
-        ActivityKind.purchase => BlindColors.tileAmber,
-        ActivityKind.domainRegister => BlindColors.tilePurple,
-        ActivityKind.transfer => BlindColors.tileCyan,
-        ActivityKind.siteVisit => BlindColors.tileGreen,
-        ActivityKind.info => BlindColors.tileGray,
+        ActivityKind.deploy => ShadowColors.tileBlue,
+        ActivityKind.purchase => ShadowColors.tileAmber,
+        ActivityKind.domainRegister => ShadowColors.tilePurple,
+        ActivityKind.transfer => ShadowColors.tileCyan,
+        ActivityKind.siteVisit => ShadowColors.tileGreen,
+        ActivityKind.info => ShadowColors.tileGray,
       };
 
   @override
   Widget build(BuildContext context) {
     final p = context.watch<ActivityProvider>();
 
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Activity',
-      subtitle: 'Your recent actions on Blind',
+      subtitle: 'Your recent actions on Shadow',
       actions: [
         IconButton(
           icon: const Icon(Icons.article_rounded),

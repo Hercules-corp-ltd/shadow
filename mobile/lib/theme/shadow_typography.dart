@@ -1,19 +1,19 @@
 import 'dart:ui' show FontVariation;
 
 import 'package:flutter/material.dart';
-import 'blind_colors.dart';
+import 'shadow_colors.dart';
 
-/// Typography system for Blind Browser.
+/// Typography system for Shadow Browser.
 ///
-/// - Display (BLIND logo, onboarding headings): Cinzel (classical serif).
+/// - Display (SHADOW logo, onboarding headings): Cinzel (classical serif).
 /// - Body / UI: Inter (clean sans-serif).
 /// - Mono (addresses, keys, derived credentials): JetBrains Mono.
 ///
 /// All three ship as variable fonts bundled under `assets/fonts/`. Nothing is
 /// fetched at runtime — a browser that sells privacy must not phone a font CDN
 /// on first launch, and bundling also keeps iOS builds deterministic offline.
-class BlindTypography {
-  BlindTypography._();
+class ShadowTypography {
+  ShadowTypography._();
 
   static const String displayFamily = 'Cinzel';
   static const String bodyFamily = 'Inter';
@@ -40,7 +40,7 @@ class BlindTypography {
       ],
       letterSpacing: letterSpacing,
       height: height,
-      color: color ?? BlindColors.textPrimary,
+      color: color ?? ShadowColors.textPrimary,
     );
   }
 
@@ -93,7 +93,7 @@ class BlindTypography {
         size: 13,
         weight: FontWeight.w400,
         height: 1.4,
-        color: BlindColors.textSecondary,
+        color: ShadowColors.textSecondary,
       );
 
   static TextStyle get caption => _style(
@@ -101,7 +101,7 @@ class BlindTypography {
         size: 12,
         weight: FontWeight.w400,
         height: 1.3,
-        color: BlindColors.textTertiary,
+        color: ShadowColors.textTertiary,
       );
 
   static TextStyle get label =>

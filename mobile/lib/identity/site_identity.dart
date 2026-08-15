@@ -1,4 +1,4 @@
-/// Everything Blind derives for one account on one site.
+/// Everything Shadow derives for one account on one site.
 ///
 /// Holds secrets in memory and is deliberately not serialisable: nothing here
 /// should ever reach disk, analytics or a crash report. It can always be

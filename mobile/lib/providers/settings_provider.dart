@@ -5,10 +5,10 @@ import '../services/settings_service.dart';
 class SettingsProvider with ChangeNotifier {
   final SettingsService _service = SettingsService();
 
-  BlindSettings _settings = const BlindSettings();
+  ShadowSettings _settings = const ShadowSettings();
   bool _isLoaded = false;
 
-  BlindSettings get settings => _settings;
+  ShadowSettings get settings => _settings;
   bool get isLoaded => _isLoaded;
 
   Future<void> load() async {
@@ -17,7 +17,7 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> update(BlindSettings next) async {
+  Future<void> update(ShadowSettings next) async {
     _settings = next;
     await _service.save(next);
     notifyListeners();

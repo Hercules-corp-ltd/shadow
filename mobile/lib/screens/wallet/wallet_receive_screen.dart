@@ -4,10 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../providers/wallet_provider.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class WalletReceiveScreen extends StatelessWidget {
   const WalletReceiveScreen({super.key});
@@ -16,7 +16,7 @@ class WalletReceiveScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final address = context.watch<WalletProvider>().walletAddress ?? '';
 
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Receive',
       subtitle: 'Share this address to receive SOL or SPL tokens',
       body: ListView(
@@ -48,14 +48,14 @@ class WalletReceiveScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Wallet address', style: BlindTypography.label),
+                Text('Wallet address', style: ShadowTypography.label),
                 const SizedBox(height: 6),
-                SelectableText(address, style: BlindTypography.mono),
+                SelectableText(address, style: ShadowTypography.mono),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          BlindButton(
+          ShadowButton(
             label: 'Copy address',
             leading: Icons.copy_rounded,
             onPressed: () {

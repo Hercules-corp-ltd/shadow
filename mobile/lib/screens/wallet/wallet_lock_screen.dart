@@ -3,18 +3,18 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/wallet_provider.dart';
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class WalletLockScreen extends StatelessWidget {
   const WalletLockScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Lock wallet',
       body: Column(
         children: [
@@ -24,39 +24,39 @@ class WalletLockScreen extends StatelessWidget {
             child: Column(
               children: [
                 const Icon(Icons.lock_rounded,
-                    size: 48, color: BlindColors.primary),
+                    size: 48, color: ShadowColors.primary),
                 const SizedBox(height: 16),
                 Text('Lock your wallet now?',
-                    style: BlindTypography.h3,
+                    style: ShadowTypography.h3,
                     textAlign: TextAlign.center),
                 const SizedBox(height: 8),
                 Text(
                   'You will need to enter your password to unlock it again. This is a good idea if you are leaving your phone unattended.',
-                  style: BlindTypography.bodySm,
+                  style: ShadowTypography.bodySm,
                   textAlign: TextAlign.center,
                 ),
               ],
             ),
           ),
           const Spacer(),
-          BlindButton(
+          ShadowButton(
             label: 'Lock now',
             leading: Icons.lock_rounded,
-            size: BlindButtonSize.lg,
+            size: ShadowButtonSize.lg,
             onPressed: () {
               context.read<WalletProvider>().lock();
               context.go('/wallet/locked');
             },
           ),
           const SizedBox(height: 12),
-          BlindButton(
+          ShadowButton(
             label: 'Cancel',
-            variant: BlindButtonVariant.ghost,
+            variant: ShadowButtonVariant.ghost,
             onPressed: () => context.pop(),
           ),
           const SizedBox(height: 24),
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: BlindColors.error),
+            style: TextButton.styleFrom(foregroundColor: ShadowColors.error),
             onPressed: () => context.push('/wallet/delete'),
             child: const Text('Delete wallet'),
           ),

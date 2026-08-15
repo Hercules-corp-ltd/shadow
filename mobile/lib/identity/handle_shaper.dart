@@ -1,4 +1,4 @@
-import 'blind_kdf.dart';
+import 'shadow_kdf.dart';
 
 /// Builds a per-site username.
 ///

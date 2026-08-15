@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 
-import '../theme/blind_colors.dart';
-import '../theme/blind_spacing.dart';
-import '../theme/blind_typography.dart';
+import '../theme/shadow_colors.dart';
+import '../theme/shadow_spacing.dart';
+import '../theme/shadow_typography.dart';
 
-enum BlindButtonVariant { primary, secondary, ghost, danger }
+enum ShadowButtonVariant { primary, secondary, ghost, danger }
 
-enum BlindButtonSize { sm, md, lg }
+enum ShadowButtonSize { sm, md, lg }
 
-/// Primary button used across the Blind app. Supports multiple variants,
+/// Primary button used across the Shadow app. Supports multiple variants,
 /// sizes, leading/trailing icons and loading state.
-class BlindButton extends StatelessWidget {
-  const BlindButton({
+class ShadowButton extends StatelessWidget {
+  const ShadowButton({
     super.key,
     required this.label,
     this.onPressed,
-    this.variant = BlindButtonVariant.primary,
-    this.size = BlindButtonSize.md,
+    this.variant = ShadowButtonVariant.primary,
+    this.size = ShadowButtonSize.md,
     this.leading,
     this.trailing,
     this.isLoading = false,
@@ -25,50 +25,50 @@ class BlindButton extends StatelessWidget {
 
   final String label;
   final VoidCallback? onPressed;
-  final BlindButtonVariant variant;
-  final BlindButtonSize size;
+  final ShadowButtonVariant variant;
+  final ShadowButtonSize size;
   final IconData? leading;
   final IconData? trailing;
   final bool isLoading;
   final bool expand;
 
   double get _height => switch (size) {
-        BlindButtonSize.sm => 40,
-        BlindButtonSize.md => 48,
-        BlindButtonSize.lg => 56,
+        ShadowButtonSize.sm => 40,
+        ShadowButtonSize.md => 48,
+        ShadowButtonSize.lg => 56,
       };
 
   EdgeInsets get _padding => switch (size) {
-        BlindButtonSize.sm => const EdgeInsets.symmetric(horizontal: 16),
-        BlindButtonSize.md => const EdgeInsets.symmetric(horizontal: 20),
-        BlindButtonSize.lg => const EdgeInsets.symmetric(horizontal: 24),
+        ShadowButtonSize.sm => const EdgeInsets.symmetric(horizontal: 16),
+        ShadowButtonSize.md => const EdgeInsets.symmetric(horizontal: 20),
+        ShadowButtonSize.lg => const EdgeInsets.symmetric(horizontal: 24),
       };
 
   @override
   Widget build(BuildContext context) {
     final bg = switch (variant) {
-      BlindButtonVariant.primary => BlindColors.primary,
-      BlindButtonVariant.secondary => BlindColors.surfaceElevated,
-      BlindButtonVariant.ghost => Colors.transparent,
-      BlindButtonVariant.danger => BlindColors.error,
+      ShadowButtonVariant.primary => ShadowColors.primary,
+      ShadowButtonVariant.secondary => ShadowColors.surfaceElevated,
+      ShadowButtonVariant.ghost => Colors.transparent,
+      ShadowButtonVariant.danger => ShadowColors.error,
     };
 
     final fg = switch (variant) {
-      BlindButtonVariant.primary => Colors.white,
-      BlindButtonVariant.secondary => BlindColors.textPrimary,
-      BlindButtonVariant.ghost => BlindColors.textPrimary,
-      BlindButtonVariant.danger => Colors.white,
+      ShadowButtonVariant.primary => Colors.white,
+      ShadowButtonVariant.secondary => ShadowColors.textPrimary,
+      ShadowButtonVariant.ghost => ShadowColors.textPrimary,
+      ShadowButtonVariant.danger => Colors.white,
     };
 
     final border = switch (variant) {
-      BlindButtonVariant.secondary =>
-        const BorderSide(color: BlindColors.border),
-      BlindButtonVariant.ghost =>
-        const BorderSide(color: BlindColors.border),
+      ShadowButtonVariant.secondary =>
+        const BorderSide(color: ShadowColors.border),
+      ShadowButtonVariant.ghost =>
+        const BorderSide(color: ShadowColors.border),
       _ => BorderSide.none,
     };
 
-    final textStyle = BlindTypography.button.copyWith(color: fg);
+    final textStyle = ShadowTypography.button.copyWith(color: fg);
 
     final child = Row(
       mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
@@ -109,7 +109,7 @@ class BlindButton extends StatelessWidget {
       opacity: disabled ? 0.45 : 1,
       child: Material(
         color: bg,
-        borderRadius: BorderRadius.circular(BlindRadius.md),
+        borderRadius: BorderRadius.circular(ShadowRadius.md),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: isLoading ? null : onPressed,
@@ -117,12 +117,12 @@ class BlindButton extends StatelessWidget {
             height: _height,
             padding: _padding,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(BlindRadius.md),
+              borderRadius: BorderRadius.circular(ShadowRadius.md),
               border: Border.fromBorderSide(border),
-              boxShadow: variant == BlindButtonVariant.primary
+              boxShadow: variant == ShadowButtonVariant.primary
                   ? [
                       BoxShadow(
-                        color: BlindColors.primary.withOpacity(0.35),
+                        color: ShadowColors.primary.withOpacity(0.35),
                         blurRadius: 24,
                         offset: const Offset(0, 6),
                       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:blind_mobile/widgets/blind_button.dart';
+import 'package:shadow_mobile/widgets/shadow_button.dart';
 
 Widget _harness(Widget child) => MaterialApp(
       home: Scaffold(body: Center(child: child)),
@@ -10,10 +10,10 @@ Widget _harness(Widget child) => MaterialApp(
 void main() {
   // Keep google_fonts offline so widget tests don't hit the network.
 
-  group('BlindButton', () {
+  group('ShadowButton', () {
     testWidgets('renders its label', (tester) async {
       await tester.pumpWidget(_harness(
-        const BlindButton(label: 'Deploy'),
+        const ShadowButton(label: 'Deploy'),
       ));
       expect(find.text('Deploy'), findsOneWidget);
     });
@@ -21,7 +21,7 @@ void main() {
     testWidgets('fires onPressed when tapped', (tester) async {
       var taps = 0;
       await tester.pumpWidget(_harness(
-        BlindButton(label: 'Tap me', onPressed: () => taps++),
+        ShadowButton(label: 'Tap me', onPressed: () => taps++),
       ));
 
       await tester.tap(find.text('Tap me'));
@@ -34,7 +34,7 @@ void main() {
         (tester) async {
       var taps = 0;
       await tester.pumpWidget(_harness(
-        BlindButton(
+        ShadowButton(
           label: 'Working',
           isLoading: true,
           onPressed: () => taps++,
@@ -42,7 +42,7 @@ void main() {
       ));
 
       // Tap the whole button area, not the text (which is hidden in loading).
-      await tester.tap(find.byType(BlindButton));
+      await tester.tap(find.byType(ShadowButton));
       await tester.pump();
 
       expect(taps, equals(0));
@@ -51,7 +51,7 @@ void main() {
 
     testWidgets('renders leading and trailing icons', (tester) async {
       await tester.pumpWidget(_harness(
-        const BlindButton(
+        const ShadowButton(
           label: 'Send',
           leading: Icons.arrow_forward_rounded,
           trailing: Icons.bolt_rounded,

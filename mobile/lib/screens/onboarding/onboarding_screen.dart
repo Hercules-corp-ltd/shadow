@@ -3,11 +3,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_spacing.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_spacing.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/grid_background.dart';
-import '../../widgets/blind_button.dart';
+import '../../widgets/shadow_button.dart';
 
 class _OnboardingSlide {
   final String god;
@@ -55,7 +55,7 @@ const _slides = <_OnboardingSlide>[
     title: 'Wisdom of the Web',
     subtitle: 'Search across the pantheon',
     description:
-        'Athena indexes every Blind site so you can discover decentralized content instantly — powered by on-chain metadata.',
+        'Athena indexes every Shadow site so you can discover decentralized content instantly — powered by on-chain metadata.',
     asset: 'assets/gods/Athena - Onboarding.svg',
   ),
 ];
@@ -73,7 +73,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _complete() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('blind_onboarding_complete_v1', true);
+    await prefs.setBool('shadow_onboarding_complete_v1', true);
     if (!mounted) return;
     context.go('/wallet/choose');
   }
@@ -89,7 +89,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final isLast = _index == _slides.length - 1;
 
     return Scaffold(
-      backgroundColor: BlindColors.background,
+      backgroundColor: ShadowColors.background,
       body: GridBackground(
         child: SafeArea(
           child: Column(
@@ -113,8 +113,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       onPressed: _complete,
                       child: Text(
                         'Skip',
-                        style: BlindTypography.button
-                            .copyWith(color: BlindColors.textSecondary),
+                        style: ShadowTypography.button
+                            .copyWith(color: ShadowColors.textSecondary),
                       ),
                     ),
                   ],
@@ -131,13 +131,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               _buildDots(),
               Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: BlindSpacing.pagePadding,
+                  horizontal: ShadowSpacing.pagePadding,
                   vertical: 24,
                 ),
-                child: BlindButton(
+                child: ShadowButton(
                   label: isLast ? 'Get Started' : 'Next',
                   trailing: Icons.arrow_forward_rounded,
-                  size: BlindButtonSize.lg,
+                  size: ShadowButtonSize.lg,
                   onPressed: () {
                     if (isLast) {
                       _complete();
@@ -169,8 +169,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             height: 8,
             decoration: BoxDecoration(
               color: _index == i
-                  ? BlindColors.primary
-                  : BlindColors.border,
+                  ? ShadowColors.primary
+                  : ShadowColors.border,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -187,7 +187,7 @@ class _SlideContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: BlindSpacing.pagePadding),
+      padding: const EdgeInsets.symmetric(horizontal: ShadowSpacing.pagePadding),
       child: Column(
         children: [
           const SizedBox(height: 16),
@@ -201,8 +201,8 @@ class _SlideContent extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             slide.god,
-            style: BlindTypography.label.copyWith(
-              color: BlindColors.primary,
+            style: ShadowTypography.label.copyWith(
+              color: ShadowColors.primary,
               letterSpacing: 4,
             ),
           ),
@@ -210,21 +210,21 @@ class _SlideContent extends StatelessWidget {
           Text(
             slide.title,
             textAlign: TextAlign.center,
-            style: BlindTypography.displayMd,
+            style: ShadowTypography.displayMd,
           ),
           const SizedBox(height: 8),
           Text(
             slide.subtitle,
             textAlign: TextAlign.center,
-            style: BlindTypography.bodyLg.copyWith(
-              color: BlindColors.textSecondary,
+            style: ShadowTypography.bodyLg.copyWith(
+              color: ShadowColors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),
           Text(
             slide.description,
             textAlign: TextAlign.center,
-            style: BlindTypography.bodySm,
+            style: ShadowTypography.bodySm,
           ),
           const SizedBox(height: 24),
         ],

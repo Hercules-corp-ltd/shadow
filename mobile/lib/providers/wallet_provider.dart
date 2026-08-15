@@ -106,7 +106,7 @@ class WalletProvider with ChangeNotifier {
 }
 
 extension WalletOnboardingFlag on WalletProvider {
-  static const _onboardingKey = 'blind_onboarding_complete_v1';
+  static const _onboardingKey = 'shadow_onboarding_complete_v1';
 
   Future<bool> isOnboardingComplete() async {
     final prefs = await SharedPreferences.getInstance();

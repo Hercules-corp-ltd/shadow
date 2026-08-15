@@ -6,10 +6,10 @@ import '../services/extensions_service.dart';
 class ExtensionsProvider with ChangeNotifier {
   final ExtensionsService _service = ExtensionsService();
 
-  List<BlindExtension> _items = const [];
+  List<ShadowExtension> _items = const [];
   bool _isLoading = false;
 
-  List<BlindExtension> get items => _items;
+  List<ShadowExtension> get items => _items;
   bool get isLoading => _isLoading;
 
   Future<void> load() async {

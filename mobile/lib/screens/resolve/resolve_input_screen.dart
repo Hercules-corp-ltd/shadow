@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class ResolveInputScreen extends StatefulWidget {
   const ResolveInputScreen({super.key});
@@ -28,9 +28,9 @@ class _ResolveInputScreenState extends State<ResolveInputScreen> {
   Widget build(BuildContext context) {
     final hasText = _ctrl.text.trim().isNotEmpty;
 
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Resolve content',
-      subtitle: 'Enter a Blind ID, .blind domain, or CID',
+      subtitle: 'Enter a Shadow ID, .shadow domain, or CID',
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
@@ -44,11 +44,11 @@ class _ResolveInputScreenState extends State<ResolveInputScreen> {
                   autofocus: true,
                   onChanged: (_) => setState(() {}),
                   onSubmitted: (_) => _go(),
-                  style: BlindTypography.body,
+                  style: ShadowTypography.body,
                   decoration: InputDecoration(
-                    hintText: 'myname.blind / Qm... / bafy...',
+                    hintText: 'myname.shadow / Qm... / bafy...',
                     prefixIcon: const Icon(Icons.link_rounded,
-                        color: BlindColors.textSecondary),
+                        color: ShadowColors.textSecondary),
                     suffixIcon: hasText
                         ? IconButton(
                             icon: const Icon(Icons.close_rounded),
@@ -65,16 +65,16 @@ class _ResolveInputScreenState extends State<ResolveInputScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'You can paste any Blind identifier: .blind domain, a site program address, or a raw IPFS / Arweave content ID.',
-                  style: BlindTypography.caption,
+                  'You can paste any Shadow identifier: .shadow domain, a site program address, or a raw IPFS / Arweave content ID.',
+                  style: ShadowTypography.caption,
                 ),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          BlindButton(
+          ShadowButton(
             label: 'Resolve',
-            size: BlindButtonSize.lg,
+            size: ShadowButtonSize.lg,
             trailing: Icons.arrow_forward_rounded,
             onPressed: hasText ? _go : null,
           ),

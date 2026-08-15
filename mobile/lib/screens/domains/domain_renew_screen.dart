@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/domains_provider.dart';
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class DomainRenewScreen extends StatefulWidget {
   const DomainRenewScreen({super.key, required this.domain});
@@ -24,7 +24,7 @@ class _DomainRenewScreenState extends State<DomainRenewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Renew Domain',
       subtitle: widget.domain,
       body: ListView(
@@ -35,7 +35,7 @@ class _DomainRenewScreenState extends State<DomainRenewScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Extend by', style: BlindTypography.h4),
+                Text('Extend by', style: ShadowTypography.h4),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 8,
@@ -55,14 +55,14 @@ class _DomainRenewScreenState extends State<DomainRenewScreen> {
             const SizedBox(height: 12),
             Text(
               _error!,
-              style: BlindTypography.bodySm
-                  .copyWith(color: BlindColors.error),
+              style: ShadowTypography.bodySm
+                  .copyWith(color: ShadowColors.error),
             ),
           ],
           const SizedBox(height: 16),
-          BlindButton(
+          ShadowButton(
             label: _submitting ? 'Renewing...' : 'Renew for $_years year(s)',
-            size: BlindButtonSize.lg,
+            size: ShadowButtonSize.lg,
             isLoading: _submitting,
             onPressed: _submitting ? null : _renew,
           ),

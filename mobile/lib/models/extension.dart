@@ -1,4 +1,4 @@
-class BlindExtension {
+class ShadowExtension {
   final String id;
   final String name;
   final String author;
@@ -9,7 +9,7 @@ class BlindExtension {
   final List<String> permissions;
   final DateTime installedAt;
 
-  const BlindExtension({
+  const ShadowExtension({
     required this.id,
     required this.name,
     required this.author,
@@ -21,8 +21,8 @@ class BlindExtension {
     required this.installedAt,
   });
 
-  factory BlindExtension.fromJson(Map<String, dynamic> json) =>
-      BlindExtension(
+  factory ShadowExtension.fromJson(Map<String, dynamic> json) =>
+      ShadowExtension(
         id: (json['id'] ?? '').toString(),
         name: json['name'] ?? '',
         author: json['author'] ?? 'Unknown',
@@ -36,7 +36,7 @@ class BlindExtension {
                 DateTime.now(),
       );
 
-  BlindExtension copyWith({bool? enabled}) => BlindExtension(
+  ShadowExtension copyWith({bool? enabled}) => ShadowExtension(
         id: id,
         name: name,
         author: author,

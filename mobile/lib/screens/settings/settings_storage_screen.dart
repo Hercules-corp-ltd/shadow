@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/settings_provider.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class SettingsStorageScreen extends StatelessWidget {
   const SettingsStorageScreen({super.key});
@@ -14,7 +14,7 @@ class SettingsStorageScreen extends StatelessWidget {
     final provider = context.watch<SettingsProvider>();
     final s = provider.settings;
 
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Storage',
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
@@ -24,8 +24,8 @@ class SettingsStorageScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Max cache size', style: BlindTypography.h4),
-                Text('${s.maxCacheMb} MB', style: BlindTypography.bodySm),
+                Text('Max cache size', style: ShadowTypography.h4),
+                Text('${s.maxCacheMb} MB', style: ShadowTypography.bodySm),
                 Slider(
                   min: 128,
                   max: 4096,
@@ -36,9 +36,9 @@ class SettingsStorageScreen extends StatelessWidget {
                       provider.update(s.copyWith(maxCacheMb: v.toInt())),
                 ),
                 const SizedBox(height: 12),
-                Text('History retention', style: BlindTypography.h4),
+                Text('History retention', style: ShadowTypography.h4),
                 Text('${s.maxHistoryItems} items',
-                    style: BlindTypography.bodySm),
+                    style: ShadowTypography.bodySm),
                 Slider(
                   min: 100,
                   max: 10000,
@@ -56,9 +56,9 @@ class SettingsStorageScreen extends StatelessWidget {
             child: SwitchListTile(
               value: s.autoClearCache,
               title: Text('Auto-clear cache weekly',
-                  style: BlindTypography.body),
+                  style: ShadowTypography.body),
               subtitle: Text('Remove non-pinned content every Sunday',
-                  style: BlindTypography.bodySm),
+                  style: ShadowTypography.bodySm),
               onChanged: (v) => provider.update(s.copyWith(autoClearCache: v)),
             ),
           ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../theme/blind_colors.dart';
-import '../theme/blind_spacing.dart';
-import '../theme/blind_typography.dart';
+import '../theme/shadow_colors.dart';
+import '../theme/shadow_spacing.dart';
+import '../theme/shadow_typography.dart';
 
 /// Small dot + label pill used for status indicators (Mainnet/Devnet/etc.).
 class StatusPill extends StatelessWidget {
@@ -22,10 +22,10 @@ class StatusPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: BlindColors.surfaceElevated,
+      color: ShadowColors.surfaceElevated,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(BlindRadius.pill),
-        side: const BorderSide(color: BlindColors.border),
+        borderRadius: BorderRadius.circular(ShadowRadius.pill),
+        side: const BorderSide(color: ShadowColors.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -49,8 +49,8 @@ class StatusPill extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 label,
-                style: BlindTypography.label.copyWith(
-                  color: BlindColors.textPrimary,
+                style: ShadowTypography.label.copyWith(
+                  color: ShadowColors.textPrimary,
                 ),
               ),
               if (trailing != null) ...[

@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../providers/domains_provider.dart';
 import '../../services/domain_service.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class DomainSettingsScreen extends StatefulWidget {
   const DomainSettingsScreen({super.key, required this.domain});
@@ -25,7 +25,7 @@ class _DomainSettingsScreenState extends State<DomainSettingsScreen> {
   Widget build(BuildContext context) {
     final d = context.watch<DomainsProvider>().active;
 
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Settings',
       subtitle: widget.domain,
       body: ListView(
@@ -36,16 +36,16 @@ class _DomainSettingsScreenState extends State<DomainSettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Verification', style: BlindTypography.h4),
+                Text('Verification', style: ShadowTypography.h4),
                 const SizedBox(height: 6),
                 Text(
                   d?.isVerified == true
                       ? 'Your domain is verified — trust score ${d?.trustScore ?? 0}.'
                       : 'Increase trust by verifying content ownership.',
-                  style: BlindTypography.bodySm,
+                  style: ShadowTypography.bodySm,
                 ),
                 const SizedBox(height: 12),
-                BlindButton(
+                ShadowButton(
                   label: _verifying ? 'Verifying...' : 'Verify ownership',
                   isLoading: _verifying,
                   onPressed: _verifying ? null : _verify,
@@ -55,7 +55,7 @@ class _DomainSettingsScreenState extends State<DomainSettingsScreen> {
           ),
           if (_message != null) ...[
             const SizedBox(height: 12),
-            Text(_message!, style: BlindTypography.bodySm),
+            Text(_message!, style: ShadowTypography.bodySm),
           ],
           const SizedBox(height: 16),
           GlassCard(
@@ -63,13 +63,13 @@ class _DomainSettingsScreenState extends State<DomainSettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Metadata', style: BlindTypography.h4),
+                Text('Metadata', style: ShadowTypography.h4),
                 const SizedBox(height: 6),
                 Text(
                   d?.metadata.isEmpty == false
                       ? d!.metadata.toString()
                       : 'No metadata set yet.',
-                  style: BlindTypography.bodySm,
+                  style: ShadowTypography.bodySm,
                 ),
               ],
             ),

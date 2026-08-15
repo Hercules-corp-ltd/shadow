@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Core color palette of the Blind Browser design system.
-/// Derived from the Figma "Blind Web Browser" file.
-class BlindColors {
-  BlindColors._();
+/// Core color palette of the Shadow Browser design system.
+/// Derived from the Figma "Shadow Web Browser" file.
+class ShadowColors {
+  ShadowColors._();
 
   // Canvas / surfaces
   static const Color background = Color(0xFF000000);
@@ -16,7 +16,7 @@ class BlindColors {
   static const Color cardNavy = Color(0xFF1A2332);
   static const Color cardNavyBorder = Color(0xFF2A3446);
 
-  // Primary accent (Blind orange)
+  // Primary accent (Shadow orange)
   static const Color primary = Color(0xFFF97316);
   static const Color primaryHover = Color(0xFFFB923C);
   static const Color primaryDark = Color(0xFFEA580C);

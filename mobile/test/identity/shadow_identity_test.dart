@@ -1,4 +1,4 @@
-import 'package:blind_mobile/identity/identity.dart';
+import 'package:shadow_mobile/identity/identity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// A fixed phrase so every expectation below is reproducible. This is a test
@@ -7,7 +7,7 @@ const String testPhrase =
     'abandon abandon abandon abandon abandon abandon '
     'abandon abandon abandon abandon abandon about';
 
-const String aliasDomain = 'mail.blind.test';
+const String aliasDomain = 'mail.shadow.test';
 
 void main() {
   group('RegistrableDomain', () {
@@ -44,11 +44,11 @@ void main() {
     });
   });
 
-  group('BlindIdentity derivation', () {
-    final engine = BlindIdentity.fromMnemonic(testPhrase, passphrase: 'unit-test');
+  group('ShadowIdentity derivation', () {
+    final engine = ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'unit-test');
 
     test('is deterministic — the same phrase rebuilds the same account', () {
-      final rebuilt = BlindIdentity.fromMnemonic(testPhrase, passphrase: 'unit-test');
+      final rebuilt = ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'unit-test');
       final a = engine.forSite('twitter.com', aliasDomain: aliasDomain);
       final b = rebuilt.forSite('twitter.com', aliasDomain: aliasDomain);
 
@@ -67,7 +67,7 @@ void main() {
     });
 
     test('separates identities by passphrase, so a leaked branch is contained', () {
-      final other = BlindIdentity.fromMnemonic(testPhrase, passphrase: 'different');
+      final other = ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'different');
       final a = engine.forSite('twitter.com', aliasDomain: aliasDomain);
       final b = other.forSite('twitter.com', aliasDomain: aliasDomain);
 
@@ -107,19 +107,19 @@ void main() {
 
     test('rejects a mistyped recovery phrase instead of deriving nonsense', () {
       expect(
-        () => BlindIdentity.fromMnemonic('abandon abandon abandon'),
+        () => ShadowIdentity.fromMnemonic('abandon abandon abandon'),
         throwsFormatException,
       );
-      expect(BlindIdentity.isValidMnemonic(testPhrase), isTrue);
-      expect(BlindIdentity.isValidMnemonic('not a real phrase at all'), isFalse);
+      expect(ShadowIdentity.isValidMnemonic(testPhrase), isTrue);
+      expect(ShadowIdentity.isValidMnemonic('not a real phrase at all'), isFalse);
     });
 
     test('generated phrases are valid and distinct', () {
-      final first = BlindIdentity.generateMnemonic();
-      final second = BlindIdentity.generateMnemonic();
+      final first = ShadowIdentity.generateMnemonic();
+      final second = ShadowIdentity.generateMnemonic();
 
       expect(first.split(' '), hasLength(12));
-      expect(BlindIdentity.isValidMnemonic(first), isTrue);
+      expect(ShadowIdentity.isValidMnemonic(first), isTrue);
       expect(first, isNot(second));
     });
 
@@ -314,15 +314,15 @@ void main() {
     });
   });
 
-  group('BlindKdf', () {
+  group('ShadowKdf', () {
     test('matches RFC 5869 structure: same inputs, same output', () {
-      final a = BlindKdf.derive(
+      final a = ShadowKdf.derive(
         inputKeyMaterial: const <int>[1, 2, 3],
         salt: 'salt',
         info: 'info',
         length: 64,
       );
-      final b = BlindKdf.derive(
+      final b = ShadowKdf.derive(
         inputKeyMaterial: const <int>[1, 2, 3],
         salt: 'salt',
         info: 'info',
@@ -333,13 +333,13 @@ void main() {
     });
 
     test('info string separates outputs', () {
-      final a = BlindKdf.derive(
+      final a = ShadowKdf.derive(
         inputKeyMaterial: const <int>[1, 2, 3],
         salt: 'salt',
         info: 'one',
         length: 32,
       );
-      final b = BlindKdf.derive(
+      final b = ShadowKdf.derive(
         inputKeyMaterial: const <int>[1, 2, 3],
         salt: 'salt',
         info: 'two',
@@ -349,7 +349,7 @@ void main() {
     });
 
     test('expands past one hash block correctly', () {
-      final long = BlindKdf.derive(
+      final long = ShadowKdf.derive(
         inputKeyMaterial: const <int>[7],
         salt: 's',
         info: 'i',

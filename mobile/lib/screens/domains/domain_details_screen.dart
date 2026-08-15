@@ -6,12 +6,12 @@ import 'package:provider/provider.dart';
 
 import '../../models/domain.dart';
 import '../../providers/domains_provider.dart';
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/list_item_card.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 import '../../widgets/status_pill.dart';
 
 class DomainDetailsScreen extends StatefulWidget {
@@ -23,7 +23,7 @@ class DomainDetailsScreen extends StatefulWidget {
 }
 
 class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
-  BlindDomain? _d;
+  ShadowDomain? _d;
 
   @override
   void initState() {
@@ -39,7 +39,7 @@ class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
     final d = _d;
     final df = DateFormat.yMMMd();
 
-    return BlindScaffold(
+    return ShadowScaffold(
       title: widget.domain,
       subtitle: d == null
           ? 'Loading...'
@@ -59,13 +59,13 @@ class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
                       Row(
                         children: [
                           Expanded(
-                            child: Text(d.domain, style: BlindTypography.h2),
+                            child: Text(d.domain, style: ShadowTypography.h2),
                           ),
                           StatusPill(
                             label: d.isVerified ? 'Verified' : 'Unverified',
                             color: d.isVerified
-                                ? BlindColors.success
-                                : BlindColors.textTertiary,
+                                ? ShadowColors.success
+                                : ShadowColors.textTertiary,
                           ),
                         ],
                       ),
@@ -76,7 +76,7 @@ class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
                           label: 'Expires',
                           value: df.format(d.expiresAt!),
                           valueColor:
-                              d.isExpired ? BlindColors.error : null,
+                              d.isExpired ? ShadowColors.error : null,
                         ),
                       _Row(
                         label: 'Owner',
@@ -100,7 +100,7 @@ class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
                   title: 'DNS records',
                   subtitle: '${d.dnsRecords.length} records',
                   leadingIcon: Icons.dns_rounded,
-                  leadingColor: BlindColors.tileCyan,
+                  leadingColor: ShadowColors.tileCyan,
                   onTap: () => context.push('/domains/${d.domain}/dns'),
                 ),
                 const SizedBox(height: 8),
@@ -108,7 +108,7 @@ class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
                   title: 'Settings',
                   subtitle: 'Metadata, visibility, verification',
                   leadingIcon: Icons.settings_rounded,
-                  leadingColor: BlindColors.tileGray,
+                  leadingColor: ShadowColors.tileGray,
                   onTap: () => context.push('/domains/${d.domain}/settings'),
                 ),
                 const SizedBox(height: 8),
@@ -116,7 +116,7 @@ class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
                   title: 'Renew',
                   subtitle: 'Extend your registration',
                   leadingIcon: Icons.refresh_rounded,
-                  leadingColor: BlindColors.tileGreen,
+                  leadingColor: ShadowColors.tileGreen,
                   onTap: () => context.push('/domains/${d.domain}/renew'),
                 ),
                 const SizedBox(height: 8),
@@ -124,13 +124,13 @@ class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
                   title: 'Transfer ownership',
                   subtitle: 'Send this domain to another wallet',
                   leadingIcon: Icons.swap_horiz_rounded,
-                  leadingColor: BlindColors.tileAmber,
+                  leadingColor: ShadowColors.tileAmber,
                   onTap: () => context.push('/domains/${d.domain}/transfer'),
                 ),
                 const SizedBox(height: 20),
-                BlindButton(
+                ShadowButton(
                   label: 'Open site',
-                  size: BlindButtonSize.lg,
+                  size: ShadowButtonSize.lg,
                   leading: Icons.open_in_new_rounded,
                   onPressed: () => context.push(
                     '/resolve?id=${Uri.encodeComponent(d.domain)}',
@@ -176,13 +176,13 @@ class _Row extends StatelessWidget {
           SizedBox(
             width: 110,
             child: Text(label,
-                style: BlindTypography.bodySm
-                    .copyWith(color: BlindColors.textTertiary)),
+                style: ShadowTypography.bodySm
+                    .copyWith(color: ShadowColors.textTertiary)),
           ),
           Expanded(
             child: Text(
               value,
-              style: BlindTypography.body.copyWith(color: valueColor),
+              style: ShadowTypography.body.copyWith(color: valueColor),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -190,7 +190,7 @@ class _Row extends StatelessWidget {
           if (onCopy != null)
             IconButton(
               icon: const Icon(Icons.copy_rounded,
-                  size: 16, color: BlindColors.textSecondary),
+                  size: 16, color: ShadowColors.textSecondary),
               onPressed: onCopy,
             ),
         ],

@@ -1,4 +1,4 @@
-package app.blind.blind_mobile
+package app.shadow.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

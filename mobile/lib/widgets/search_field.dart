@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../theme/blind_colors.dart';
-import '../theme/blind_spacing.dart';
-import '../theme/blind_typography.dart';
+import '../theme/shadow_colors.dart';
+import '../theme/shadow_spacing.dart';
+import '../theme/shadow_typography.dart';
 
 /// The rounded search field used on the home page (and other list screens).
-class BlindSearchField extends StatelessWidget {
-  const BlindSearchField({
+class ShadowSearchField extends StatelessWidget {
+  const ShadowSearchField({
     super.key,
     this.hint = 'Search domains or enter Web3/token address...',
     this.onChanged,
@@ -27,16 +27,16 @@ class BlindSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: BlindColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(BlindRadius.md),
-        border: Border.all(color: BlindColors.border),
+        color: ShadowColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(ShadowRadius.md),
+        border: Border.all(color: ShadowColors.border),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
         children: [
           const Icon(
             Icons.search_rounded,
-            color: BlindColors.textSecondary,
+            color: ShadowColors.textSecondary,
             size: 20,
           ),
           const SizedBox(width: 12),
@@ -46,12 +46,12 @@ class BlindSearchField extends StatelessWidget {
               controller: controller,
               onChanged: onChanged,
               onSubmitted: onSubmitted,
-              style: BlindTypography.body,
-              cursorColor: BlindColors.primary,
+              style: ShadowTypography.body,
+              cursorColor: ShadowColors.primary,
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: BlindTypography.body
-                    .copyWith(color: BlindColors.textTertiary),
+                hintStyle: ShadowTypography.body
+                    .copyWith(color: ShadowColors.textTertiary),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding:
@@ -65,7 +65,7 @@ class BlindSearchField extends StatelessWidget {
           ] else
             const Icon(
               Icons.mic_none_rounded,
-              color: BlindColors.textSecondary,
+              color: ShadowColors.textSecondary,
               size: 20,
             ),
         ],

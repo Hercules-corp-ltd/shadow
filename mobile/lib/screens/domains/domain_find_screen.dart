@@ -4,14 +4,14 @@ import 'package:provider/provider.dart';
 
 import '../../providers/domains_provider.dart';
 import '../../providers/wallet_provider.dart';
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/list_item_card.dart';
 import '../../widgets/search_field.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class DomainFindScreen extends StatefulWidget {
   const DomainFindScreen({super.key});
@@ -44,28 +44,28 @@ class _DomainFindScreenState extends State<DomainFindScreen> {
   Widget build(BuildContext context) {
     final p = context.watch<DomainsProvider>();
 
-    return BlindScaffold(
-      title: 'Blind Domains',
-      subtitle: 'Find, register, and manage your Blind domains',
+    return ShadowScaffold(
+      title: 'Shadow Domains',
+      subtitle: 'Find, register, and manage your Shadow domains',
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
           GlassCard(
             padding: const EdgeInsets.all(16),
-            gradient: BlindColors.navyGradient,
-            border: Border.all(color: BlindColors.cardNavyBorder, width: 1),
+            gradient: ShadowColors.navyGradient,
+            border: Border.all(color: ShadowColors.cardNavyBorder, width: 1),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Find your Blind name', style: BlindTypography.h3),
+                Text('Find your Shadow name', style: ShadowTypography.h3),
                 const SizedBox(height: 12),
-                BlindSearchField(
-                  hint: 'yourname.blind',
+                ShadowSearchField(
+                  hint: 'yourname.shadow',
                   controller: _queryCtrl,
                   onSubmitted: (q) => _search(q),
                 ),
                 const SizedBox(height: 12),
-                BlindButton(
+                ShadowButton(
                   label: 'Search availability',
                   leading: Icons.search_rounded,
                   onPressed: () => _search(_queryCtrl.text),
@@ -74,7 +74,7 @@ class _DomainFindScreenState extends State<DomainFindScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          Text('Your domains', style: BlindTypography.h3),
+          Text('Your domains', style: ShadowTypography.h3),
           const SizedBox(height: 12),
           if (p.isLoading && p.myDomains.isEmpty)
             const Center(
@@ -87,7 +87,7 @@ class _DomainFindScreenState extends State<DomainFindScreen> {
               icon: Icons.language_rounded,
               title: 'No domains yet',
               message:
-                  'Register your first .blind domain to claim your identity on the decentralized web.',
+                  'Register your first .shadow domain to claim your identity on the decentralized web.',
             )
           else
             ...p.myDomains.map(
@@ -98,8 +98,8 @@ class _DomainFindScreenState extends State<DomainFindScreen> {
                   subtitle: d.isVerified ? 'Verified · trust ${d.trustScore ?? 0}' : 'Unverified',
                   leadingIcon: Icons.language_rounded,
                   leadingColor: d.isVerified
-                      ? BlindColors.success
-                      : BlindColors.tileGray,
+                      ? ShadowColors.success
+                      : ShadowColors.tileGray,
                   onTap: () => context.push('/domains/${d.domain}'),
                 ),
               ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../theme/blind_colors.dart';
-import '../theme/blind_spacing.dart';
-import '../theme/blind_typography.dart';
+import '../theme/shadow_colors.dart';
+import '../theme/shadow_spacing.dart';
+import '../theme/shadow_typography.dart';
 
 /// A generic "icon + title + subtitle + trailing" card used in history,
 /// bookmarks, downloads, recent activity, etc.
@@ -35,10 +35,10 @@ class ListItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: BlindColors.surfaceElevated,
+      color: ShadowColors.surfaceElevated,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(BlindRadius.md),
-        side: const BorderSide(color: BlindColors.border),
+        borderRadius: BorderRadius.circular(ShadowRadius.md),
+        side: const BorderSide(color: ShadowColors.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -54,13 +54,13 @@ class ListItemCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: (leadingColor ?? BlindColors.primary)
+                    color: (leadingColor ?? ShadowColors.primary)
                         .withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(BlindRadius.sm),
+                    borderRadius: BorderRadius.circular(ShadowRadius.sm),
                   ),
                   child: Icon(
                     leadingIcon,
-                    color: leadingColor ?? BlindColors.primary,
+                    color: leadingColor ?? ShadowColors.primary,
                     size: 20,
                   ),
                 ),
@@ -73,7 +73,7 @@ class ListItemCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: BlindTypography.h4,
+                      style: ShadowTypography.h4,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -82,7 +82,7 @@ class ListItemCard extends StatelessWidget {
                         statusLabel != null) ...[
                       const SizedBox(height: 4),
                       DefaultTextStyle(
-                        style: BlindTypography.bodySm,
+                        style: ShadowTypography.bodySm,
                         child: Row(
                           children: [
                             if (timeLabel != null) Text(timeLabel!),
@@ -107,9 +107,9 @@ class ListItemCard extends StatelessWidget {
                               ],
                               Text(
                                 statusLabel!,
-                                style: BlindTypography.bodySm.copyWith(
+                                style: ShadowTypography.bodySm.copyWith(
                                   color:
-                                      statusColor ?? BlindColors.success,
+                                      statusColor ?? ShadowColors.success,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -126,7 +126,7 @@ class ListItemCard extends StatelessWidget {
               else
                 const Icon(
                   Icons.chevron_right_rounded,
-                  color: BlindColors.textTertiary,
+                  color: ShadowColors.textTertiary,
                 ),
             ],
           ),

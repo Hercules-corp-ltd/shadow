@@ -1,4 +1,4 @@
-import 'blind_kdf.dart';
+import 'shadow_kdf.dart';
 import 'password_policy.dart';
 
 /// Turns fixed entropy into a password that satisfies a site's rules.

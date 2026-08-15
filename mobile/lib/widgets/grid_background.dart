@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/blind_colors.dart';
+import '../theme/shadow_colors.dart';
 
 /// Subtle dotted "+" grid background seen on onboarding screens.
 class GridBackground extends StatelessWidget {
@@ -12,7 +12,7 @@ class GridBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: BlindColors.background,
+      color: ShadowColors.background,
       child: CustomPaint(
         painter: _CrossGridPainter(spacing: spacing),
         child: child ?? const SizedBox.expand(),

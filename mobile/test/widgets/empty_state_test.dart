@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:blind_mobile/widgets/empty_state.dart';
+import 'package:shadow_mobile/widgets/empty_state.dart';
 
 void main() {
 

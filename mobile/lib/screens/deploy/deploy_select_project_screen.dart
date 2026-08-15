@@ -4,19 +4,19 @@ import 'package:provider/provider.dart';
 
 import '../../models/deploy_project.dart';
 import '../../providers/deploy_provider.dart';
-import '../../theme/blind_colors.dart';
-import '../../theme/blind_typography.dart';
+import '../../theme/shadow_colors.dart';
+import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/list_item_card.dart';
-import '../../widgets/blind_button.dart';
-import '../../widgets/blind_scaffold.dart';
+import '../../widgets/shadow_button.dart';
+import '../../widgets/shadow_scaffold.dart';
 
 class DeploySelectProjectScreen extends StatelessWidget {
   const DeploySelectProjectScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlindScaffold(
+    return ShadowScaffold(
       title: 'Deploy Website',
       subtitle: 'Publish your site to the decentralized web',
       body: ListView(
@@ -27,13 +27,13 @@ class DeploySelectProjectScreen extends StatelessWidget {
             context.push('/deploy/config');
           }),
           const SizedBox(height: 24),
-          Text('What would you like to deploy?', style: BlindTypography.h3),
+          Text('What would you like to deploy?', style: ShadowTypography.h3),
           const SizedBox(height: 12),
           ListItemCard(
             title: 'Static Site',
             subtitle: 'HTML, CSS & JS files',
             leadingIcon: Icons.web_rounded,
-            leadingColor: BlindColors.tileBlue,
+            leadingColor: ShadowColors.tileBlue,
             onTap: () => _choose(context, ProjectFramework.static_),
           ),
           const SizedBox(height: 8),
@@ -41,7 +41,7 @@ class DeploySelectProjectScreen extends StatelessWidget {
             title: 'React / Next.js',
             subtitle: 'Compiled build output',
             leadingIcon: Icons.code_rounded,
-            leadingColor: BlindColors.tileCyan,
+            leadingColor: ShadowColors.tileCyan,
             onTap: () => _choose(context, ProjectFramework.next),
           ),
           const SizedBox(height: 8),
@@ -49,7 +49,7 @@ class DeploySelectProjectScreen extends StatelessWidget {
             title: 'Vue / Nuxt',
             subtitle: 'Compiled build output',
             leadingIcon: Icons.rocket_launch_rounded,
-            leadingColor: BlindColors.tileGreen,
+            leadingColor: ShadowColors.tileGreen,
             onTap: () => _choose(context, ProjectFramework.nuxt),
           ),
           const SizedBox(height: 8),
@@ -57,7 +57,7 @@ class DeploySelectProjectScreen extends StatelessWidget {
             title: 'SvelteKit',
             subtitle: 'Compiled build output',
             leadingIcon: Icons.bolt_rounded,
-            leadingColor: BlindColors.tileOrange,
+            leadingColor: ShadowColors.tileOrange,
             onTap: () => _choose(context, ProjectFramework.svelte),
           ),
         ],
@@ -95,8 +95,8 @@ class _HeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassCard(
       padding: const EdgeInsets.all(24),
-      gradient: BlindColors.navyGradient,
-      border: Border.all(color: BlindColors.cardNavyBorder, width: 1),
+      gradient: ShadowColors.navyGradient,
+      border: Border.all(color: ShadowColors.cardNavyBorder, width: 1),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -104,23 +104,23 @@ class _HeroCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: BlindColors.primary.withOpacity(0.2),
+              color: ShadowColors.primary.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.cloud_upload_rounded,
-                color: BlindColors.primary, size: 24),
+                color: ShadowColors.primary, size: 24),
           ),
           const SizedBox(height: 16),
-          Text('Go Web3 in minutes', style: BlindTypography.h2),
+          Text('Go Web3 in minutes', style: ShadowTypography.h2),
           const SizedBox(height: 6),
           Text(
             'Upload your website, we handle storage, pinning, and on-chain registration.',
-            style: BlindTypography.body.copyWith(
-              color: BlindColors.textSecondary,
+            style: ShadowTypography.body.copyWith(
+              color: ShadowColors.textSecondary,
             ),
           ),
           const SizedBox(height: 20),
-          BlindButton(
+          ShadowButton(
             label: 'Start new deployment',
             leading: Icons.add_rounded,
             onPressed: onStart,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import 'providers/identity_provider.dart';
 import 'providers/activity_provider.dart';
 import 'providers/bookmarks_provider.dart';
 import 'providers/deploy_provider.dart';
@@ -13,16 +14,16 @@ import 'providers/settings_provider.dart';
 import 'providers/tokens_provider.dart';
 import 'providers/wallet_provider.dart';
 import 'router/app_router.dart';
-import 'theme/blind_theme.dart';
+import 'theme/shadow_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(BlindTheme.overlayStyle);
-  runApp(const BlindApp());
+  SystemChrome.setSystemUIOverlayStyle(ShadowTheme.overlayStyle);
+  runApp(const ShadowApp());
 }
 
-class BlindApp extends StatelessWidget {
-  const BlindApp({super.key});
+class ShadowApp extends StatelessWidget {
+  const ShadowApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +39,15 @@ class BlindApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TokensProvider()),
         ChangeNotifierProvider(create: (_) => ActivityProvider()),
         ChangeNotifierProvider(create: (_) => DeployProvider()),
+        ChangeNotifierProvider(create: (_) => IdentityProvider()),
       ],
       child: Builder(
         builder: (ctx) {
           final router = AppRouter.build(ctx);
           return MaterialApp.router(
-            title: 'Blind Browser',
+            title: 'Shadow Browser',
             debugShowCheckedModeBanner: false,
-            theme: BlindTheme.build(),
+            theme: ShadowTheme.build(),
             routerConfig: router,
           );
         },
