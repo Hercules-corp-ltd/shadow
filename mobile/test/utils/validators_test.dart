@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shadow_mobile/utils/validators.dart';
+import 'package:blind_mobile/utils/validators.dart';
 
 void main() {
   group('Validators.isValidPubkey', () {
@@ -29,14 +29,14 @@ void main() {
 
   group('Validators.isValidDomain', () {
     test('accepts normal domains', () {
-      expect(Validators.isValidDomain('example.shadow'), isTrue);
-      expect(Validators.isValidDomain('sub.my-site.shadow'), isTrue);
+      expect(Validators.isValidDomain('example.blind'), isTrue);
+      expect(Validators.isValidDomain('sub.my-site.blind'), isTrue);
     });
 
     test('rejects empty or malformed domains', () {
       expect(Validators.isValidDomain(''), isFalse);
-      expect(Validators.isValidDomain('-bad.shadow'), isFalse);
-      expect(Validators.isValidDomain('bad-.shadow'), isFalse);
+      expect(Validators.isValidDomain('-bad.blind'), isFalse);
+      expect(Validators.isValidDomain('bad-.blind'), isFalse);
       expect(Validators.isValidDomain('a' * 254), isFalse);
     });
   });

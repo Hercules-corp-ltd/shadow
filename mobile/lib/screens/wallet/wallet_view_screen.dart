@@ -7,13 +7,13 @@ import '../../models/nft.dart';
 import '../../models/token_balance.dart';
 import '../../providers/tokens_provider.dart';
 import '../../providers/wallet_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/icon_tile.dart';
 import '../../widgets/list_item_card.dart';
 import '../../widgets/section_header.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class WalletViewScreen extends StatefulWidget {
   const WalletViewScreen({super.key});
@@ -41,7 +41,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
         ? '${addr.substring(0, 6)}…${addr.substring(addr.length - 6)}'
         : addr;
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Wallet',
       subtitle: shortAddr,
       actions: [
@@ -51,7 +51,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
         ),
       ],
       body: RefreshIndicator(
-        color: ShadowColors.primary,
+        color: BlindColors.primary,
         onRefresh: () async {
           await context.read<TokensProvider>().load(addr);
         },
@@ -80,28 +80,28 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: ShadowColors.primaryGradient,
+        gradient: BlindColors.primaryGradient,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Total balance',
-              style: ShadowTypography.label
+              style: BlindTypography.label
                   .copyWith(color: Colors.white.withOpacity(0.9))),
           const SizedBox(height: 8),
           Text(
             portfolio == null
                 ? '—'
                 : '\$${portfolio.totalUsd.toStringAsFixed(2)}',
-            style: ShadowTypography.displayMd.copyWith(color: Colors.white),
+            style: BlindTypography.displayMd.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 4),
           Text(
             portfolio == null
                 ? 'Loading…'
                 : '${portfolio.solBalance.toStringAsFixed(4)} SOL',
-            style: ShadowTypography.bodySm.copyWith(color: Colors.white70),
+            style: BlindTypography.bodySm.copyWith(color: Colors.white70),
           ),
           const SizedBox(height: 16),
           Row(
@@ -136,25 +136,25 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
         IconTile(
           label: 'Send',
           icon: const Icon(Icons.arrow_upward_rounded),
-          color: ShadowColors.tileBlue,
+          color: BlindColors.tileBlue,
           onTap: () => context.push('/wallet/send'),
         ),
         IconTile(
           label: 'Receive',
           icon: const Icon(Icons.arrow_downward_rounded),
-          color: ShadowColors.tileGreen,
+          color: BlindColors.tileGreen,
           onTap: () => context.push('/wallet/receive'),
         ),
         IconTile(
           label: 'Swap',
           icon: const Icon(Icons.swap_horiz_rounded),
-          color: ShadowColors.tilePurple,
+          color: BlindColors.tilePurple,
           onTap: () => context.push('/wallet/swap'),
         ),
         IconTile(
           label: 'Buy',
           icon: const Icon(Icons.add_rounded),
-          color: ShadowColors.tileAmber,
+          color: BlindColors.tileAmber,
           onTap: () => ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('On-ramp coming soon')),
           ),
@@ -170,7 +170,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
           padding: const EdgeInsets.all(20),
           child: Text(
             'No tokens yet. Swap SOL to any SPL token to see it here.',
-            style: ShadowTypography.bodySm,
+            style: BlindTypography.bodySm,
           ),
         ),
       ];
@@ -183,15 +183,15 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
             title: t.symbol,
             subtitle: t.name,
             leadingIcon: Icons.monetization_on_rounded,
-            leadingColor: ShadowColors.tileAmber,
+            leadingColor: BlindColors.tileAmber,
             trailing: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(t.balance.toStringAsFixed(4),
-                    style: ShadowTypography.h4),
+                    style: BlindTypography.h4),
                 Text('\$${t.usdValue.toStringAsFixed(2)}',
-                    style: ShadowTypography.bodySm),
+                    style: BlindTypography.bodySm),
               ],
             ),
           ),
@@ -203,7 +203,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     if (nfts.isEmpty) {
       return GlassCard(
         padding: const EdgeInsets.all(20),
-        child: Text('No NFTs in this wallet yet.', style: ShadowTypography.bodySm),
+        child: Text('No NFTs in this wallet yet.', style: BlindTypography.bodySm),
       );
     }
     return GridView.builder(
@@ -220,9 +220,9 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
         final nft = nfts[i];
         return Container(
           decoration: BoxDecoration(
-            color: ShadowColors.surfaceElevated,
+            color: BlindColors.surfaceElevated,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: ShadowColors.border),
+            border: Border.all(color: BlindColors.border),
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(
@@ -231,9 +231,9 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  color: ShadowColors.surface,
+                  color: BlindColors.surface,
                   child: nft.imageUrl == null
-                      ? const Icon(Icons.image_rounded, size: 48, color: ShadowColors.textTertiary)
+                      ? const Icon(Icons.image_rounded, size: 48, color: BlindColors.textTertiary)
                       : Image.network(nft.imageUrl!, fit: BoxFit.cover),
                 ),
               ),
@@ -245,12 +245,12 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                     Text(nft.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: ShadowTypography.h4),
+                        style: BlindTypography.h4),
                     if (nft.collectionName != null)
                       Text(nft.collectionName!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: ShadowTypography.bodySm),
+                          style: BlindTypography.bodySm),
                   ],
                 ),
               ),

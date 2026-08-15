@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ShadowSettings {
+class BlindSettings {
   // General
   final bool analyticsEnabled;
   final bool telemetryEnabled;
@@ -31,7 +31,7 @@ class ShadowSettings {
   final bool experimentalFeatures;
   final String logLevel; // debug | info | warn | error
 
-  const ShadowSettings({
+  const BlindSettings({
     this.analyticsEnabled = true,
     this.telemetryEnabled = false,
     this.autoUpdateEnabled = true,
@@ -52,7 +52,7 @@ class ShadowSettings {
     this.logLevel = 'info',
   });
 
-  ShadowSettings copyWith({
+  BlindSettings copyWith({
     bool? analyticsEnabled,
     bool? telemetryEnabled,
     bool? autoUpdateEnabled,
@@ -72,7 +72,7 @@ class ShadowSettings {
     bool? experimentalFeatures,
     String? logLevel,
   }) =>
-      ShadowSettings(
+      BlindSettings(
         analyticsEnabled: analyticsEnabled ?? this.analyticsEnabled,
         telemetryEnabled: telemetryEnabled ?? this.telemetryEnabled,
         autoUpdateEnabled: autoUpdateEnabled ?? this.autoUpdateEnabled,
@@ -114,7 +114,7 @@ class ShadowSettings {
         'log_level': logLevel,
       };
 
-  factory ShadowSettings.fromJson(Map<String, dynamic> j) => ShadowSettings(
+  factory BlindSettings.fromJson(Map<String, dynamic> j) => BlindSettings(
         analyticsEnabled: j['analytics_enabled'] ?? true,
         telemetryEnabled: j['telemetry_enabled'] ?? false,
         autoUpdateEnabled: j['auto_update_enabled'] ?? true,
@@ -137,20 +137,20 @@ class ShadowSettings {
 }
 
 class SettingsService {
-  static const _key = 'shadow_settings_v1';
+  static const _key = 'blind_settings_v1';
 
-  Future<ShadowSettings> load() async {
+  Future<BlindSettings> load() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_key);
-    if (raw == null) return const ShadowSettings();
+    if (raw == null) return const BlindSettings();
     try {
-      return ShadowSettings.fromJson(Map<String, dynamic>.from(json.decode(raw)));
+      return BlindSettings.fromJson(Map<String, dynamic>.from(json.decode(raw)));
     } catch (_) {
-      return const ShadowSettings();
+      return const BlindSettings();
     }
   }
 
-  Future<void> save(ShadowSettings settings) async {
+  Future<void> save(BlindSettings settings) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_key, json.encode(settings.toJson()));
   }

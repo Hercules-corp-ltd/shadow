@@ -4,10 +4,10 @@ import 'api_client.dart';
 class ExtensionsService {
   final ApiClient _api = ApiClient.instance;
 
-  Future<List<ShadowExtension>> listInstalled() async {
+  Future<List<BlindExtension>> listInstalled() async {
     final res = await _api.get<List<dynamic>>('/extensions');
     return (res.data ?? [])
-        .map((e) => ShadowExtension.fromJson(Map<String, dynamic>.from(e)))
+        .map((e) => BlindExtension.fromJson(Map<String, dynamic>.from(e)))
         .toList();
   }
 

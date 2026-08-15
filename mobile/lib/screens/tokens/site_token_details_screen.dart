@@ -4,11 +4,11 @@ import 'package:provider/provider.dart';
 
 import '../../models/token_balance.dart';
 import '../../providers/tokens_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/shadow_button.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_button.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class SiteTokenDetailsScreen extends StatelessWidget {
   const SiteTokenDetailsScreen({super.key, required this.mint});
@@ -21,7 +21,7 @@ class SiteTokenDetailsScreen extends StatelessWidget {
         .cast<TokenBalance?>()
         .firstWhere((e) => e?.mintAddress == mint, orElse: () => null);
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: t?.symbol ?? 'Token',
       subtitle: t?.name,
       body: ListView(
@@ -29,25 +29,25 @@ class SiteTokenDetailsScreen extends StatelessWidget {
         children: [
           GlassCard(
             padding: const EdgeInsets.all(20),
-            gradient: ShadowColors.primaryGradient,
+            gradient: BlindColors.primaryGradient,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Balance',
-                    style: ShadowTypography.caption
+                    style: BlindTypography.caption
                         .copyWith(color: Colors.white70)),
                 const SizedBox(height: 4),
                 Text(
                   t == null
                       ? '–'
                       : '${t.balance.toStringAsFixed(4)} ${t.symbol}',
-                  style: ShadowTypography.h1.copyWith(color: Colors.white),
+                  style: BlindTypography.h1.copyWith(color: Colors.white),
                 ),
                 if (t != null && t.usdValue > 0) ...[
                   const SizedBox(height: 4),
                   Text(
                     '≈ \$${t.usdValue.toStringAsFixed(2)}',
-                    style: ShadowTypography.bodySm
+                    style: BlindTypography.bodySm
                         .copyWith(color: Colors.white70),
                   ),
                 ],
@@ -58,7 +58,7 @@ class SiteTokenDetailsScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: ShadowButton(
+                child: BlindButton(
                   label: 'Send',
                   leading: Icons.send_rounded,
                   onPressed: () {},
@@ -66,18 +66,18 @@ class SiteTokenDetailsScreen extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: ShadowButton(
+                child: BlindButton(
                   label: 'Receive',
-                  variant: ShadowButtonVariant.secondary,
+                  variant: BlindButtonVariant.secondary,
                   leading: Icons.qr_code_rounded,
                   onPressed: () {},
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: ShadowButton(
+                child: BlindButton(
                   label: 'Swap',
-                  variant: ShadowButtonVariant.secondary,
+                  variant: BlindButtonVariant.secondary,
                   leading: Icons.swap_horiz_rounded,
                   onPressed: () {},
                 ),
@@ -90,7 +90,7 @@ class SiteTokenDetailsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Token info', style: ShadowTypography.h4),
+                Text('Token info', style: BlindTypography.h4),
                 const SizedBox(height: 12),
                 _row(context, 'Mint', mint, copy: true),
                 if (t != null) ...[
@@ -115,19 +115,19 @@ class SiteTokenDetailsScreen extends StatelessWidget {
           SizedBox(
             width: 90,
             child: Text(label,
-                style: ShadowTypography.bodySm
-                    .copyWith(color: ShadowColors.textTertiary)),
+                style: BlindTypography.bodySm
+                    .copyWith(color: BlindColors.textTertiary)),
           ),
           Expanded(
             child: Text(value,
-                style: ShadowTypography.body,
+                style: BlindTypography.body,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis),
           ),
           if (copy)
             IconButton(
               icon: const Icon(Icons.copy_rounded,
-                  size: 16, color: ShadowColors.textSecondary),
+                  size: 16, color: BlindColors.textSecondary),
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: value));
                 if (context.mounted) {

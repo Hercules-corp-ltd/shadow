@@ -4,12 +4,12 @@ import 'package:provider/provider.dart';
 
 import '../../providers/settings_provider.dart';
 import '../../providers/wallet_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/list_item_card.dart';
-import '../../widgets/shadow_button.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_button.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -31,27 +31,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>();
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Settings',
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
           GlassCard(
             padding: const EdgeInsets.all(20),
-            gradient: ShadowColors.navyGradient,
-            border: Border.all(color: ShadowColors.cardNavyBorder, width: 1),
+            gradient: BlindColors.navyGradient,
+            border: Border.all(color: BlindColors.cardNavyBorder, width: 1),
             child: Row(
               children: [
                 Container(
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    gradient: ShadowColors.primaryGradient,
+                    gradient: BlindColors.primaryGradient,
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
                   child: Text('S',
-                      style: ShadowTypography.h2
+                      style: BlindTypography.h2
                           .copyWith(color: Colors.white)),
                 ),
                 const SizedBox(width: 12),
@@ -59,12 +59,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Shadow user', style: ShadowTypography.h3),
+                      Text('Blind user', style: BlindTypography.h3),
                       Text(
                         wallet.walletAddress == null
                             ? 'No wallet connected'
                             : _short(wallet.walletAddress!),
-                        style: ShadowTypography.bodySm,
+                        style: BlindTypography.bodySm,
                       ),
                     ],
                   ),
@@ -77,7 +77,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'General',
             subtitle: 'Language, telemetry, auto-update',
             leadingIcon: Icons.tune_rounded,
-            leadingColor: ShadowColors.tileBlue,
+            leadingColor: BlindColors.tileBlue,
             onTap: () => context.push('/settings/general'),
           ),
           const SizedBox(height: 8),
@@ -85,7 +85,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Network',
             subtitle: 'RPC, network, proxy',
             leadingIcon: Icons.router_rounded,
-            leadingColor: ShadowColors.tilePurple,
+            leadingColor: BlindColors.tilePurple,
             onTap: () => context.push('/settings/network'),
           ),
           const SizedBox(height: 8),
@@ -93,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Storage',
             subtitle: 'Cache, history retention',
             leadingIcon: Icons.storage_rounded,
-            leadingColor: ShadowColors.tileAmber,
+            leadingColor: BlindColors.tileAmber,
             onTap: () => context.push('/settings/storage'),
           ),
           const SizedBox(height: 8),
@@ -101,7 +101,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Security',
             subtitle: 'Auto-lock, biometrics',
             leadingIcon: Icons.security_rounded,
-            leadingColor: ShadowColors.tileGreen,
+            leadingColor: BlindColors.tileGreen,
             onTap: () => context.push('/settings/security'),
           ),
           const SizedBox(height: 8),
@@ -109,20 +109,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Advanced',
             subtitle: 'Developer mode, log level',
             leadingIcon: Icons.code_rounded,
-            leadingColor: ShadowColors.tileRed,
+            leadingColor: BlindColors.tileRed,
             onTap: () => context.push('/settings/advanced'),
           ),
           const SizedBox(height: 24),
-          ShadowButton(
+          BlindButton(
             label: 'Lock wallet',
-            variant: ShadowButtonVariant.secondary,
+            variant: BlindButtonVariant.secondary,
             leading: Icons.lock_outline_rounded,
             onPressed: () => context.push('/wallet/lock'),
           ),
           const SizedBox(height: 8),
-          ShadowButton(
+          BlindButton(
             label: 'Delete wallet',
-            variant: ShadowButtonVariant.danger,
+            variant: BlindButtonVariant.danger,
             leading: Icons.delete_outline_rounded,
             onPressed: () => context.push('/wallet/delete'),
           ),

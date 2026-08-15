@@ -13,16 +13,16 @@ import 'providers/settings_provider.dart';
 import 'providers/tokens_provider.dart';
 import 'providers/wallet_provider.dart';
 import 'router/app_router.dart';
-import 'theme/shadow_theme.dart';
+import 'theme/blind_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(ShadowTheme.overlayStyle);
-  runApp(const ShadowApp());
+  SystemChrome.setSystemUIOverlayStyle(BlindTheme.overlayStyle);
+  runApp(const BlindApp());
 }
 
-class ShadowApp extends StatelessWidget {
-  const ShadowApp({super.key});
+class BlindApp extends StatelessWidget {
+  const BlindApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +43,9 @@ class ShadowApp extends StatelessWidget {
         builder: (ctx) {
           final router = AppRouter.build(ctx);
           return MaterialApp.router(
-            title: 'Shadow Browser',
+            title: 'Blind Browser',
             debugShowCheckedModeBanner: false,
-            theme: ShadowTheme.build(),
+            theme: BlindTheme.build(),
             routerConfig: router,
           );
         },

@@ -3,11 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/activity_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class ActivityLogsScreen extends StatefulWidget {
   const ActivityLogsScreen({super.key});
@@ -31,7 +31,7 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
   Widget build(BuildContext context) {
     final p = context.watch<ActivityProvider>();
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Logs',
       subtitle: 'Diagnostic logs from your browser',
       body: Column(
@@ -71,10 +71,10 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
                           final l = p.logs[i];
                           final lvl = (l.status ?? 'info').toLowerCase();
                           final color = switch (lvl) {
-                            'error' => ShadowColors.error,
-                            'warn' => ShadowColors.warning,
-                            'debug' => ShadowColors.textTertiary,
-                            _ => ShadowColors.info,
+                            'error' => BlindColors.error,
+                            'warn' => BlindColors.warning,
+                            'debug' => BlindColors.textTertiary,
+                            _ => BlindColors.info,
                           };
                           return GlassCard(
                             padding: const EdgeInsets.all(12),
@@ -90,7 +90,7 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
                                   ),
                                   child: Text(
                                     lvl.toUpperCase(),
-                                    style: ShadowTypography.caption.copyWith(
+                                    style: BlindTypography.caption.copyWith(
                                       color: color,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -103,13 +103,13 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(l.title,
-                                          style: ShadowTypography.body),
+                                          style: BlindTypography.body),
                                       if (l.subtitle != null)
                                         Text(l.subtitle!,
-                                            style: ShadowTypography.caption),
+                                            style: BlindTypography.caption),
                                       Text(
                                         DateFormat('HH:mm:ss').format(l.timestamp),
-                                        style: ShadowTypography.caption,
+                                        style: BlindTypography.caption,
                                       ),
                                     ],
                                   ),

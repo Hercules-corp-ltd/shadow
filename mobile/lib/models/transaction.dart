@@ -2,7 +2,7 @@ enum TxStatus { pending, confirmed, failed }
 
 enum TxType { send, receive, swap, buy, deploy, register, renew, unknown }
 
-class ShadowTransaction {
+class BlindTransaction {
   final String signature;
   final TxType type;
   final TxStatus status;
@@ -13,7 +13,7 @@ class ShadowTransaction {
   final DateTime timestamp;
   final double? feeSol;
 
-  const ShadowTransaction({
+  const BlindTransaction({
     required this.signature,
     required this.type,
     required this.status,
@@ -25,8 +25,8 @@ class ShadowTransaction {
     this.feeSol,
   });
 
-  factory ShadowTransaction.fromJson(Map<String, dynamic> json) =>
-      ShadowTransaction(
+  factory BlindTransaction.fromJson(Map<String, dynamic> json) =>
+      BlindTransaction(
         signature: json['signature'] ?? '',
         type: TxType.values.firstWhere(
           (e) => e.name == (json['type']?.toString() ?? ''),

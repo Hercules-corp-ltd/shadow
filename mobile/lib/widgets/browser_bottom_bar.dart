@@ -2,9 +2,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../theme/shadow_colors.dart';
-import '../theme/shadow_spacing.dart';
-import '../theme/shadow_typography.dart';
+import '../theme/blind_colors.dart';
+import '../theme/blind_spacing.dart';
+import '../theme/blind_typography.dart';
 
 /// Data describing an open browser tab.
 class BrowserTab {
@@ -49,9 +49,9 @@ class BrowserBottomBar extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
         child: Container(
           decoration: BoxDecoration(
-            color: ShadowColors.surfaceElevated.withOpacity(0.85),
+            color: BlindColors.surfaceElevated.withOpacity(0.85),
             border: const Border(
-              top: BorderSide(color: ShadowColors.border),
+              top: BorderSide(color: BlindColors.border),
             ),
           ),
           child: SafeArea(
@@ -64,7 +64,7 @@ class BrowserBottomBar extends StatelessWidget {
                 Container(
                   height: 4,
                   decoration: const BoxDecoration(
-                    gradient: ShadowColors.primaryGradient,
+                    gradient: BlindColors.primaryGradient,
                   ),
                 ),
               ],
@@ -101,7 +101,7 @@ class BrowserBottomBar extends StatelessWidget {
           IconButton(
             onPressed: onAddTab,
             icon: const Icon(Icons.add_rounded),
-            color: ShadowColors.textSecondary,
+            color: BlindColors.textSecondary,
             visualDensity: VisualDensity.compact,
           ),
         ],
@@ -119,22 +119,22 @@ class BrowserBottomBar extends StatelessWidget {
               height: 36,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: ShadowColors.surface,
-                borderRadius: BorderRadius.circular(ShadowRadius.sm),
-                border: Border.all(color: ShadowColors.border),
+                color: BlindColors.surface,
+                borderRadius: BorderRadius.circular(BlindRadius.sm),
+                border: Border.all(color: BlindColors.border),
               ),
               child: Row(
                 children: [
                   const Icon(
                     Icons.bolt_rounded,
                     size: 14,
-                    color: ShadowColors.primary,
+                    color: BlindColors.primary,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     'Secure',
-                    style: ShadowTypography.caption.copyWith(
-                      color: ShadowColors.success,
+                    style: BlindTypography.caption.copyWith(
+                      color: BlindColors.success,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -142,7 +142,7 @@ class BrowserBottomBar extends StatelessWidget {
                   Expanded(
                     child: Text(
                       currentUrl,
-                      style: ShadowTypography.label.copyWith(
+                      style: BlindTypography.label.copyWith(
                         fontFamily: 'monospace',
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -164,7 +164,7 @@ class BrowserBottomBar extends StatelessWidget {
     return IconButton(
       onPressed: onTap,
       icon: Icon(icon, size: 18),
-      color: ShadowColors.textSecondary,
+      color: BlindColors.textSecondary,
       visualDensity: VisualDensity.compact,
     );
   }
@@ -186,15 +186,15 @@ class _TabChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final labelColor =
-        active ? ShadowColors.primary : ShadowColors.textSecondary;
-    final borderColor = active ? ShadowColors.primary : ShadowColors.border;
+        active ? BlindColors.primary : BlindColors.textSecondary;
+    final borderColor = active ? BlindColors.primary : BlindColors.border;
 
     return Padding(
       padding: const EdgeInsets.only(right: 6),
       child: Material(
         color: active
-            ? ShadowColors.primarySoft
-            : ShadowColors.surface,
+            ? BlindColors.primarySoft
+            : BlindColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(color: borderColor),
@@ -213,7 +213,7 @@ class _TabChip extends StatelessWidget {
                 ],
                 Text(
                   tab.title,
-                  style: ShadowTypography.label.copyWith(color: labelColor),
+                  style: BlindTypography.label.copyWith(color: labelColor),
                 ),
                 if (onClose != null) ...[
                   const SizedBox(width: 8),

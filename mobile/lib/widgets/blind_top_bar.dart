@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../theme/shadow_colors.dart';
+import '../theme/blind_colors.dart';
 import 'status_pill.dart';
 
 /// The persistent top bar with network pill + shortcut icons that appears
 /// on the home page and most nested screens.
-class ShadowTopBar extends StatelessWidget implements PreferredSizeWidget {
-  const ShadowTopBar({
+class BlindTopBar extends StatelessWidget implements PreferredSizeWidget {
+  const BlindTopBar({
     super.key,
     this.network = 'Mainnet',
-    this.networkColor = ShadowColors.mainnet,
+    this.networkColor = BlindColors.mainnet,
     this.onNetworkTap,
     this.actions = const [],
   });
@@ -37,7 +37,7 @@ class ShadowTopBar extends StatelessWidget implements PreferredSizeWidget {
               trailing: const Icon(
                 Icons.keyboard_arrow_down_rounded,
                 size: 16,
-                color: ShadowColors.textSecondary,
+                color: BlindColors.textSecondary,
               ),
             ),
             const Spacer(),
@@ -49,9 +49,9 @@ class ShadowTopBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-/// Compact icon button used in the ShadowTopBar actions.
-class ShadowTopBarButton extends StatelessWidget {
-  const ShadowTopBarButton({
+/// Compact icon button used in the BlindTopBar actions.
+class BlindTopBarButton extends StatelessWidget {
+  const BlindTopBarButton({
     super.key,
     required this.icon,
     this.onPressed,
@@ -69,9 +69,9 @@ class ShadowTopBarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bg = isActive
-        ? ShadowColors.primary
-        : (background ?? ShadowColors.surfaceElevated);
-    final fg = isActive ? Colors.white : (color ?? ShadowColors.textSecondary);
+        ? BlindColors.primary
+        : (background ?? BlindColors.surfaceElevated);
+    final fg = isActive ? Colors.white : (color ?? BlindColors.textSecondary);
 
     return Padding(
       padding: const EdgeInsets.only(left: 6),
@@ -80,7 +80,7 @@ class ShadowTopBarButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(
-            color: isActive ? ShadowColors.primary : ShadowColors.border,
+            color: isActive ? BlindColors.primary : BlindColors.border,
           ),
         ),
         clipBehavior: Clip.antiAlias,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../theme/shadow_colors.dart';
-import '../theme/shadow_typography.dart';
-import 'shadow_button.dart';
+import '../theme/blind_colors.dart';
+import '../theme/blind_typography.dart';
+import 'blind_button.dart';
 
 /// A reusable "nothing here yet" state with icon, message, and optional action.
 class EmptyState extends StatelessWidget {
@@ -33,22 +33,22 @@ class EmptyState extends StatelessWidget {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: ShadowColors.primarySoft,
+                color: BlindColors.primarySoft,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 32, color: ShadowColors.primary),
+              child: Icon(icon, size: 32, color: BlindColors.primary),
             ),
             const SizedBox(height: 20),
-            Text(title, style: ShadowTypography.h3, textAlign: TextAlign.center),
+            Text(title, style: BlindTypography.h3, textAlign: TextAlign.center),
             const SizedBox(height: 8),
             Text(
               message,
-              style: ShadowTypography.bodySm,
+              style: BlindTypography.bodySm,
               textAlign: TextAlign.center,
             ),
             if (actionLabel != null) ...[
               const SizedBox(height: 20),
-              ShadowButton(
+              BlindButton(
                 label: actionLabel!,
                 onPressed: onAction,
                 expand: false,

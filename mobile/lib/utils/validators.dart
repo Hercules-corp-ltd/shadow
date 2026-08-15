@@ -1,4 +1,4 @@
-// Validation utilities for Shadow app
+// Validation utilities for Blind app
 class Validators {
   // Validate Solana public key (base58, 32-44 chars)
   static bool isValidPubkey(String pubkey) {

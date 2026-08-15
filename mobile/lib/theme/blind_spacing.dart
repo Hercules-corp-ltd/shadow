@@ -1,6 +1,6 @@
 /// Spacing tokens — 4px grid, matches Figma design.
-class ShadowSpacing {
-  ShadowSpacing._();
+class BlindSpacing {
+  BlindSpacing._();
 
   static const double x0 = 0;
   static const double x1 = 4;
@@ -21,8 +21,8 @@ class ShadowSpacing {
   static const double tilePadding = 12;
 }
 
-class ShadowRadius {
-  ShadowRadius._();
+class BlindRadius {
+  BlindRadius._();
 
   static const double xs = 6;
   static const double sm = 8;

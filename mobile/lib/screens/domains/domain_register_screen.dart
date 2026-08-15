@@ -4,11 +4,11 @@ import 'package:provider/provider.dart';
 
 import '../../providers/domains_provider.dart';
 import '../../providers/wallet_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/shadow_button.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_button.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class DomainRegisterScreen extends StatefulWidget {
   const DomainRegisterScreen({super.key});
@@ -42,9 +42,9 @@ class _DomainRegisterScreenState extends State<DomainRegisterScreen> {
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>().walletAddress ?? '';
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Register Domain',
-      subtitle: 'Claim your .shadow name on-chain',
+      subtitle: 'Claim your .blind name on-chain',
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
@@ -53,20 +53,20 @@ class _DomainRegisterScreenState extends State<DomainRegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Domain', style: ShadowTypography.h4),
+                Text('Domain', style: BlindTypography.h4),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _domainCtrl,
                   decoration: const InputDecoration(
-                    hintText: 'yourname.shadow',
+                    hintText: 'yourname.blind',
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text('Site registry address', style: ShadowTypography.h4),
+                Text('Site registry address', style: BlindTypography.h4),
                 const SizedBox(height: 6),
                 Text(
                   'The PDA of your registered site. Leave blank to register the domain only.',
-                  style: ShadowTypography.caption,
+                  style: BlindTypography.caption,
                 ),
                 const SizedBox(height: 8),
                 TextField(
@@ -76,7 +76,7 @@ class _DomainRegisterScreenState extends State<DomainRegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text('Duration', style: ShadowTypography.h4),
+                Text('Duration', style: BlindTypography.h4),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -96,14 +96,14 @@ class _DomainRegisterScreenState extends State<DomainRegisterScreen> {
             const SizedBox(height: 16),
             Text(
               _error!,
-              style: ShadowTypography.bodySm
-                  .copyWith(color: ShadowColors.error),
+              style: BlindTypography.bodySm
+                  .copyWith(color: BlindColors.error),
             ),
           ],
           const SizedBox(height: 20),
-          ShadowButton(
+          BlindButton(
             label: _submitting ? 'Registering...' : 'Register on-chain',
-            size: ShadowButtonSize.lg,
+            size: BlindButtonSize.lg,
             trailing: Icons.rocket_launch_rounded,
             isLoading: _submitting,
             onPressed: _submitting || wallet.isEmpty ? null : () => _submit(wallet),

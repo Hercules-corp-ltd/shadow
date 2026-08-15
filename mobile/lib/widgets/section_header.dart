@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../theme/shadow_colors.dart';
-import '../theme/shadow_typography.dart';
+import '../theme/blind_colors.dart';
+import '../theme/blind_typography.dart';
 
 /// "Heading + optional action" row used throughout the app to title lists.
 class SectionHeader extends StatelessWidget {
@@ -26,17 +26,17 @@ class SectionHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (icon != null) ...[
-          Icon(icon, color: ShadowColors.primary, size: 22),
+          Icon(icon, color: BlindColors.primary, size: 22),
           const SizedBox(width: 8),
         ],
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: ShadowTypography.h3),
+              Text(title, style: BlindTypography.h3),
               if (subtitle != null) ...[
                 const SizedBox(height: 4),
-                Text(subtitle!, style: ShadowTypography.bodySm),
+                Text(subtitle!, style: BlindTypography.bodySm),
               ],
             ],
           ),

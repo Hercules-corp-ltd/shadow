@@ -12,7 +12,7 @@ class BrowserService {
     final response = await http.get(
       Uri.parse('$baseUrl/history?limit=$limit'),
       headers: {
-        'X-Shadow-Auth': authToken,
+        'X-Blind-Auth': authToken,
         'Content-Type': 'application/json',
       },
     );
@@ -33,7 +33,7 @@ class BrowserService {
     final response = await http.post(
       Uri.parse('$baseUrl/history'),
       headers: {
-        'X-Shadow-Auth': authToken,
+        'X-Blind-Auth': authToken,
         'Content-Type': 'application/json',
       },
       body: json.encode({
@@ -53,7 +53,7 @@ class BrowserService {
     final response = await http.delete(
       Uri.parse('$baseUrl/history'),
       headers: {
-        'X-Shadow-Auth': authToken,
+        'X-Blind-Auth': authToken,
         'Content-Type': 'application/json',
       },
     );
@@ -72,7 +72,7 @@ class BrowserService {
     final response = await http.get(
       uri,
       headers: {
-        'X-Shadow-Auth': authToken,
+        'X-Blind-Auth': authToken,
         'Content-Type': 'application/json',
       },
     );
@@ -95,7 +95,7 @@ class BrowserService {
     final response = await http.post(
       Uri.parse('$baseUrl/bookmarks'),
       headers: {
-        'X-Shadow-Auth': authToken,
+        'X-Blind-Auth': authToken,
         'Content-Type': 'application/json',
       },
       body: json.encode({
@@ -117,7 +117,7 @@ class BrowserService {
     final response = await http.delete(
       Uri.parse('$baseUrl/bookmarks/$domain'),
       headers: {
-        'X-Shadow-Auth': authToken,
+        'X-Blind-Auth': authToken,
         'Content-Type': 'application/json',
       },
     );
@@ -132,7 +132,7 @@ class BrowserService {
     final response = await http.post(
       Uri.parse('$baseUrl/sessions'),
       headers: {
-        'X-Shadow-Auth': authToken,
+        'X-Blind-Auth': authToken,
         'Content-Type': 'application/json',
       },
     );
@@ -148,7 +148,7 @@ class BrowserService {
     final response = await http.get(
       Uri.parse('$baseUrl/sessions/active'),
       headers: {
-        'X-Shadow-Auth': authToken,
+        'X-Blind-Auth': authToken,
         'Content-Type': 'application/json',
       },
     );

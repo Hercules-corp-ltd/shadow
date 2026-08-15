@@ -4,15 +4,15 @@ import 'package:provider/provider.dart';
 
 import '../../models/activity.dart';
 import '../../providers/activity_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_spacing.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_spacing.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/browser_bottom_bar.dart';
 import '../../widgets/icon_tile.dart';
 import '../../widgets/list_item_card.dart';
 import '../../widgets/search_field.dart';
 import '../../widgets/section_header.dart';
-import '../../widgets/shadow_top_bar.dart';
+import '../../widgets/blind_top_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,26 +33,26 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ShadowColors.background,
+      backgroundColor: BlindColors.background,
       body: SafeArea(
         child: Column(
           children: [
-            ShadowTopBar(
+            BlindTopBar(
               actions: [
-                ShadowTopBarButton(
+                BlindTopBarButton(
                   icon: const Icon(Icons.star_rounded),
                   isActive: true,
                   onPressed: () => context.push('/bookmarks'),
                 ),
-                ShadowTopBarButton(
+                BlindTopBarButton(
                   icon: const Icon(Icons.extension_rounded),
                   onPressed: () => context.push('/extensions'),
                 ),
-                ShadowTopBarButton(
+                BlindTopBarButton(
                   icon: const Icon(Icons.visibility_off_rounded),
                   onPressed: () {},
                 ),
-                ShadowTopBarButton(
+                BlindTopBarButton(
                   icon: const Icon(Icons.menu_rounded),
                   onPressed: () => _showMenu(context),
                 ),
@@ -69,15 +69,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildContent(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(
-        ShadowSpacing.pagePadding,
+        BlindSpacing.pagePadding,
         8,
-        ShadowSpacing.pagePadding,
+        BlindSpacing.pagePadding,
         24,
       ),
       children: [
-        const _ShadowLogoHeader(),
+        const _BlindLogoHeader(),
         const SizedBox(height: 20),
-        ShadowSearchField(
+        BlindSearchField(
           onSubmitted: (q) {
             if (q.trim().isEmpty) return;
             context.push('/resolve?id=${Uri.encodeComponent(q.trim())}');
@@ -102,14 +102,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showMenu(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: ShadowColors.surfaceElevated,
+      backgroundColor: BlindColors.surfaceElevated,
       builder: (_) => _HomeMenuSheet(),
     );
   }
 }
 
-class _ShadowLogoHeader extends StatelessWidget {
-  const _ShadowLogoHeader();
+class _BlindLogoHeader extends StatelessWidget {
+  const _BlindLogoHeader();
 
   @override
   Widget build(BuildContext context) {
@@ -124,19 +124,19 @@ class _ShadowLogoHeader extends StatelessWidget {
               colors: [Color(0xFF2A2A2A), Color(0xFF050505)],
             ),
             border: Border.fromBorderSide(
-              BorderSide(color: ShadowColors.border),
+              BorderSide(color: BlindColors.border),
             ),
           ),
           alignment: Alignment.center,
           child: Text(
             'S',
-            style: ShadowTypography.displayLg.copyWith(fontSize: 36),
+            style: BlindTypography.displayLg.copyWith(fontSize: 36),
           ),
         ),
         const SizedBox(width: 14),
         Text(
           'SHADOW',
-          style: ShadowTypography.displayLg.copyWith(letterSpacing: 4),
+          style: BlindTypography.displayLg.copyWith(letterSpacing: 4),
         ),
       ],
     );
@@ -151,14 +151,14 @@ class _ConvertCta extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(ShadowRadius.xl),
+        borderRadius: BorderRadius.circular(BlindRadius.xl),
         onTap: () => context.push('/deploy'),
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            gradient: ShadowColors.navyGradient,
-            borderRadius: BorderRadius.circular(ShadowRadius.xl),
-            border: Border.all(color: ShadowColors.cardNavyBorder),
+            gradient: BlindColors.navyGradient,
+            borderRadius: BorderRadius.circular(BlindRadius.xl),
+            border: Border.all(color: BlindColors.cardNavyBorder),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,11 +168,11 @@ class _ConvertCta extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Convert Your Existing Website',
-                        style: ShadowTypography.h3),
+                        style: BlindTypography.h3),
                     const SizedBox(height: 8),
                     Text(
                       'Transform any traditional website into a decentralized Web3 site in minutes',
-                      style: ShadowTypography.bodySm,
+                      style: BlindTypography.bodySm,
                     ),
                     const SizedBox(height: 16),
                     Container(
@@ -182,13 +182,13 @@ class _ConvertCta extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(ShadowRadius.sm),
+                        borderRadius: BorderRadius.circular(BlindRadius.sm),
                         border: Border.all(color: Colors.white24),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('Get Started', style: ShadowTypography.label),
+                          Text('Get Started', style: BlindTypography.label),
                           const SizedBox(width: 6),
                           const Icon(Icons.arrow_forward_rounded, size: 14),
                         ],
@@ -203,7 +203,7 @@ class _ConvertCta extends StatelessWidget {
                 height: 72,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(ShadowRadius.md),
+                  borderRadius: BorderRadius.circular(BlindRadius.md),
                 ),
                 child: const Icon(Icons.public_rounded,
                     size: 36, color: Colors.white70),
@@ -223,20 +223,20 @@ class _FeatureGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final tiles = <_Feature>[
       _Feature('Wallet', Icons.account_balance_wallet_rounded,
-          ShadowColors.tileBlue, '/wallet'),
-      _Feature('Domains', Icons.language_rounded, ShadowColors.tilePurple,
+          BlindColors.tileBlue, '/wallet'),
+      _Feature('Domains', Icons.language_rounded, BlindColors.tilePurple,
           '/domains'),
-      _Feature('Deploy', Icons.rocket_launch_rounded, ShadowColors.tileGreen,
+      _Feature('Deploy', Icons.rocket_launch_rounded, BlindColors.tileGreen,
           '/deploy'),
-      _Feature('Resolve', Icons.link_rounded, ShadowColors.tileOrange,
+      _Feature('Resolve', Icons.link_rounded, BlindColors.tileOrange,
           '/resolve'),
       _Feature('Tokens', Icons.monetization_on_rounded,
-          ShadowColors.tileAmber, '/tokens'),
+          BlindColors.tileAmber, '/tokens'),
       _Feature(
-          'Activity', Icons.pie_chart_rounded, ShadowColors.tilePink, '/activity'),
-      _Feature('Settings', Icons.settings_rounded, ShadowColors.tileGray,
+          'Activity', Icons.pie_chart_rounded, BlindColors.tilePink, '/activity'),
+      _Feature('Settings', Icons.settings_rounded, BlindColors.tileGray,
           '/settings'),
-      _Feature('History', Icons.history_rounded, ShadowColors.tileCyan,
+      _Feature('History', Icons.history_rounded, BlindColors.tileCyan,
           '/history'),
     ];
 
@@ -281,12 +281,12 @@ class _RecentActivityList extends StatelessWidget {
       };
 
   Color _colorFor(ActivityKind k) => switch (k) {
-        ActivityKind.deploy => ShadowColors.primary,
-        ActivityKind.purchase => ShadowColors.tilePink,
-        ActivityKind.domainRegister => ShadowColors.tilePurple,
-        ActivityKind.transfer => ShadowColors.tileBlue,
-        ActivityKind.siteVisit => ShadowColors.tileCyan,
-        ActivityKind.info => ShadowColors.tileGray,
+        ActivityKind.deploy => BlindColors.primary,
+        ActivityKind.purchase => BlindColors.tilePink,
+        ActivityKind.domainRegister => BlindColors.tilePurple,
+        ActivityKind.transfer => BlindColors.tileBlue,
+        ActivityKind.siteVisit => BlindColors.tileCyan,
+        ActivityKind.info => BlindColors.tileGray,
       };
 
   String _timeAgo(DateTime t) {
@@ -315,18 +315,18 @@ class _RecentActivityList extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: ShadowColors.surfaceElevated,
-          borderRadius: BorderRadius.circular(ShadowRadius.md),
-          border: Border.all(color: ShadowColors.border),
+          color: BlindColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(BlindRadius.md),
+          border: Border.all(color: BlindColors.border),
         ),
         child: Row(
           children: [
-            const Icon(Icons.history_rounded, color: ShadowColors.primary),
+            const Icon(Icons.history_rounded, color: BlindColors.primary),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 'No recent activity yet — deploy a site or mint a domain to get going.',
-                style: ShadowTypography.bodySm,
+                style: BlindTypography.bodySm,
               ),
             ),
           ],
@@ -342,7 +342,7 @@ class _RecentActivityList extends StatelessWidget {
             subtitle: entry.subtitle,
             timeLabel: _timeAgo(entry.timestamp),
             statusLabel: entry.status ?? 'Success',
-            statusColor: ShadowColors.success,
+            statusColor: BlindColors.success,
             leadingIcon: _iconFor(entry.kind),
             leadingColor: _colorFor(entry.kind),
             onTap: () {
@@ -397,10 +397,10 @@ class _HomeMenuSheet extends StatelessWidget {
           children: [
             for (final item in items)
               ListTile(
-                leading: Icon(item.icon, color: ShadowColors.primary),
-                title: Text(item.label, style: ShadowTypography.bodyLg),
+                leading: Icon(item.icon, color: BlindColors.primary),
+                title: Text(item.label, style: BlindTypography.bodyLg),
                 trailing: const Icon(Icons.chevron_right_rounded,
-                    color: ShadowColors.textTertiary),
+                    color: BlindColors.textTertiary),
                 onTap: () {
                   Navigator.of(context).pop();
                   context.push(item.route);

@@ -1,5 +1,5 @@
-name: shadow_mobile
-description: Shadow Browser - Mobile App (Flutter)
+name: blind_mobile
+description: Blind Browser - Mobile App (Flutter)
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -31,7 +31,6 @@ dependencies:
   cupertino_icons: ^1.0.6
   flutter_animate: ^4.3.0
   flutter_svg: ^2.0.10+1
-  google_fonts: ^6.2.1
   cached_network_image: ^3.4.1
   shimmer: ^3.0.0
   percent_indicator: ^4.2.3
@@ -64,3 +63,14 @@ flutter:
     - assets/icons/
     - assets/illustrations/
     - assets/gods/
+
+  fonts:
+    - family: Cinzel
+      fonts:
+        - asset: assets/fonts/Cinzel-Variable.ttf
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Variable.ttf
+    - family: JetBrainsMono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono-Variable.ttf

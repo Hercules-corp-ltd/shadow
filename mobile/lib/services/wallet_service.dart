@@ -10,10 +10,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:solana/solana.dart';
 
 class WalletService {
-  static const String _walletStorageKey = 'shadow_wallet_encrypted';
-  static const String _walletAddressKey = 'shadow_wallet_address';
-  static const String _walletSaltKey = 'shadow_wallet_salt';
-  static const String _walletIvKey = 'shadow_wallet_iv';
+  static const String _walletStorageKey = 'blind_wallet_encrypted';
+  static const String _walletAddressKey = 'blind_wallet_address';
+  static const String _walletSaltKey = 'blind_wallet_salt';
+  static const String _walletIvKey = 'blind_wallet_iv';
   static const int _pbkdf2Iterations = 100000;
 
   /// Generate a new Solana keypair

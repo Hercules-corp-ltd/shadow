@@ -1,5 +1,5 @@
-/// Barrel file for data models used across the Shadow mobile app.
-library shadow_models;
+/// Barrel file for data models used across the Blind mobile app.
+library blind_models;
 
 export 'history_entry.dart';
 export 'bookmark.dart';

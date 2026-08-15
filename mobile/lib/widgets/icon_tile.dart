@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../theme/shadow_colors.dart';
-import '../theme/shadow_spacing.dart';
-import '../theme/shadow_typography.dart';
+import '../theme/blind_colors.dart';
+import '../theme/blind_spacing.dart';
+import '../theme/blind_typography.dart';
 
 /// Colored rounded-square icon with a label below, matching the feature
-/// grid on the Shadow home page.
+/// grid on the Blind home page.
 class IconTile extends StatelessWidget {
   const IconTile({
     super.key,
@@ -28,7 +28,7 @@ class IconTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(ShadowRadius.md),
+        borderRadius: BorderRadius.circular(BlindRadius.md),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 8,
@@ -42,7 +42,7 @@ class IconTile extends StatelessWidget {
                 height: size,
                 decoration: BoxDecoration(
                   color: color,
-                  borderRadius: BorderRadius.circular(ShadowRadius.md),
+                  borderRadius: BorderRadius.circular(BlindRadius.md),
                   boxShadow: [
                     BoxShadow(
                       color: color.withOpacity(0.35),
@@ -61,8 +61,8 @@ class IconTile extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 label,
-                style: ShadowTypography.bodySm.copyWith(
-                  color: ShadowColors.textPrimary,
+                style: BlindTypography.bodySm.copyWith(
+                  color: BlindColors.textPrimary,
                   fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,

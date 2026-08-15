@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../theme/shadow_colors.dart';
-import '../theme/shadow_typography.dart';
+import '../theme/blind_colors.dart';
+import '../theme/blind_typography.dart';
 import '../widgets/grid_background.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -11,7 +11,7 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ShadowColors.background,
+      backgroundColor: BlindColors.background,
       body: GridBackground(
         child: Center(
           child: Column(
@@ -28,7 +28,7 @@ class SplashScreen extends StatelessWidget {
                 child: Center(
                   child: Text(
                     'S',
-                    style: ShadowTypography.displayXL
+                    style: BlindTypography.displayXL
                         .copyWith(fontSize: 56, color: Colors.white),
                   ),
                 ),
@@ -38,7 +38,7 @@ class SplashScreen extends StatelessWidget {
                   .scale(duration: 1600.ms, begin: const Offset(0.98, 0.98)),
               const SizedBox(height: 24),
               Text('SHADOW',
-                      style: ShadowTypography.displayLg
+                      style: BlindTypography.displayLg
                           .copyWith(letterSpacing: 6))
                   .animate()
                   .fadeIn(delay: 200.ms, duration: 600.ms),
@@ -48,7 +48,7 @@ class SplashScreen extends StatelessWidget {
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: ShadowColors.primary,
+                  color: BlindColors.primary,
                 ),
               ),
             ],

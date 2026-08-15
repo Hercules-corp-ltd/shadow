@@ -5,11 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/deploy_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/shadow_button.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_button.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class DeployDeployedScreen extends StatelessWidget {
   const DeployDeployedScreen({super.key});
@@ -17,12 +17,12 @@ class DeployDeployedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final project = context.watch<DeployProvider>().project;
-    final domain = project?.domain ?? '${project?.id ?? ''}.shadow';
+    final domain = project?.domain ?? '${project?.id ?? ''}.blind';
     final cid = project?.contentCid;
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Deployed!',
-      subtitle: 'Your site is live on Shadow',
+      subtitle: 'Your site is live on Blind',
       showBack: false,
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
@@ -32,11 +32,11 @@ class DeployDeployedScreen extends StatelessWidget {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                gradient: ShadowColors.primaryGradient,
+                gradient: BlindColors.primaryGradient,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: ShadowColors.primary.withOpacity(0.4),
+                    color: BlindColors.primary.withOpacity(0.4),
                     blurRadius: 40,
                     spreadRadius: 4,
                   ),
@@ -52,48 +52,48 @@ class DeployDeployedScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Shadow domain', style: ShadowTypography.caption),
+                Text('Blind domain', style: BlindTypography.caption),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     Expanded(
                       child: SelectableText(
                         domain,
-                        style: ShadowTypography.h3,
+                        style: BlindTypography.h3,
                       ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.copy_rounded,
-                          color: ShadowColors.textSecondary),
+                          color: BlindColors.textSecondary),
                       onPressed: () => _copy(context, domain),
                     ),
                   ],
                 ),
                 if (cid != null) ...[
-                  const Divider(height: 24, color: ShadowColors.border),
-                  Text('Content CID', style: ShadowTypography.caption),
+                  const Divider(height: 24, color: BlindColors.border),
+                  Text('Content CID', style: BlindTypography.caption),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       Expanded(
                         child: SelectableText(cid,
-                            style: ShadowTypography.mono, maxLines: 1),
+                            style: BlindTypography.mono, maxLines: 1),
                       ),
                       IconButton(
                         icon: const Icon(Icons.copy_rounded,
-                            color: ShadowColors.textSecondary),
+                            color: BlindColors.textSecondary),
                         onPressed: () => _copy(context, cid),
                       ),
                     ],
                   ),
                 ],
                 if (project?.programAddress != null) ...[
-                  const Divider(height: 24, color: ShadowColors.border),
-                  Text('Registry account', style: ShadowTypography.caption),
+                  const Divider(height: 24, color: BlindColors.border),
+                  Text('Registry account', style: BlindTypography.caption),
                   const SizedBox(height: 4),
                   SelectableText(
                     project!.programAddress!,
-                    style: ShadowTypography.mono,
+                    style: BlindTypography.mono,
                     maxLines: 2,
                   ),
                 ],
@@ -101,17 +101,17 @@ class DeployDeployedScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          ShadowButton(
+          BlindButton(
             label: 'Open site',
-            size: ShadowButtonSize.lg,
+            size: BlindButtonSize.lg,
             leading: Icons.open_in_new_rounded,
             onPressed: () => context
                 .push('/resolve?id=${Uri.encodeComponent(domain)}'),
           ),
           const SizedBox(height: 8),
-          ShadowButton(
+          BlindButton(
             label: 'Back to home',
-            variant: ShadowButtonVariant.ghost,
+            variant: BlindButtonVariant.ghost,
             onPressed: () {
               context.read<DeployProvider>().reset();
               context.go('/home');

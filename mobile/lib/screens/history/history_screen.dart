@@ -4,12 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/history_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/list_item_card.dart';
 import '../../widgets/search_field.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -33,13 +33,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     final p = context.watch<HistoryProvider>();
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Browsing History',
       subtitle: 'View and manage your browsing activity',
       actions: [
         IconButton(
           icon: const Icon(Icons.delete_outline_rounded,
-              color: ShadowColors.error),
+              color: BlindColors.error),
           onPressed: p.entries.isEmpty
               ? null
               : () => context.push('/history/clear'),
@@ -47,7 +47,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ],
       body: Column(
         children: [
-          ShadowSearchField(
+          BlindSearchField(
             hint: 'Search history...',
             controller: _searchCtrl,
             onChanged: (q) => p.setQuery(q),
@@ -64,7 +64,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       label: Text(_label(r)),
                       selected: p.range == r,
                       onSelected: (_) => p.load(range: r),
-                      labelStyle: ShadowTypography.label,
+                      labelStyle: BlindTypography.label,
                     ),
                   ),
               ],
@@ -96,7 +96,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       return EmptyState(
         icon: Icons.history_rounded,
         title: 'No history yet',
-        message: 'Sites you visit on Shadow will appear here.',
+        message: 'Sites you visit on Blind will appear here.',
         actionLabel: 'Open home',
         onAction: () => context.go('/home'),
       );
@@ -110,7 +110,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           title: e.title ?? e.domain,
           subtitle: e.domain,
           leadingIcon: Icons.public_rounded,
-          leadingColor: ShadowColors.tileCyan,
+          leadingColor: BlindColors.tileCyan,
           timeLabel: DateFormat('HH:mm').format(e.visitedAt),
           onTap: () => context.push('/resolve?id=${Uri.encodeComponent(e.domain)}'),
         );

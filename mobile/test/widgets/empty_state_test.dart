@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'package:shadow_mobile/widgets/empty_state.dart';
+import 'package:blind_mobile/widgets/empty_state.dart';
 
 void main() {
-  setUpAll(() {
-    GoogleFonts.config.allowRuntimeFetching = false;
-  });
 
   testWidgets('EmptyState shows icon, title, message, and fires action',
       (tester) async {

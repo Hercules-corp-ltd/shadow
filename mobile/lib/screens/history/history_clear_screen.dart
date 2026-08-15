@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/history_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/shadow_button.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_button.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class HistoryClearScreen extends StatefulWidget {
   const HistoryClearScreen({super.key});
@@ -21,7 +21,7 @@ class _HistoryClearScreenState extends State<HistoryClearScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Clear History',
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
@@ -34,12 +34,12 @@ class _HistoryClearScreenState extends State<HistoryClearScreen> {
                 Row(
                   children: [
                     const Icon(Icons.delete_sweep_rounded,
-                        color: ShadowColors.error),
+                        color: BlindColors.error),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Select a time range to clear',
-                        style: ShadowTypography.h3,
+                        style: BlindTypography.h3,
                       ),
                     ),
                   ],
@@ -56,18 +56,18 @@ class _HistoryClearScreenState extends State<HistoryClearScreen> {
                     value: r[0],
                     groupValue: _range,
                     onChanged: (v) => setState(() => _range = v ?? 'all'),
-                    title: Text(r[1], style: ShadowTypography.body),
-                    activeColor: ShadowColors.primary,
+                    title: Text(r[1], style: BlindTypography.body),
+                    activeColor: BlindColors.primary,
                     contentPadding: EdgeInsets.zero,
                   ),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          ShadowButton(
+          BlindButton(
             label: 'Clear History',
-            variant: ShadowButtonVariant.danger,
-            size: ShadowButtonSize.lg,
+            variant: BlindButtonVariant.danger,
+            size: BlindButtonSize.lg,
             onPressed: () async {
               await context.read<HistoryProvider>().clear();
               if (!mounted) return;
@@ -78,9 +78,9 @@ class _HistoryClearScreenState extends State<HistoryClearScreen> {
             },
           ),
           const SizedBox(height: 8),
-          ShadowButton(
+          BlindButton(
             label: 'Cancel',
-            variant: ShadowButtonVariant.ghost,
+            variant: BlindButtonVariant.ghost,
             onPressed: () => context.pop(),
           ),
         ],

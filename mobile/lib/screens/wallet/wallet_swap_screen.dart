@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/tokens_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/shadow_button.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_button.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class WalletSwapScreen extends StatefulWidget {
   const WalletSwapScreen({super.key});
@@ -27,7 +27,7 @@ class _WalletSwapScreenState extends State<WalletSwapScreen> {
     final mints = ['SOL', ...tokens.tokens.map((t) => t.symbol)].toSet().toList();
     if (!mints.contains(_to)) _to = 'USDC';
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Swap',
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
@@ -43,7 +43,7 @@ class _WalletSwapScreenState extends State<WalletSwapScreen> {
             child: Container(
               margin: const EdgeInsets.symmetric(vertical: 8),
               decoration: const BoxDecoration(
-                color: ShadowColors.primary,
+                color: BlindColors.primary,
                 shape: BoxShape.circle,
               ),
               child: IconButton(
@@ -68,9 +68,9 @@ class _WalletSwapScreenState extends State<WalletSwapScreen> {
             options: mints,
           ),
           const SizedBox(height: 24),
-          ShadowButton(
+          BlindButton(
             label: 'Swap',
-            size: ShadowButtonSize.lg,
+            size: BlindButtonSize.lg,
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Swap route coming soon')),
@@ -97,7 +97,7 @@ class _WalletSwapScreenState extends State<WalletSwapScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: ShadowTypography.label),
+          Text(label, style: BlindTypography.label),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -107,7 +107,7 @@ class _WalletSwapScreenState extends State<WalletSwapScreen> {
                   readOnly: readOnly,
                   keyboardType: const TextInputType.numberWithOptions(
                       decimal: true),
-                  style: ShadowTypography.h2,
+                  style: BlindTypography.h2,
                   decoration: InputDecoration(
                     hintText: hint.isEmpty ? '0.00' : hint,
                     filled: false,
@@ -119,7 +119,7 @@ class _WalletSwapScreenState extends State<WalletSwapScreen> {
               ),
               DropdownButton<String>(
                 value: options.contains(symbol) ? symbol : options.first,
-                dropdownColor: ShadowColors.surfaceElevated,
+                dropdownColor: BlindColors.surfaceElevated,
                 items: options
                     .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                     .toList(),

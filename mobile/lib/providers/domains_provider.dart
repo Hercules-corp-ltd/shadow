@@ -6,15 +6,15 @@ import '../services/domain_service.dart';
 class DomainsProvider with ChangeNotifier {
   final DomainService _service = DomainService();
 
-  List<ShadowDomain> _myDomains = const [];
-  List<ShadowDomain> _searchResults = const [];
-  ShadowDomain? _active;
+  List<BlindDomain> _myDomains = const [];
+  List<BlindDomain> _searchResults = const [];
+  BlindDomain? _active;
   bool _isLoading = false;
   String? _error;
 
-  List<ShadowDomain> get myDomains => _myDomains;
-  List<ShadowDomain> get searchResults => _searchResults;
-  ShadowDomain? get active => _active;
+  List<BlindDomain> get myDomains => _myDomains;
+  List<BlindDomain> get searchResults => _searchResults;
+  BlindDomain? get active => _active;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -45,13 +45,13 @@ class DomainsProvider with ChangeNotifier {
     }
   }
 
-  Future<ShadowDomain?> load(String domain) async {
+  Future<BlindDomain?> load(String domain) async {
     _active = await _service.get(domain);
     notifyListeners();
     return _active;
   }
 
-  Future<ShadowDomain> register({
+  Future<BlindDomain> register({
     required String domain,
     required String programAddress,
     required String ownerPubkey,

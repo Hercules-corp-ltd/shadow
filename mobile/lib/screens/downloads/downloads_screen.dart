@@ -6,11 +6,11 @@ import 'package:provider/provider.dart';
 
 import '../../models/download.dart';
 import '../../providers/downloads_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class DownloadsScreen extends StatefulWidget {
   const DownloadsScreen({super.key});
@@ -50,13 +50,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
   Widget build(BuildContext context) {
     final p = context.watch<DownloadsProvider>();
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Downloads',
       subtitle: '${p.items.length} items',
       actions: [
         IconButton(
           icon: const Icon(Icons.delete_outline_rounded,
-              color: ShadowColors.error),
+              color: BlindColors.error),
           onPressed: p.items.isEmpty
               ? null
               : () => context.push('/downloads/clear'),
@@ -69,7 +69,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                   icon: Icons.download_rounded,
                   title: 'No downloads yet',
                   message:
-                      'Files you download from Shadow sites will appear here.',
+                      'Files you download from Blind sites will appear here.',
                 )
               : ListView.separated(
                   padding: const EdgeInsets.only(bottom: 24),
@@ -85,11 +85,11 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                             height: 48,
                             decoration: BoxDecoration(
                               color:
-                                  ShadowColors.primary.withOpacity(0.18),
+                                  BlindColors.primary.withOpacity(0.18),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(_iconFor(d.type),
-                                color: ShadowColors.primary),
+                                color: BlindColors.primary),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -97,13 +97,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(d.fileName,
-                                    style: ShadowTypography.h4,
+                                    style: BlindTypography.h4,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis),
                                 const SizedBox(height: 4),
                                 Text(
                                   '${_fmtSize(d.sizeBytes)} · ${d.sourceDomain} · ${DateFormat.Md().format(d.startedAt)}',
-                                  style: ShadowTypography.bodySm,
+                                  style: BlindTypography.bodySm,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -111,8 +111,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                                   const SizedBox(height: 8),
                                   LinearPercentIndicator(
                                     percent: d.progress.clamp(0, 1),
-                                    backgroundColor: ShadowColors.border,
-                                    progressColor: ShadowColors.primary,
+                                    backgroundColor: BlindColors.border,
+                                    progressColor: BlindColors.primary,
                                     animation: true,
                                     lineHeight: 4,
                                     padding: EdgeInsets.zero,
@@ -129,7 +129,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                                   : d.status == DownloadStatus.paused
                                       ? Icons.play_circle_rounded
                                       : Icons.more_vert_rounded,
-                              color: ShadowColors.textSecondary,
+                              color: BlindColors.textSecondary,
                             ),
                             onPressed: () {
                               final provider =

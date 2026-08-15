@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../theme/shadow_colors.dart';
-import '../theme/shadow_spacing.dart';
-import '../theme/shadow_typography.dart';
+import '../theme/blind_colors.dart';
+import '../theme/blind_spacing.dart';
+import '../theme/blind_typography.dart';
 
 /// A consistent dark scaffold with optional back button + title + subtitle.
 /// Used on almost every inner screen (History, Bookmarks, etc.).
-class ShadowScaffold extends StatelessWidget {
-  const ShadowScaffold({
+class BlindScaffold extends StatelessWidget {
+  const BlindScaffold({
     super.key,
     this.title,
     this.subtitle,
@@ -17,7 +17,7 @@ class ShadowScaffold extends StatelessWidget {
     this.bottomBar,
     this.showBack = true,
     this.padding =
-        const EdgeInsets.symmetric(horizontal: ShadowSpacing.pagePadding),
+        const EdgeInsets.symmetric(horizontal: BlindSpacing.pagePadding),
     this.background,
   });
 
@@ -34,7 +34,7 @@ class ShadowScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ShadowColors.background,
+      backgroundColor: BlindColors.background,
       bottomNavigationBar: bottomBar,
       body: Stack(
         children: [
@@ -80,10 +80,10 @@ class ShadowScaffold extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (title != null)
-                  Text(title!, style: ShadowTypography.h2),
+                  Text(title!, style: BlindTypography.h2),
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
-                  Text(subtitle!, style: ShadowTypography.bodySm),
+                  Text(subtitle!, style: BlindTypography.bodySm),
                 ],
               ],
             ),

@@ -4,12 +4,12 @@ import 'package:provider/provider.dart';
 
 import '../../providers/tokens_provider.dart';
 import '../../providers/wallet_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/search_field.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class SiteTokenScreen extends StatefulWidget {
   const SiteTokenScreen({super.key});
@@ -40,12 +40,12 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
             t.name.toLowerCase().contains(_query.toLowerCase()))
         .toList();
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Site Tokens',
-      subtitle: 'Tokens issued by Shadow sites you follow',
+      subtitle: 'Tokens issued by Blind sites you follow',
       body: Column(
         children: [
-          ShadowSearchField(
+          BlindSearchField(
             hint: 'Search tokens...',
             onChanged: (q) => setState(() => _query = q),
           ),
@@ -53,7 +53,7 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
           if (p.portfolio != null)
             GlassCard(
               padding: const EdgeInsets.all(16),
-              gradient: ShadowColors.primaryGradient,
+              gradient: BlindColors.primaryGradient,
               child: Row(
                 children: [
                   const Icon(Icons.account_balance_wallet_rounded,
@@ -64,11 +64,11 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Portfolio value',
-                            style: ShadowTypography.caption
+                            style: BlindTypography.caption
                                 .copyWith(color: Colors.white70)),
                         Text(
                           '\$${p.portfolio!.totalUsd.toStringAsFixed(2)}',
-                          style: ShadowTypography.h2
+                          style: BlindTypography.h2
                               .copyWith(color: Colors.white),
                         ),
                       ],
@@ -101,7 +101,7 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
                                   width: 44,
                                   height: 44,
                                   decoration: BoxDecoration(
-                                    gradient: ShadowColors.goldGradient,
+                                    gradient: BlindColors.goldGradient,
                                     shape: BoxShape.circle,
                                   ),
                                   alignment: Alignment.center,
@@ -109,7 +109,7 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
                                     t.symbol.isEmpty
                                         ? '?'
                                         : t.symbol[0].toUpperCase(),
-                                    style: ShadowTypography.h4
+                                    style: BlindTypography.h4
                                         .copyWith(color: Colors.white),
                                   ),
                                 ),
@@ -120,9 +120,9 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(t.symbol,
-                                          style: ShadowTypography.h4),
+                                          style: BlindTypography.h4),
                                       Text(t.name,
-                                          style: ShadowTypography.bodySm,
+                                          style: BlindTypography.bodySm,
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis),
                                     ],
@@ -133,12 +133,12 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
                                   children: [
                                     Text(
                                       t.balance.toStringAsFixed(4),
-                                      style: ShadowTypography.body,
+                                      style: BlindTypography.body,
                                     ),
                                     if (t.usdValue > 0)
                                       Text(
                                         '\$${t.usdValue.toStringAsFixed(2)}',
-                                        style: ShadowTypography.caption,
+                                        style: BlindTypography.caption,
                                       ),
                                   ],
                                 ),

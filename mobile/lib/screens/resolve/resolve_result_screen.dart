@@ -7,15 +7,15 @@ import '../../models/site.dart';
 import '../../providers/bookmarks_provider.dart';
 import '../../services/history_service.dart';
 import '../../services/resolve_service.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/shadow_button.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_button.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class ResolveResultScreen extends StatefulWidget {
-  const ResolveResultScreen({super.key, required this.shadowId});
-  final String shadowId;
+  const ResolveResultScreen({super.key, required this.blindId});
+  final String blindId;
 
   @override
   State<ResolveResultScreen> createState() => _ResolveResultScreenState();
@@ -34,9 +34,9 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
   }
 
   Future<void> _load() async {
-    final id = widget.shadowId;
+    final id = widget.blindId;
     Site? site;
-    if (id.endsWith('.shadow')) {
+    if (id.endsWith('.blind')) {
       site = await _service.resolveDomain(id);
     } else {
       site = await _service.resolveById(id);
@@ -56,7 +56,7 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const ShadowScaffold(
+      return const BlindScaffold(
         title: 'Resolved',
         body: Center(child: CircularProgressIndicator()),
       );
@@ -64,15 +64,15 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
 
     final site = _site;
     if (site == null) {
-      return ShadowScaffold(
+      return BlindScaffold(
         title: 'Not found',
         body: Center(
-          child: Text('Site could not be resolved', style: ShadowTypography.body),
+          child: Text('Site could not be resolved', style: BlindTypography.body),
         ),
       );
     }
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: site.title ?? site.domain,
       subtitle: site.domain,
       body: ListView(
@@ -80,8 +80,8 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
         children: [
           GlassCard(
             padding: const EdgeInsets.all(20),
-            gradient: ShadowColors.navyGradient,
-            border: Border.all(color: ShadowColors.cardNavyBorder, width: 1),
+            gradient: BlindColors.navyGradient,
+            border: Border.all(color: BlindColors.cardNavyBorder, width: 1),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -91,7 +91,7 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
                       width: 56,
                       height: 56,
                       decoration: BoxDecoration(
-                        gradient: ShadowColors.primaryGradient,
+                        gradient: BlindColors.primaryGradient,
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: const Icon(Icons.public_rounded,
@@ -103,10 +103,10 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(site.title ?? site.domain,
-                              style: ShadowTypography.h3),
+                              style: BlindTypography.h3),
                           const SizedBox(height: 4),
                           Text(site.domain,
-                              style: ShadowTypography.bodySm),
+                              style: BlindTypography.bodySm),
                         ],
                       ),
                     ),
@@ -114,7 +114,7 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
                 ),
                 if (site.description != null) ...[
                   const SizedBox(height: 16),
-                  Text(site.description!, style: ShadowTypography.body),
+                  Text(site.description!, style: BlindTypography.body),
                 ],
               ],
             ),
@@ -136,9 +136,9 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          ShadowButton(
+          BlindButton(
             label: 'Open content',
-            size: ShadowButtonSize.lg,
+            size: BlindButtonSize.lg,
             leading: Icons.open_in_new_rounded,
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -147,9 +147,9 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
             },
           ),
           const SizedBox(height: 8),
-          ShadowButton(
+          BlindButton(
             label: 'Save to bookmarks',
-            variant: ShadowButtonVariant.secondary,
+            variant: BlindButtonVariant.secondary,
             leading: Icons.bookmark_add_outlined,
             onPressed: () async {
               await context.read<BookmarksProvider>().add(
@@ -177,20 +177,20 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
             width: 110,
             child: Text(
               label,
-              style: ShadowTypography.bodySm
-                  .copyWith(color: ShadowColors.textTertiary),
+              style: BlindTypography.bodySm
+                  .copyWith(color: BlindColors.textTertiary),
             ),
           ),
           Expanded(
             child: Text(value,
-                style: ShadowTypography.body,
+                style: BlindTypography.body,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis),
           ),
           if (copy)
             IconButton(
               icon: const Icon(Icons.copy_rounded,
-                  size: 16, color: ShadowColors.textSecondary),
+                  size: 16, color: BlindColors.textSecondary),
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: value));
                 if (!mounted) return;

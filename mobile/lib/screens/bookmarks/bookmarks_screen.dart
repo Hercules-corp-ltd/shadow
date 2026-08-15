@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/bookmarks_provider.dart';
-import '../../theme/shadow_colors.dart';
+import '../../theme/blind_colors.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/list_item_card.dart';
 import '../../widgets/search_field.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class BookmarksScreen extends StatefulWidget {
   const BookmarksScreen({super.key});
@@ -29,13 +29,13 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
   Widget build(BuildContext context) {
     final p = context.watch<BookmarksProvider>();
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Bookmarks',
       subtitle: '${p.bookmarks.length} saved sites',
       actions: [
         IconButton(
           icon: const Icon(Icons.delete_outline_rounded,
-              color: ShadowColors.error),
+              color: BlindColors.error),
           onPressed: p.bookmarks.isEmpty
               ? null
               : () => context.push('/bookmarks/clear'),
@@ -43,7 +43,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
       ],
       body: Column(
         children: [
-          ShadowSearchField(
+          BlindSearchField(
             hint: 'Search bookmarks...',
             onChanged: p.setQuery,
           ),
@@ -88,12 +88,12 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                             title: b.title ?? b.domain,
                             subtitle: b.domain,
                             leadingIcon: Icons.bookmark_rounded,
-                            leadingColor: ShadowColors.primary,
+                            leadingColor: BlindColors.primary,
                             onTap: () => context.push(
                                 '/resolve?id=${Uri.encodeComponent(b.domain)}'),
                             trailing: IconButton(
                               icon: const Icon(Icons.more_vert_rounded,
-                                  color: ShadowColors.textTertiary),
+                                  color: BlindColors.textTertiary),
                               onPressed: () => _showBookmarkMenu(context, b.domain),
                             ),
                           );
@@ -111,7 +111,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
   void _showBookmarkMenu(BuildContext context, String domain) {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: ShadowColors.surfaceElevated,
+      backgroundColor: BlindColors.surfaceElevated,
       builder: (_) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -126,7 +126,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline_rounded,
-                  color: ShadowColors.error),
+                  color: BlindColors.error),
               title: const Text('Remove bookmark'),
               onTap: () async {
                 Navigator.pop(context);

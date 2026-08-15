@@ -1,4 +1,4 @@
-class ShadowDomain {
+class BlindDomain {
   final String domain;
   final String programAddress;
   final String ownerPubkey;
@@ -9,7 +9,7 @@ class ShadowDomain {
   final Map<String, dynamic> metadata;
   final List<DnsRecord> dnsRecords;
 
-  const ShadowDomain({
+  const BlindDomain({
     required this.domain,
     required this.programAddress,
     required this.ownerPubkey,
@@ -24,7 +24,7 @@ class ShadowDomain {
   bool get isExpired =>
       expiresAt != null && expiresAt!.isBefore(DateTime.now());
 
-  factory ShadowDomain.fromJson(Map<String, dynamic> json) => ShadowDomain(
+  factory BlindDomain.fromJson(Map<String, dynamic> json) => BlindDomain(
         domain: json['domain'] ?? '',
         programAddress: json['program_address'] ?? '',
         ownerPubkey: json['owner_pubkey'] ?? '',

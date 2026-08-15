@@ -3,12 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/domains_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/shadow_button.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_button.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class DomainResultsScreen extends StatelessWidget {
   const DomainResultsScreen({super.key});
@@ -17,7 +17,7 @@ class DomainResultsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.watch<DomainsProvider>();
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Search Results',
       subtitle: '${p.searchResults.length} matches',
       body: p.isLoading
@@ -44,8 +44,8 @@ class DomainResultsScreen extends StatelessWidget {
                             height: 44,
                             decoration: BoxDecoration(
                               color: (available
-                                      ? ShadowColors.success
-                                      : ShadowColors.textTertiary)
+                                      ? BlindColors.success
+                                      : BlindColors.textTertiary)
                                   .withOpacity(0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -54,8 +54,8 @@ class DomainResultsScreen extends StatelessWidget {
                                   ? Icons.check_rounded
                                   : Icons.block_rounded,
                               color: available
-                                  ? ShadowColors.success
-                                  : ShadowColors.textTertiary,
+                                  ? BlindColors.success
+                                  : BlindColors.textTertiary,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -63,22 +63,22 @@ class DomainResultsScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(d.domain, style: ShadowTypography.h4),
+                                Text(d.domain, style: BlindTypography.h4),
                                 Text(
                                   available ? 'Available' : 'Taken',
-                                  style: ShadowTypography.bodySm.copyWith(
+                                  style: BlindTypography.bodySm.copyWith(
                                     color: available
-                                        ? ShadowColors.success
-                                        : ShadowColors.textTertiary,
+                                        ? BlindColors.success
+                                        : BlindColors.textTertiary,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                           if (available)
-                            ShadowButton(
+                            BlindButton(
                               label: 'Register',
-                              size: ShadowButtonSize.sm,
+                              size: BlindButtonSize.sm,
                               expand: false,
                               onPressed: () => context.push(
                                 '/domains/register?q=${Uri.encodeComponent(d.domain)}',

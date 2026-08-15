@@ -5,33 +5,33 @@ import 'api_client.dart';
 class DomainService {
   final ApiClient _api = ApiClient.instance;
 
-  Future<ShadowDomain?> get(String domain) async {
+  Future<BlindDomain?> get(String domain) async {
     try {
       final res = await _api.get<Map<String, dynamic>>('/domains/$domain');
-      return ShadowDomain.fromJson(res.data ?? const {});
+      return BlindDomain.fromJson(res.data ?? const {});
     } catch (_) {
       return null;
     }
   }
 
-  Future<List<ShadowDomain>> search(String query, {int limit = 20}) async {
+  Future<List<BlindDomain>> search(String query, {int limit = 20}) async {
     final res = await _api.get<List<dynamic>>(
       '/domains/search',
       query: {'q': query, 'limit': limit},
     );
     return (res.data ?? [])
-        .map((e) => ShadowDomain.fromJson(Map<String, dynamic>.from(e)))
+        .map((e) => BlindDomain.fromJson(Map<String, dynamic>.from(e)))
         .toList();
   }
 
-  Future<List<ShadowDomain>> ownerDomains(String wallet) async {
+  Future<List<BlindDomain>> ownerDomains(String wallet) async {
     final res = await _api.get<List<dynamic>>('/domains/owner/$wallet');
     return (res.data ?? [])
-        .map((e) => ShadowDomain.fromJson(Map<String, dynamic>.from(e)))
+        .map((e) => BlindDomain.fromJson(Map<String, dynamic>.from(e)))
         .toList();
   }
 
-  Future<ShadowDomain> register({
+  Future<BlindDomain> register({
     required String domain,
     required String programAddress,
     required String ownerPubkey,
@@ -43,7 +43,7 @@ class DomainService {
       'owner_pubkey': ownerPubkey,
       'years': years ?? 1,
     });
-    return ShadowDomain.fromJson(res.data ?? const {});
+    return BlindDomain.fromJson(res.data ?? const {});
   }
 
   Future<void> transfer({

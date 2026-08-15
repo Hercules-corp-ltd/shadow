@@ -258,17 +258,17 @@ class AppRouter {
             GoRoute(
               path: 'resolving',
               builder: (ctx, s) => ResolveResolvingScreen(
-                  shadowId: s.uri.queryParameters['id'] ?? ''),
+                  blindId: s.uri.queryParameters['id'] ?? ''),
             ),
             GoRoute(
               path: 'result',
               builder: (ctx, s) => ResolveResultScreen(
-                  shadowId: s.uri.queryParameters['id'] ?? ''),
+                  blindId: s.uri.queryParameters['id'] ?? ''),
             ),
             GoRoute(
               path: 'failed',
               builder: (ctx, s) => ResolveFailedScreen(
-                  shadowId: s.uri.queryParameters['id'] ?? ''),
+                  blindId: s.uri.queryParameters['id'] ?? ''),
             ),
           ],
         ),

@@ -5,11 +5,11 @@ import 'package:provider/provider.dart';
 import '../../providers/tokens_provider.dart';
 import '../../providers/wallet_provider.dart';
 import '../../services/tokens_service.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/shadow_button.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_button.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class WalletSendScreen extends StatefulWidget {
   const WalletSendScreen({super.key});
@@ -71,7 +71,7 @@ class _WalletSendScreenState extends State<WalletSendScreen> {
     final tokens = context.watch<TokensProvider>();
     final allMints = ['SOL', ...tokens.tokens.map((t) => t.symbol)];
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Send',
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
@@ -81,7 +81,7 @@ class _WalletSendScreenState extends State<WalletSendScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Destination', style: ShadowTypography.label),
+                Text('Destination', style: BlindTypography.label),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _address,
@@ -98,7 +98,7 @@ class _WalletSendScreenState extends State<WalletSendScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Asset', style: ShadowTypography.label),
+                Text('Asset', style: BlindTypography.label),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   value: _selectedMint,
@@ -106,10 +106,10 @@ class _WalletSendScreenState extends State<WalletSendScreen> {
                       .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                       .toList(),
                   onChanged: (v) => setState(() => _selectedMint = v ?? 'SOL'),
-                  dropdownColor: ShadowColors.surfaceElevated,
+                  dropdownColor: BlindColors.surfaceElevated,
                 ),
                 const SizedBox(height: 12),
-                Text('Amount', style: ShadowTypography.label),
+                Text('Amount', style: BlindTypography.label),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _amount,
@@ -123,15 +123,15 @@ class _WalletSendScreenState extends State<WalletSendScreen> {
           if (_error != null) ...[
             const SizedBox(height: 12),
             Text(_error!,
-                style: ShadowTypography.bodySm
-                    .copyWith(color: ShadowColors.error)),
+                style: BlindTypography.bodySm
+                    .copyWith(color: BlindColors.error)),
           ],
           const SizedBox(height: 24),
-          ShadowButton(
+          BlindButton(
             label: 'Review & Send',
             isLoading: _submitting,
             onPressed: _submitting ? null : _submit,
-            size: ShadowButtonSize.lg,
+            size: BlindButtonSize.lg,
           ),
         ],
       ),

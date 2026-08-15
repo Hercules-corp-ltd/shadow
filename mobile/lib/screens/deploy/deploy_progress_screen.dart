@@ -8,11 +8,11 @@ import 'package:provider/provider.dart';
 
 import '../../models/deploy_project.dart';
 import '../../providers/deploy_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/shadow_button.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_button.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class DeployProgressScreen extends StatefulWidget {
   const DeployProgressScreen({super.key});
@@ -67,13 +67,13 @@ class _DeployProgressScreenState extends State<DeployProgressScreen> {
         active: status == DeployStatus.deploying,
       ),
       _StepData(
-        label: 'Publishing to Shadow network',
+        label: 'Publishing to Blind network',
         done: status == DeployStatus.deployed,
         active: false,
       ),
     ];
 
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Deploying...',
       subtitle: project?.name,
       showBack: status == DeployStatus.failed,
@@ -91,7 +91,7 @@ class _DeployProgressScreenState extends State<DeployProgressScreen> {
                       _StepIcon(step: s),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(s.label, style: ShadowTypography.body),
+                        child: Text(s.label, style: BlindTypography.body),
                       ),
                     ],
                   ),
@@ -99,8 +99,8 @@ class _DeployProgressScreenState extends State<DeployProgressScreen> {
                     const SizedBox(height: 8),
                     LinearPercentIndicator(
                       percent: s.progress!.clamp(0, 1),
-                      backgroundColor: ShadowColors.border,
-                      progressColor: ShadowColors.primary,
+                      backgroundColor: BlindColors.border,
+                      progressColor: BlindColors.primary,
                       animation: true,
                       lineHeight: 4,
                       padding: EdgeInsets.zero,
@@ -118,15 +118,15 @@ class _DeployProgressScreenState extends State<DeployProgressScreen> {
               padding: const EdgeInsets.all(16),
               color: Colors.red.withOpacity(0.08),
               border: Border.all(
-                  color: ShadowColors.error.withOpacity(0.4), width: 1),
+                  color: BlindColors.error.withOpacity(0.4), width: 1),
               child: Text(
                 provider.error!,
-                style: ShadowTypography.body
-                    .copyWith(color: ShadowColors.error),
+                style: BlindTypography.body
+                    .copyWith(color: BlindColors.error),
               ),
             ),
             const SizedBox(height: 16),
-            ShadowButton(
+            BlindButton(
               label: 'Retry',
               onPressed: _run,
             ),
@@ -160,7 +160,7 @@ class _StepIcon extends StatelessWidget {
     if (step.done) {
       return const CircleAvatar(
         radius: 12,
-        backgroundColor: ShadowColors.success,
+        backgroundColor: BlindColors.success,
         child: Icon(Icons.check_rounded, size: 14, color: Colors.white),
       );
     }
@@ -170,7 +170,7 @@ class _StepIcon extends StatelessWidget {
         height: 24,
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation(ShadowColors.primary),
+          valueColor: AlwaysStoppedAnimation(BlindColors.primary),
         ),
       );
     }
@@ -178,7 +178,7 @@ class _StepIcon extends StatelessWidget {
       width: 24,
       height: 24,
       decoration: const BoxDecoration(
-        color: ShadowColors.border,
+        color: BlindColors.border,
         shape: BoxShape.circle,
       ),
     );

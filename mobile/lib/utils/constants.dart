@@ -1,14 +1,14 @@
-// Constants for Shadow mobile app
-class ShadowConstants {
+// Constants for Blind mobile app
+class BlindConstants {
   // API endpoints
   static const String defaultApiUrl = 'http://localhost:8080/api';
   static const String defaultSolanaRpc = 'https://api.devnet.solana.com';
   
   // Storage keys
-  static const String walletKey = 'shadow_wallet';
-  static const String authTokenKey = 'shadow_auth_token';
-  static const String sessionKey = 'shadow_session';
-  static const String settingsKey = 'shadow_settings';
+  static const String walletKey = 'blind_wallet';
+  static const String authTokenKey = 'blind_auth_token';
+  static const String sessionKey = 'blind_session';
+  static const String settingsKey = 'blind_settings';
   
   // UI constants
   static const double defaultPadding = 16.0;

@@ -3,12 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/wallet_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_spacing.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_spacing.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/grid_background.dart';
-import '../../widgets/shadow_button.dart';
+import '../../widgets/blind_button.dart';
 
 class WalletChooseScreen extends StatelessWidget {
   const WalletChooseScreen({super.key});
@@ -31,30 +31,30 @@ class WalletChooseScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ShadowColors.background,
+      backgroundColor: BlindColors.background,
       body: GridBackground(
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(ShadowSpacing.pagePadding),
+            padding: const EdgeInsets.all(BlindSpacing.pagePadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 32),
                 Text(
                   'Choose your\nwallet',
-                  style: ShadowTypography.displayMd,
+                  style: BlindTypography.displayMd,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Create a brand new Solana wallet or import an existing one using your 12-word recovery phrase.',
-                  style: ShadowTypography.bodySm,
+                  style: BlindTypography.bodySm,
                 ),
                 const SizedBox(height: 32),
                 _WalletOption(
                   icon: Icons.add_circle_outline_rounded,
                   title: 'Create a new wallet',
                   subtitle: 'Generate a fresh keypair encrypted on this device',
-                  color: ShadowColors.primary,
+                  color: BlindColors.primary,
                   onTap: () => _createNewWallet(context),
                 ),
                 const SizedBox(height: 12),
@@ -62,13 +62,13 @@ class WalletChooseScreen extends StatelessWidget {
                   icon: Icons.download_rounded,
                   title: 'Import existing wallet',
                   subtitle: 'Restore using your 12 or 24-word seed phrase',
-                  color: ShadowColors.tileBlue,
+                  color: BlindColors.tileBlue,
                   onTap: () => context.push('/wallet/import'),
                 ),
                 const Spacer(),
-                ShadowButton(
+                BlindButton(
                   label: 'Cancel',
-                  variant: ShadowButtonVariant.ghost,
+                  variant: BlindButtonVariant.ghost,
                   onPressed: () => context.go('/welcome'),
                 ),
               ],
@@ -107,7 +107,7 @@ class _WalletOption extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               color: color.withOpacity(0.18),
-              borderRadius: BorderRadius.circular(ShadowRadius.sm),
+              borderRadius: BorderRadius.circular(BlindRadius.sm),
             ),
             child: Icon(icon, color: color),
           ),
@@ -116,14 +116,14 @@ class _WalletOption extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: ShadowTypography.h4),
+                Text(title, style: BlindTypography.h4),
                 const SizedBox(height: 4),
-                Text(subtitle, style: ShadowTypography.bodySm),
+                Text(subtitle, style: BlindTypography.bodySm),
               ],
             ),
           ),
           const Icon(Icons.chevron_right_rounded,
-              color: ShadowColors.textTertiary),
+              color: BlindColors.textTertiary),
         ],
       ),
     );
@@ -147,7 +147,7 @@ Future<String?> _askPassword(
   return showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: ShadowColors.surface,
+    backgroundColor: BlindColors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -171,14 +171,14 @@ Future<String?> _askPassword(
                     mode == _PasswordMode.create
                         ? 'Set a wallet password'
                         : 'Unlock your wallet',
-                    style: ShadowTypography.h3,
+                    style: BlindTypography.h3,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     mode == _PasswordMode.create
                         ? 'Used to encrypt your private key on this device. It never leaves your phone.'
                         : 'Enter the password you set when the wallet was created.',
-                    style: ShadowTypography.bodySm,
+                    style: BlindTypography.bodySm,
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
@@ -201,7 +201,7 @@ Future<String?> _askPassword(
                     ),
                   ],
                   const SizedBox(height: 20),
-                  ShadowButton(
+                  BlindButton(
                     label: mode == _PasswordMode.create ? 'Create' : 'Unlock',
                     onPressed: () {
                       if (formKey.currentState?.validate() != true) return;

@@ -5,11 +5,11 @@ import 'package:provider/provider.dart';
 
 import '../../models/deploy_project.dart';
 import '../../providers/deploy_provider.dart';
-import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
+import '../../theme/blind_colors.dart';
+import '../../theme/blind_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../widgets/shadow_button.dart';
-import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/blind_button.dart';
+import '../../widgets/blind_scaffold.dart';
 
 class DeployUploadScreen extends StatefulWidget {
   const DeployUploadScreen({super.key});
@@ -56,7 +56,7 @@ class _DeployUploadScreenState extends State<DeployUploadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ShadowScaffold(
+    return BlindScaffold(
       title: 'Upload files',
       subtitle: 'Select your site files to deploy',
       body: ListView(
@@ -71,21 +71,21 @@ class _DeployUploadScreenState extends State<DeployUploadScreen> {
                   width: 72,
                   height: 72,
                   decoration: BoxDecoration(
-                    color: ShadowColors.primarySoft,
+                    color: BlindColors.primarySoft,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.file_upload_rounded,
                     size: 32,
-                    color: ShadowColors.primary,
+                    color: BlindColors.primary,
                   ),
                 ),
                 const SizedBox(height: 16),
-                Text('Tap to select files', style: ShadowTypography.h3),
+                Text('Tap to select files', style: BlindTypography.h3),
                 const SizedBox(height: 8),
                 Text(
                   'HTML, CSS, JS, images, fonts, and any static assets',
-                  style: ShadowTypography.bodySm,
+                  style: BlindTypography.bodySm,
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -93,12 +93,12 @@ class _DeployUploadScreenState extends State<DeployUploadScreen> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 16),
-            Text(_error!, style: ShadowTypography.bodySm.copyWith(color: ShadowColors.error)),
+            Text(_error!, style: BlindTypography.bodySm.copyWith(color: BlindColors.error)),
           ],
           const SizedBox(height: 20),
-          ShadowButton(
+          BlindButton(
             label: _picking ? 'Picking...' : 'Browse files',
-            size: ShadowButtonSize.lg,
+            size: BlindButtonSize.lg,
             leading: Icons.folder_open_rounded,
             isLoading: _picking,
             onPressed: _picking ? null : _pick,
