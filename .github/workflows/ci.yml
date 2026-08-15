@@ -9,6 +9,9 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  # Keep in step with the toolchain used locally; the theme APIs this app
+  # relies on (CardThemeData and friends) do not exist before 3.32.
+  FLUTTER_VERSION: "3.41.7"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -69,7 +72,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.24.3"
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
@@ -84,3 +87,41 @@ jobs:
 
       - name: flutter test
         run: flutter test --reporter=expanded
+
+  # ----------------------------------------------------------------------
+  # iOS: compile the real app on a macOS runner, unsigned.
+  #
+  # Development happens on Windows, where `flutter build ios` cannot run at
+  # all. This job is the only thing standing between "it analyzes" and "it
+  # actually builds for a device", so it must stay green — it catches
+  # CocoaPods resolution, deployment-target mismatches and Info.plist errors
+  # that no amount of `flutter analyze` will ever surface.
+  # ----------------------------------------------------------------------
+  ios:
+    name: iOS (unsigned build)
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      - name: Show pod environment
+        run: pod --version
+
+      - name: Build iOS (no code signing)
+        run: flutter build ios --release --no-codesign
+
+      - name: Report app size
+        run: du -sh build/ios/iphoneos/Runner.app
