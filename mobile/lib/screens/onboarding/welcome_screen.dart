@@ -60,7 +60,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'A browser worth of the gods',
+                  'A browser worthy of the gods',
                   textAlign: TextAlign.center,
                   style: ShadowTypography.bodyLg,
                 ),
