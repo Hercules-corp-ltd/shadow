@@ -17,8 +17,13 @@ class WalletChooseScreen extends StatelessWidget {
     final password = await _askPassword(context, mode: _PasswordMode.create);
     if (password == null || !context.mounted) return;
     try {
-      await context.read<WalletProvider>().createNewWallet(password);
-      if (context.mounted) context.go('/home');
+      final phrase = await context.read<WalletProvider>().createNewWallet(
+            password,
+          );
+      // Straight to the phrase, never to /home. These words exist in exactly
+      // one place until the user writes them down, and this is the only
+      // moment Shadow can show them.
+      if (context.mounted) context.go('/wallet/phrase', extra: phrase);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -53,7 +58,7 @@ class WalletChooseScreen extends StatelessWidget {
                 _WalletOption(
                   icon: Icons.add_circle_outline_rounded,
                   title: 'Create a new wallet',
-                  subtitle: 'Generate a fresh keypair encrypted on this device',
+                  subtitle: 'Twelve words, shown once, that restore it anywhere',
                   color: ShadowColors.primary,
                   onTap: () => _createNewWallet(context),
                 ),

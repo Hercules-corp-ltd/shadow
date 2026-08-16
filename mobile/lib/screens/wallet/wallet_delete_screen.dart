@@ -21,7 +21,23 @@ class _WalletDeleteScreenState extends State<WalletDeleteScreen> {
   bool _loading = false;
 
   @override
+  void initState() {
+    super.initState();
+    // The whole screen turns on whether a phrase exists, so ask before
+    // drawing anything that makes a promise about one.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<WalletProvider>().refreshRecoverability();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Null means "not checked yet". Treat it as the dangerous case rather
+    // than the reassuring one — a screen about irreversible deletion must
+    // never default to claiming the data is recoverable.
+    final recoverable = context.watch<WalletProvider>().hasRecoveryPhrase;
+    final restorable = recoverable == true;
+
     return ShadowScaffold(
       title: 'Delete wallet',
       body: Column(
@@ -41,7 +57,16 @@ class _WalletDeleteScreenState extends State<WalletDeleteScreen> {
                     style: ShadowTypography.h3, textAlign: TextAlign.center),
                 const SizedBox(height: 8),
                 Text(
-                  'Deleting your wallet removes the encrypted key material from this device. You can restore it using your 12-word seed phrase.',
+                  restorable
+                      ? 'Deleting removes the encrypted key from this device. '
+                          'You can restore this wallet, and everything in it, '
+                          'from your twelve words.'
+                      : 'This wallet was created before Shadow generated '
+                          'recovery phrases, so there are no words for it. '
+                          'The encrypted key on this device is the only copy '
+                          'that exists. Deleting it destroys the wallet and '
+                          'any funds in it permanently — nobody can bring it '
+                          'back, including us.',
                   style: ShadowTypography.bodySm,
                   textAlign: TextAlign.center,
                 ),
@@ -53,7 +78,9 @@ class _WalletDeleteScreenState extends State<WalletDeleteScreen> {
             value: _acknowledged,
             onChanged: (v) => setState(() => _acknowledged = v ?? false),
             title: Text(
-              'I have backed up my seed phrase',
+              restorable
+                  ? 'I have backed up my seed phrase'
+                  : 'I understand this wallet cannot be recovered',
               style: ShadowTypography.body,
             ),
             activeColor: ShadowColors.primary,

@@ -9,17 +9,38 @@ import 'package:pointycastle/export.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:solana/solana.dart';
 
+import '../identity/shadow_identity.dart';
+
 class WalletService {
   static const String _walletStorageKey = 'shadow_wallet_encrypted';
   static const String _walletAddressKey = 'shadow_wallet_address';
   static const String _walletSaltKey = 'shadow_wallet_salt';
   static const String _walletIvKey = 'shadow_wallet_iv';
+
+  // The recovery phrase, encrypted under the same password as the key.
+  static const String _mnemonicStorageKey = 'shadow_wallet_mnemonic';
+  static const String _mnemonicSaltKey = 'shadow_wallet_mnemonic_salt';
+  static const String _mnemonicIvKey = 'shadow_wallet_mnemonic_iv';
+
   static const int _pbkdf2Iterations = 100000;
 
-  /// Generate a new Solana keypair
-  Future<Ed25519HDKeyPair> generateWallet() async {
-    return Ed25519HDKeyPair.random();
-  }
+  /// Generates a fresh recovery phrase.
+  ///
+  /// Wallets used to be created with `Ed25519HDKeyPair.random()`, which has
+  /// no phrase behind it at all. That made a wallet created inside Shadow
+  /// unrecoverable by design: the encrypted key on the device was the only
+  /// copy in existence, so a forgotten password, a wiped phone or a tapped
+  /// "delete wallet" was permanent loss — while the delete screen assured
+  /// the user they could restore from a seed phrase they had never been
+  /// shown.
+  String createMnemonic() => ShadowIdentity.generateMnemonic();
+
+  /// Derives the Solana keypair for [mnemonic].
+  ///
+  /// Same call as the import path, so a phrase created here restores
+  /// identically anywhere else that speaks BIP-44 for Solana.
+  Future<Ed25519HDKeyPair> walletFromMnemonic(String mnemonic) =>
+      Ed25519HDKeyPair.fromMnemonic(mnemonic);
 
   /// Derive encryption key from password using PBKDF2
   Uint8List _deriveKey(String password, Uint8List salt) {
@@ -112,7 +133,16 @@ class WalletService {
   }
 
   /// Store wallet securely with encryption
-  Future<void> storeWallet(Ed25519HDKeyPair keypair, String password) async {
+  ///
+  /// [mnemonic] is stored under the same password rather than in the
+  /// keystore in the clear. It is the seed to real funds, so the bar it has
+  /// to clear is the one the private key already clears — device access
+  /// alone must not be enough.
+  Future<void> storeWallet(
+    Ed25519HDKeyPair keypair,
+    String password, {
+    String? mnemonic,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final data = await keypair.extract();
@@ -120,15 +150,52 @@ class WalletService {
       final address = keypair.address;
 
       final encrypted = await _encrypt(secretKey, password, null, null);
-      
+
       // Store in SharedPreferences
       await prefs.setString(_walletStorageKey, encrypted['encrypted']!);
       await prefs.setString(_walletAddressKey, address);
       await prefs.setString(_walletSaltKey, encrypted['salt']!);
       await prefs.setString(_walletIvKey, encrypted['iv']!);
+
+      if (mnemonic != null && mnemonic.trim().isNotEmpty) {
+        final sealed = await _encrypt(
+          Uint8List.fromList(utf8.encode(mnemonic.trim())),
+          password,
+          null,
+          null,
+        );
+        await prefs.setString(_mnemonicStorageKey, sealed['encrypted']!);
+        await prefs.setString(_mnemonicSaltKey, sealed['salt']!);
+        await prefs.setString(_mnemonicIvKey, sealed['iv']!);
+      }
     } catch (e) {
       throw Exception('Failed to store wallet: $e');
     }
+  }
+
+  /// Returns the stored recovery phrase, or null when there is none.
+  ///
+  /// Null is not an error state — wallets created before this existed are
+  /// genuinely phraseless, and [hasRecoveryPhrase] is how the UI finds out
+  /// so it can stop claiming otherwise.
+  Future<String?> revealMnemonic(String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    final encrypted = prefs.getString(_mnemonicStorageKey);
+    final salt = prefs.getString(_mnemonicSaltKey);
+    final iv = prefs.getString(_mnemonicIvKey);
+    if (encrypted == null || salt == null || iv == null) return null;
+
+    final plain = await _decrypt(encrypted, password, salt, iv);
+    return utf8.decode(plain);
+  }
+
+  /// Whether this wallet can be restored from words.
+  ///
+  /// False for any wallet created before wallets had phrases. Those keys
+  /// exist only as the ciphertext on this device.
+  Future<bool> hasRecoveryPhrase() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey(_mnemonicStorageKey);
   }
 
   /// Load wallet from storage with password decryption
@@ -173,6 +240,9 @@ class WalletService {
     await prefs.remove(_walletAddressKey);
     await prefs.remove(_walletSaltKey);
     await prefs.remove(_walletIvKey);
+    await prefs.remove(_mnemonicStorageKey);
+    await prefs.remove(_mnemonicSaltKey);
+    await prefs.remove(_mnemonicIvKey);
   }
 
   /// Verify password is correct for stored wallet

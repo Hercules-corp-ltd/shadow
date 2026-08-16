@@ -107,8 +107,17 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
                       context: context,
                       builder: (_) => AlertDialog(
                         title: const Text('Delete wallet?'),
-                        content: const Text(
-                            'This will erase your encrypted wallet from this device. Make sure you have your seed phrase.'),
+                        content: Text(
+                          context.read<WalletProvider>().hasRecoveryPhrase ==
+                                  true
+                              ? 'This erases the encrypted wallet from this '
+                                  'device. You can restore it from your '
+                                  'twelve words.'
+                              : 'This wallet has no recovery phrase, so the '
+                                  'key on this device is the only copy. '
+                                  'Deleting it destroys the wallet and any '
+                                  'funds in it, permanently.',
+                        ),
                         actions: [
                           TextButton(
                               onPressed: () => Navigator.pop(context, false),

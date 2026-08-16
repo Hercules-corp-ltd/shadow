@@ -16,9 +16,21 @@ import '../../widgets/shadow_scaffold.dart';
 /// down. The app previously created keys with no phrase shown at all, which
 /// meant a forgotten password was permanent, silent loss of funds.
 class IdentityPhraseScreen extends StatefulWidget {
-  const IdentityPhraseScreen({super.key, required this.phrase});
+  const IdentityPhraseScreen({
+    super.key,
+    required this.phrase,
+    this.subtitle = 'Twelve words that rebuild every account you create',
+    this.continueRoute = '/identity',
+  });
 
   final String phrase;
+
+  /// What these particular words unlock. A wallet phrase and an identity
+  /// phrase carry different stakes and the screen should say which.
+  final String subtitle;
+
+  /// Where "Continue" goes once the user has confirmed the backup.
+  final String continueRoute;
 
   @override
   State<IdentityPhraseScreen> createState() => _IdentityPhraseScreenState();
@@ -34,7 +46,7 @@ class _IdentityPhraseScreenState extends State<IdentityPhraseScreen> {
   Widget build(BuildContext context) {
     return ShadowScaffold(
       title: 'Your recovery phrase',
-      subtitle: 'Twelve words that rebuild every account you create',
+      subtitle: widget.subtitle,
       showBack: false,
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
@@ -103,7 +115,8 @@ class _IdentityPhraseScreenState extends State<IdentityPhraseScreen> {
           const SizedBox(height: 8),
           ShadowButton(
             label: 'Continue',
-            onPressed: _acknowledged ? () => context.go('/identity') : null,
+            onPressed:
+                _acknowledged ? () => context.go(widget.continueRoute) : null,
           ),
         ],
       ),

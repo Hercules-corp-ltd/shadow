@@ -34,19 +34,41 @@ class WalletProvider with ChangeNotifier {
       _state = WalletLifecycle.noWallet;
     } else {
       _walletAddress = address;
+      _hasRecoveryPhrase = await _walletService.hasRecoveryPhrase();
       _state = WalletLifecycle.locked;
     }
     _isLoading = false;
     notifyListeners();
   }
 
-  /// Creates a new wallet, stores it encrypted, and signs the user in with
-  /// the backend via Sign-In-With-Solana.
-  Future<void> createNewWallet(String password) async {
-    final keypair = await _walletService.generateWallet();
-    await _walletService.storeWallet(keypair, password);
+  /// Whether the stored wallet can be restored from words.
+  ///
+  /// Null until [refreshRecoverability] has run. False means the wallet
+  /// predates recovery phrases and the ciphertext on this device is the only
+  /// copy of the key in existence — which the delete and lock screens have
+  /// to say plainly instead of promising a phrase that does not exist.
+  bool? get hasRecoveryPhrase => _hasRecoveryPhrase;
+  bool? _hasRecoveryPhrase;
+
+  Future<void> refreshRecoverability() async {
+    _hasRecoveryPhrase = await _walletService.hasRecoveryPhrase();
+    notifyListeners();
+  }
+
+  /// Creates a new wallet from a fresh recovery phrase and returns it.
+  ///
+  /// The phrase is the caller's to display exactly once, and the caller must
+  /// not continue until the user has confirmed they wrote it down. Returning
+  /// it rather than storing it silently is deliberate: this used to be
+  /// `Ed25519HDKeyPair.random()`, with no phrase anywhere, which is how the
+  /// app ended up telling people to back up words it had never generated.
+  Future<String> createNewWallet(String password) async {
+    final mnemonic = _walletService.createMnemonic();
+    final keypair = await _walletService.walletFromMnemonic(mnemonic);
+    await _walletService.storeWallet(keypair, password, mnemonic: mnemonic);
     _wallet = keypair;
     _walletAddress = keypair.publicKey.toBase58();
+    _hasRecoveryPhrase = true;
     _state = WalletLifecycle.unlocked;
     notifyListeners();
     try {
@@ -54,6 +76,7 @@ class WalletProvider with ChangeNotifier {
     } catch (_) {
       // Auth failure is non-fatal for local wallet creation.
     }
+    return mnemonic;
   }
 
   Future<void> importFromSeedPhrase(
@@ -61,13 +84,18 @@ class WalletProvider with ChangeNotifier {
     String password,
   ) async {
     final mnemonic = words.join(' ');
-    final keypair = await Ed25519HDKeyPair.fromMnemonic(mnemonic);
-    await _walletService.storeWallet(keypair, password);
+    final keypair = await _walletService.walletFromMnemonic(mnemonic);
+    await _walletService.storeWallet(keypair, password, mnemonic: mnemonic);
     _wallet = keypair;
     _walletAddress = keypair.publicKey.toBase58();
+    _hasRecoveryPhrase = true;
     _state = WalletLifecycle.unlocked;
     notifyListeners();
   }
+
+  /// Re-reads the stored phrase. Requires the wallet password.
+  Future<String?> revealRecoveryPhrase(String password) =>
+      _walletService.revealMnemonic(password);
 
   Future<void> unlockWallet(String password) async {
     final keypair = await _walletService.loadWallet(password);

@@ -113,6 +113,14 @@ class AppRouter {
               IdentityPhraseScreen(phrase: state.extra as String? ?? ''),
         ),
         GoRoute(
+          path: '/wallet/phrase',
+          builder: (_, state) => IdentityPhraseScreen(
+            phrase: state.extra as String? ?? '',
+            subtitle: 'Twelve words that restore this wallet and its funds',
+            continueRoute: '/home',
+          ),
+        ),
+        GoRoute(
           path: '/onboarding',
           builder: (_, __) => const OnboardingScreen(),
         ),
