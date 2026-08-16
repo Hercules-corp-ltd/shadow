@@ -231,10 +231,23 @@ class _BrowserScreenState extends State<BrowserScreen> {
       return;
     }
 
-    await tab.controller.runJavaScriptReturningResult(
+    final raw = await tab.controller.runJavaScriptReturningResult(
       CodeFillScript.build(code: code.value, expectedDomain: domain),
     );
     if (!context.mounted) return;
+
+    // Report what happened rather than what was attempted. The script can
+    // find no code field at all, and saying "filled" when nothing was would
+    // send the user looking for a value that is not on the page.
+    final filled = CodeFillScript.filledCount(raw);
+    if (filled == 0) {
+      _toast(
+        context,
+        'No code field found on this page. The code is ${code.value} — '
+        'tap Copy to take it yourself.',
+      );
+      return;
+    }
 
     mailbox.clearFound();
     _toast(context, 'Filled the code. Press the button yourself.');

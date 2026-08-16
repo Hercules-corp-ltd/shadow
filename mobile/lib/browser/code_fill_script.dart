@@ -188,6 +188,27 @@ class CodeFillScript {
 ''';
   }
 
+  /// How many fields the injected script actually wrote to.
+  ///
+  /// The platforms disagree about what a JavaScript return value looks like
+  /// coming back — iOS hands over a native String, Android a JSON-encoded
+  /// one, sometimes double-encoded — so this unwraps the same way
+  /// `Autofill._decode` does. Zero means the page had no code field, which
+  /// the caller must say out loud rather than claiming a fill.
+  static int filledCount(Object? raw) {
+    Object? value = raw;
+    for (var attempt = 0; attempt < 3; attempt++) {
+      if (value is Map) return (value['filled'] as int?) ?? 0;
+      if (value is! String) return 0;
+      try {
+        value = jsonDecode(value);
+      } on FormatException {
+        return 0;
+      }
+    }
+    return 0;
+  }
+
   /// Whether a code from [mailboxDomain] may be offered on [pageUrl].
   ///
   /// Pure, so the rule is testable without a page. **This is the check that

@@ -93,6 +93,26 @@ void main() {
     });
   });
 
+  group('the result is read, not assumed', () {
+    test('unwraps what either platform returns', () {
+      // iOS hands back a native String, Android a JSON-encoded one, and
+      // sometimes it arrives double-encoded and quoted.
+      expect(CodeFillScript.filledCount('{"filled":6,"split":true}'), 6);
+      expect(CodeFillScript.filledCount('"{\\"filled\\":1}"'), 1);
+      expect(CodeFillScript.filledCount(<String, dynamic>{'filled': 1}), 1);
+    });
+
+    test('a page with no code field counts as zero, not as success', () {
+      // Caught on a device: the toast said "Filled the code" on a page that
+      // had no code field, sending the user to look for a value that was
+      // never written.
+      expect(CodeFillScript.filledCount('{"filled":0,"refused":"no-field"}'), 0);
+      expect(CodeFillScript.filledCount('{"filled":0,"refused":"domain"}'), 0);
+      expect(CodeFillScript.filledCount(null), 0);
+      expect(CodeFillScript.filledCount('not json'), 0);
+    });
+  });
+
   group('a code may only be filled into the site it belongs to', () {
     bool may(String? url, String domain) => CodeFillScript.mayOffer(
           pageUrl: url == null ? null : Uri.parse(url),
