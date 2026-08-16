@@ -48,6 +48,20 @@ class Download {
         localPath: json['local_path'],
       );
 
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'file_name': fileName,
+        'mime_type': mimeType,
+        'size_bytes': sizeBytes,
+        'bytes_received': bytesReceived,
+        'source_domain': sourceDomain,
+        'started_at': startedAt.toIso8601String(),
+        'completed_at': completedAt?.toIso8601String(),
+        'status': status.name,
+        'type': type.name,
+        'local_path': localPath,
+      };
+
   static DownloadStatus _parseStatus(dynamic v) {
     return DownloadStatus.values.firstWhere(
       (s) => s.name == (v?.toString() ?? ''),

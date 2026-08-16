@@ -29,4 +29,14 @@ class HistoryEntry {
       timeSpentSeconds: (json['time_spent_seconds'] ?? 0) as int,
     );
   }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'domain': domain,
+        'program_address': programAddress,
+        'title': title,
+        'favicon_url': faviconUrl,
+        'visited_at': visitedAt.toIso8601String(),
+        'time_spent_seconds': timeSpentSeconds,
+      };
 }

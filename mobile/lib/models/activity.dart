@@ -35,4 +35,15 @@ class ActivityEntry {
         relatedDomain: json['related_domain'],
         relatedTx: json['related_tx'],
       );
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'kind': kind.name,
+        'title': title,
+        'subtitle': subtitle,
+        'timestamp': timestamp.toIso8601String(),
+        'status': status,
+        'related_domain': relatedDomain,
+        'related_tx': relatedTx,
+      };
 }

@@ -47,4 +47,16 @@ class ShadowExtension {
         permissions: permissions,
         installedAt: installedAt,
       );
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'name': name,
+        'author': author,
+        'version': version,
+        'description': description,
+        'icon_url': iconUrl,
+        'enabled': enabled,
+        'permissions': permissions,
+        'installed_at': installedAt.toIso8601String(),
+      };
 }

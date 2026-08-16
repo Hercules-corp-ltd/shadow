@@ -32,17 +32,17 @@ class DownloadsProvider with ChangeNotifier {
   }
 
   Future<void> pause(String id) async {
-    await _service.pause(id);
+    await _service.setStatus(id, DownloadStatus.paused);
     await load();
   }
 
   Future<void> resume(String id) async {
-    await _service.resume(id);
+    await _service.setStatus(id, DownloadStatus.downloading);
     await load();
   }
 
   Future<void> cancel(String id) async {
-    await _service.cancel(id);
+    await _service.remove(id);
     _items = _items.where((d) => d.id != id).toList();
     notifyListeners();
   }

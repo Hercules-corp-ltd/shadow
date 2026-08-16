@@ -31,4 +31,17 @@ class Bookmark {
             DateTime.tryParse(json['created_at']?.toString() ?? '') ??
                 DateTime.now(),
       );
+
+  /// Mirrors [Bookmark.fromJson] key for key, so a round-trip through
+  /// local storage is lossless.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'domain': domain,
+        'program_address': programAddress,
+        'title': title,
+        'description': description,
+        'folder': folder,
+        'tags': tags,
+        'created_at': createdAt.toIso8601String(),
+      };
 }
