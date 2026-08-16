@@ -63,13 +63,22 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Portfolio value',
+                        // Holdings, not a valuation. RPC returns balances and
+                        // no price, and the previous dollar figure came from a
+                        // backend that had hardcoded the SOL price.
+                        Text('Holdings',
                             style: ShadowTypography.caption
                                 .copyWith(color: Colors.white70)),
                         Text(
-                          '\$${p.portfolio!.totalUsd.toStringAsFixed(2)}',
+                          '${p.portfolio!.solBalance.toStringAsFixed(4)} SOL',
                           style: ShadowTypography.h2
                               .copyWith(color: Colors.white),
+                        ),
+                        Text(
+                          '${p.portfolio!.tokenCount} SPL token'
+                          '${p.portfolio!.tokenCount == 1 ? '' : 's'}',
+                          style: ShadowTypography.caption
+                              .copyWith(color: Colors.white70),
                         ),
                       ],
                     ),

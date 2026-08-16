@@ -12,6 +12,7 @@ import 'providers/downloads_provider.dart';
 import 'providers/extensions_provider.dart';
 import 'providers/history_provider.dart';
 import 'providers/settings_provider.dart';
+import 'services/settings_service.dart';
 import 'providers/tokens_provider.dart';
 import 'providers/wallet_provider.dart';
 import 'router/app_router.dart';
@@ -37,7 +38,14 @@ class ShadowApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DownloadsProvider()),
         ChangeNotifierProvider(create: (_) => ExtensionsProvider()),
         ChangeNotifierProvider(create: (_) => DomainsProvider()),
-        ChangeNotifierProvider(create: (_) => TokensProvider()),
+        // Proxy so the RPC URL in Settings genuinely governs where holdings
+        // are read from. That setting existed for months with no consumer.
+        ChangeNotifierProxyProvider<SettingsProvider, TokensProvider>(
+          create: (_) => TokensProvider(rpcUrl: const ShadowSettings().rpcUrl),
+          update: (_, settings, tokens) =>
+              (tokens ?? TokensProvider(rpcUrl: settings.settings.rpcUrl))
+                ..setRpcUrl(settings.settings.rpcUrl),
+        ),
         ChangeNotifierProvider(create: (_) => ActivityProvider()),
         ChangeNotifierProvider(create: (_) => DeployProvider()),
         ChangeNotifierProvider(create: (_) => IdentityProvider()),

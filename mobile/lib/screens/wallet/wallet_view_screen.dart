@@ -86,21 +86,24 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Total balance',
+          // SOL, not dollars. Nothing here knows a price, and the figure this
+          // replaced was computed from a hardcoded one.
+          Text('SOL balance',
               style: ShadowTypography.label
                   .copyWith(color: Colors.white.withValues(alpha: 0.9))),
           const SizedBox(height: 8),
           Text(
             portfolio == null
                 ? '—'
-                : '\$${portfolio.totalUsd.toStringAsFixed(2)}',
+                : portfolio.solBalance.toStringAsFixed(4),
             style: ShadowTypography.displayMd.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 4),
           Text(
             portfolio == null
                 ? 'Loading…'
-                : '${portfolio.solBalance.toStringAsFixed(4)} SOL',
+                : '${portfolio.tokenCount} SPL token'
+                    '${portfolio.tokenCount == 1 ? '' : 's'}',
             style: ShadowTypography.bodySm.copyWith(color: Colors.white70),
           ),
           const SizedBox(height: 16),
