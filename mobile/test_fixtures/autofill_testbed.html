@@ -1,0 +1,144 @@
+<!doctype html>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shadow autofill testbed</title>
+
+<!--
+  A page for exercising lib/browser/autofill_script.dart against a real DOM.
+
+  The Dart tests cover the policy and the payload; they cannot cover the
+  field detection, because that is JavaScript running against a live
+  document. This is the fixture for that, and it is meant to be hostile:
+  every field below the first group is something the heuristics should
+  leave alone, and several are shapes that real signup forms genuinely use.
+
+  Served over https via raw.githack.com so the https-only rule is satisfied
+  without weakening anything for a test.
+
+  Expected result: email x1, username x1, password x2, and NOTHING else
+  touched. The banner at the bottom checks that for you.
+-->
+
+<style>
+  body { font: 16px system-ui; background: #111; color: #eee; margin: 0;
+         padding: 16px 16px 120px }
+  h1 { font-size: 20px }
+  h2 { font-size: 14px; color: #888; text-transform: uppercase;
+       letter-spacing: .08em; margin: 28px 0 0 }
+  label { display: block; margin: 14px 0 4px; color: #aaa; font-size: 13px }
+  input[type=text], input[type=email], input[type=password],
+  input[type=tel], input[type=search] {
+    width: 100%; box-sizing: border-box; padding: 12px; font-size: 16px;
+    background: #1c1c1c; color: #fff; border: 1px solid #333;
+    border-radius: 6px }
+  .trap input, .trap { border-color: #553 }
+  .note { color: #777; font-size: 12px; margin: 6px 0 0 }
+  .row { margin: 12px 0 }
+  input[type=submit], button { margin-top: 18px; width: 100%; padding: 14px;
+    font-size: 16px; background: #e8590c; color: #fff; border: 0;
+    border-radius: 6px }
+  #verdict { position: fixed; left: 0; right: 0; bottom: 0; padding: 14px 16px;
+    font: 14px/1.4 system-ui; background: #000; border-top: 2px solid #333 }
+  .pass { color: #40c057 } .fail { color: #ff6b6b }
+</style>
+
+<h1>Create your account</h1>
+
+<h2>Should be filled</h2>
+
+<label>Email address</label>
+<input type="email" name="email" autocomplete="email" placeholder="you@example.com">
+
+<label>Username</label>
+<input type="text" name="username" autocomplete="username" placeholder="pick a handle">
+
+<label>Password</label>
+<input type="password" name="password" autocomplete="new-password">
+
+<label>Confirm password</label>
+<input type="password" name="password_confirm" autocomplete="new-password">
+
+<h2>Should not be filled</h2>
+<p class="note">Plain text fields that mean something else.</p>
+
+<div class="trap">
+  <label>Full name</label>
+  <input type="text" name="full_name" placeholder="Ada Lovelace">
+
+  <label>Company</label>
+  <input type="text" name="company" placeholder="Acme Ltd">
+
+  <label>Phone</label>
+  <input type="tel" name="phone" placeholder="+44...">
+
+  <label>Search</label>
+  <input type="search" name="q" placeholder="search">
+</div>
+
+<h2>Non-text inputs</h2>
+<p class="note">
+  Checkboxes are inputs too, and these two are named the way real forms name
+  them. Writing a credential into either would put it in the POST body.
+</p>
+
+<div class="trap">
+  <div class="row">
+    <label><input type="checkbox" name="email_updates"> Email me product updates</label>
+  </div>
+  <div class="row">
+    <label><input type="checkbox" name="remember_username" checked> Remember my username</label>
+  </div>
+</div>
+
+<h2>Buttons that are inputs</h2>
+<p class="note">
+  <code>&lt;input type="submit" name="login"&gt;</code> is ordinary markup. Its
+  value is its label.
+</p>
+
+<div class="trap">
+  <input type="submit" name="login" value="Sign up"
+         onclick="document.title='SUBMITTED'; return false">
+</div>
+
+<h2>Invisible or inert</h2>
+<p class="note">These must be skipped for the reasons already in the script.</p>
+
+<input type="hidden" name="csrf_token" value="keep-me">
+<input type="text" name="username_hidden_parent" style="display:none">
+<input type="text" name="username_disabled" disabled value="keep-me">
+<input type="text" name="username_readonly" readonly value="keep-me">
+
+<div id="verdict">checking…</div>
+
+<script>
+  var EXPECT_FILLED = ['email', 'username', 'password', 'password_confirm'];
+  var EXPECT_UNTOUCHED = ['full_name', 'company', 'phone', 'q',
+    'email_updates', 'remember_username', 'login', 'csrf_token',
+    'username_hidden_parent', 'username_disabled', 'username_readonly'];
+
+  var before = {};
+  document.querySelectorAll('input').forEach(function (el) {
+    before[el.name] = el.value;
+  });
+
+  function check() {
+    var bad = [], good = [];
+    EXPECT_FILLED.forEach(function (n) {
+      var el = document.getElementsByName(n)[0];
+      if (el && el.value) good.push(n); else bad.push('empty: ' + n);
+    });
+    EXPECT_UNTOUCHED.forEach(function (n) {
+      var el = document.getElementsByName(n)[0];
+      if (el && el.value !== before[n]) bad.push('TOUCHED: ' + n);
+    });
+    if (document.title === 'SUBMITTED') bad.push('FORM WAS SUBMITTED');
+
+    document.getElementById('verdict').innerHTML = bad.length
+      ? '<b class=fail>FAIL</b> ' + bad.join(' · ')
+      : '<b class=pass>PASS</b> filled ' + good.join(', ') +
+        '; nothing else touched; not submitted';
+  }
+
+  check();
+  setInterval(check, 500);
+</script>
