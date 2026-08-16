@@ -6,8 +6,8 @@ import '../../providers/tokens_provider.dart';
 import '../../providers/wallet_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
-import '../../widgets/empty_state.dart';
 import '../../widgets/glass_card.dart';
+import '../../widgets/load_state_view.dart';
 import '../../widgets/search_field.dart';
 import '../../widgets/shadow_scaffold.dart';
 
@@ -71,8 +71,8 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
                                 .copyWith(color: Colors.white70)),
                         Text(
                           '${p.portfolio!.solBalance.toStringAsFixed(4)} SOL',
-                          style: ShadowTypography.h2
-                              .copyWith(color: Colors.white),
+                          style:
+                              ShadowTypography.h2.copyWith(color: Colors.white),
                         ),
                         Text(
                           '${p.portfolio!.tokenCount} SPL token'
@@ -88,76 +88,77 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
             ),
           const SizedBox(height: 16),
           Expanded(
-            child: p.isLoading && tokens.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : tokens.isEmpty
-                    ? const EmptyState(
-                        icon: Icons.token_rounded,
-                        title: 'No tokens yet',
-                        message:
-                            'Site tokens you hold or follow will appear here.',
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.only(bottom: 24),
-                        itemBuilder: (_, i) {
-                          final t = tokens[i];
-                          return GlassCard(
-                            padding: const EdgeInsets.all(14),
-                            onTap: () => context.push('/tokens/${t.mintAddress}'),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: const BoxDecoration(
-                                    gradient: ShadowColors.goldGradient,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    t.symbol.isEmpty
-                                        ? '?'
-                                        : t.symbol[0].toUpperCase(),
-                                    style: ShadowTypography.h4
-                                        .copyWith(color: Colors.white),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(t.symbol,
-                                          style: ShadowTypography.h4),
-                                      Text(t.name,
-                                          style: ShadowTypography.bodySm,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis),
-                                    ],
-                                  ),
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      t.balance.toStringAsFixed(4),
-                                      style: ShadowTypography.body,
-                                    ),
-                                    if (t.usdValue > 0)
-                                      Text(
-                                        '\$${t.usdValue.toStringAsFixed(2)}',
-                                        style: ShadowTypography.caption,
-                                      ),
-                                  ],
-                                ),
-                              ],
+            child: LoadStateView(
+              isLoading: p.isLoading,
+              isEmpty: tokens.isEmpty,
+              // An unreachable RPC is not an empty wallet, and this screen
+              // used to render both as "No tokens yet".
+              error: p.error,
+              onRetry: () {
+                final wallet = context.read<WalletProvider>().walletAddress;
+                if (wallet != null) p.load(wallet);
+              },
+              emptyIcon: Icons.token_rounded,
+              emptyTitle: 'No tokens yet',
+              emptyMessage: 'Tokens held by this wallet will appear here.',
+              child: ListView.separated(
+                padding: const EdgeInsets.only(bottom: 24),
+                itemBuilder: (_, i) {
+                  final t = tokens[i];
+                  return GlassCard(
+                    padding: const EdgeInsets.all(14),
+                    onTap: () => context.push('/tokens/${t.mintAddress}'),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: const BoxDecoration(
+                            gradient: ShadowColors.goldGradient,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            t.symbol.isEmpty ? '?' : t.symbol[0].toUpperCase(),
+                            style: ShadowTypography.h4
+                                .copyWith(color: Colors.white),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(t.symbol, style: ShadowTypography.h4),
+                              Text(t.name,
+                                  style: ShadowTypography.bodySm,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              t.balance.toStringAsFixed(4),
+                              style: ShadowTypography.body,
                             ),
-                          );
-                        },
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
-                        itemCount: tokens.length,
-                      ),
+                            if (t.usdValue > 0)
+                              Text(
+                                '\$${t.usdValue.toStringAsFixed(2)}',
+                                style: ShadowTypography.caption,
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemCount: tokens.length,
+              ),
+            ),
           ),
         ],
       ),

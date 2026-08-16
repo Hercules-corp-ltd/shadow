@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/domain.dart';
@@ -39,11 +40,15 @@ class DomainsProvider with ChangeNotifier {
 
   Future<void> search(String query) async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
     try {
       _searchResults = await _service.search(query);
-    } catch (_) {
+    } catch (e) {
       _searchResults = const [];
+      _error = e is DioException
+          ? describeDioFailure(e)
+          : 'Could not search domains';
     } finally {
       _isLoading = false;
       notifyListeners();

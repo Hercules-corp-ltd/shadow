@@ -1,10 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/domain.dart';
 import '../../services/domain_service.dart';
+import '../../services/fetch_outcome.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/load_state_view.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/shadow_button.dart';
 import '../../widgets/shadow_scaffold.dart';
@@ -21,6 +23,7 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
   final _service = DomainService();
   List<DnsRecord> _records = const [];
   bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -29,11 +32,20 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       _records = await _service.dnsRecords(widget.domain);
-    } catch (_) {
+    } catch (e) {
+      // The DNS routes do not exist on the backend at all, so this is the
+      // normal path today. Showing an empty list invited the user to add
+      // records into a void; showing the failure at least tells the truth.
       _records = const [];
+      _error = e is DioException
+          ? describeDioFailure(e)
+          : 'Could not load DNS records';
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -47,69 +59,66 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
       body: Column(
         children: [
           Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _records.isEmpty
-                    ? const EmptyState(
-                        icon: Icons.dns_rounded,
-                        title: 'No DNS records',
-                        message:
-                            'Add records to resolve subdomains, mail, or verification TXTs.',
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        itemBuilder: (_, i) {
-                          final r = _records[i];
-                          return GlassCard(
-                            padding: const EdgeInsets.all(14),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: ShadowColors.primarySoft,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(r.type,
-                                      style: ShadowTypography.caption.copyWith(
-                                        color: ShadowColors.primary,
-                                        fontWeight: FontWeight.w700,
-                                      )),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(r.name,
-                                          style: ShadowTypography.body),
-                                      Text(r.value,
-                                          style: ShadowTypography.caption,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis),
-                                    ],
-                                  ),
-                                ),
-                                Text('${r.ttl}s',
-                                    style: ShadowTypography.caption),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline_rounded,
-                                      color: ShadowColors.error),
-                                  onPressed: () async {
-                                    await _service.deleteDnsRecord(
-                                        widget.domain, r.id);
-                                    _load();
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
-                        itemCount: _records.length,
-                      ),
+            child: LoadStateView(
+              isLoading: _loading,
+              isEmpty: _records.isEmpty,
+              error: _error,
+              onRetry: _load,
+              emptyIcon: Icons.dns_rounded,
+              emptyTitle: 'No DNS records',
+              emptyMessage:
+                  'Add records to resolve subdomains, mail, or verification TXTs.',
+              child: ListView.separated(
+                padding: const EdgeInsets.only(bottom: 12),
+                itemBuilder: (_, i) {
+                  final r = _records[i];
+                  return GlassCard(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: ShadowColors.primarySoft,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(r.type,
+                              style: ShadowTypography.caption.copyWith(
+                                color: ShadowColors.primary,
+                                fontWeight: FontWeight.w700,
+                              )),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(r.name, style: ShadowTypography.body),
+                              Text(r.value,
+                                  style: ShadowTypography.caption,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis),
+                            ],
+                          ),
+                        ),
+                        Text('${r.ttl}s', style: ShadowTypography.caption),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline_rounded,
+                              color: ShadowColors.error),
+                          onPressed: () async {
+                            await _service.deleteDnsRecord(widget.domain, r.id);
+                            _load();
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemCount: _records.length,
+              ),
+            ),
           ),
           const SizedBox(height: 12),
           ShadowButton(
@@ -233,6 +242,21 @@ class _AddDnsSheetState extends State<_AddDnsSheet> {
       );
       if (mounted) Navigator.of(context).pop();
       widget.onSave();
+    } catch (e) {
+      // There was no catch here at all, only try/finally — so a failed save
+      // threw an unhandled async exception while the sheet closed anyway,
+      // and the record appeared to have been created.
+      if (!mounted) return;
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e is DioException
+                ? 'Could not save: ${describeDioFailure(e)}'
+                : 'Could not save that record',
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
