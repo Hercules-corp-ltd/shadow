@@ -27,8 +27,24 @@ yarn-error.log*
 Thumbs.db
 
 # Solana
+#
+# Deny-by-default on JSON, because a Solana keypair is a bare JSON array of
+# bytes and committing one publishes a private key. Kept deny-by-default
+# rather than narrowed to id.json/*-keypair.json: a stray keypair under an
+# unexpected name is unrecoverable, an over-broad ignore is merely annoying.
+#
+# The cost is that anything legitimately JSON must be allow-listed below —
+# and that cost was already paid once. This rule is why no package.json
+# existed anywhere in this repository: every frontend's manifest was silently
+# never committed, which left four applications unbuildable from a clean
+# checkout. Add to the allow-list when you add tracked JSON.
 *.json
 !tsconfig.json
+!package.json
+!package-lock.json
+!.vscode/*.json
+!**/assets/**/*.json
+!mobile/ios/Runner.xcodeproj/**/*.json
 test-ledger/
 .anchor/
 
