@@ -346,6 +346,19 @@ class _DeriveViewState extends State<_DeriveView> {
               const SizedBox(height: 4),
               Text('Aliases arrive at ${provider.aliasDomain}',
                   style: ShadowTypography.bodySm),
+              if (provider.fingerprint != null) ...[
+                const SizedBox(height: 10),
+                Text('This identity', style: ShadowTypography.caption),
+                const SizedBox(height: 2),
+                Text(provider.fingerprint!, style: ShadowTypography.mono),
+                const SizedBox(height: 6),
+                Text(
+                  'Should read the same every time you unlock. If it changes, '
+                  'your passphrase is different and these are not your '
+                  'accounts.',
+                  style: ShadowTypography.caption,
+                ),
+              ],
             ],
           ),
         ),

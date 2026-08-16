@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/identity_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../screens/browser/browser_screen.dart';
 import '../screens/identity/identity_screen.dart';
@@ -109,8 +110,12 @@ class AppRouter {
         ),
         GoRoute(
           path: '/identity/phrase',
-          builder: (_, state) =>
-              IdentityPhraseScreen(phrase: state.extra as String? ?? ''),
+          builder: (ctx, state) => IdentityPhraseScreen(
+            phrase: state.extra as String? ?? '',
+            // The alias domain is not in the phrase, so the backup screen has
+            // to name it or the recovery promise is untrue.
+            alsoRecord: ctx.read<IdentityProvider>().aliasDomain,
+          ),
         ),
         GoRoute(
           path: '/wallet/phrase',

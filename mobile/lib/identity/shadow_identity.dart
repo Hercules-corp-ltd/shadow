@@ -43,6 +43,52 @@ class ShadowIdentity {
 
   static const String _rootSalt = 'shadow.identity.v1';
   static const String _branchInfo = 'credential-branch';
+  static const String _fingerprintInfo = 'identity-fingerprint/v1';
+  static const String _verifierInfo = 'identity-verifier/v1';
+
+  /// A short, memorable label for *which* identity this is.
+  ///
+  /// BIP-39 checksums the words but not the passphrase, so `Shadow` instead
+  /// of `shadow` unlocks successfully into a completely different, entirely
+  /// empty universe of accounts with no error anywhere. Showing this on the
+  /// unlock screen turns that silent divergence into something a person can
+  /// notice in one glance.
+  ///
+  /// Safe to display; never send it anywhere. It is a stable identifier for
+  /// one identity, so off the device it would be a correlation handle.
+  String get fingerprint {
+    _assertUsable();
+    return HandleShaper.fingerprint(
+      ShadowKdf.derive(
+        inputKeyMaterial: _branchKey,
+        salt: _rootSalt,
+        info: _fingerprintInfo,
+        length: 16,
+      ),
+    );
+  }
+
+  /// A value that proves a later unlock used the same passphrase.
+  ///
+  /// Stored once, on first unlock, and compared on every unlock afterwards.
+  ///
+  /// The honest trade: someone holding both the device's keystore and this
+  /// value can test passphrase guesses offline. That costs one BIP-39 seed
+  /// derivation per guess — which is exactly what it already costs them to
+  /// test a guess by deriving a credential and trying it at a site they know
+  /// the user uses. So this changes convenience rather than difficulty, and
+  /// it buys the difference between a wrong passphrase failing loudly and a
+  /// wrong passphrase silently orphaning every account the user owns.
+  String get passphraseVerifier {
+    _assertUsable();
+    final bytes = ShadowKdf.derive(
+      inputKeyMaterial: _branchKey,
+      salt: _rootSalt,
+      info: _verifierInfo,
+      length: 8,
+    );
+    return base32Encode(bytes);
+  }
 
   final Uint8List _branchKey;
 

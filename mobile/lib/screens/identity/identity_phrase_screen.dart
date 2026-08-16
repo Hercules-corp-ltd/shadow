@@ -21,6 +21,7 @@ class IdentityPhraseScreen extends StatefulWidget {
     required this.phrase,
     this.subtitle = 'Twelve words that rebuild every account you create',
     this.continueRoute = '/identity',
+    this.alsoRecord,
   });
 
   final String phrase;
@@ -31,6 +32,14 @@ class IdentityPhraseScreen extends StatefulWidget {
 
   /// Where "Continue" goes once the user has confirmed the backup.
   final String continueRoute;
+
+  /// Something that is *not* in the phrase but is needed to restore from it.
+  ///
+  /// The alias domain is the case that matters: it lives in the keystore, not
+  /// in the words, so "twelve words restore everything" is false without it.
+  /// A user who writes down only the phrase and later reinstalls will hold a
+  /// valid identity that mints addresses at the wrong domain.
+  final String? alsoRecord;
 
   @override
   State<IdentityPhraseScreen> createState() => _IdentityPhraseScreenState();
@@ -80,6 +89,27 @@ class _IdentityPhraseScreenState extends State<IdentityPhraseScreen> {
             padding: const EdgeInsets.all(20),
             child: _revealed ? _wordGrid() : _coveredState(),
           ),
+          if (widget.alsoRecord != null) ...[
+            const SizedBox(height: 16),
+            GlassCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Write this down too', style: ShadowTypography.h4),
+                  const SizedBox(height: 8),
+                  Text(widget.alsoRecord!, style: ShadowTypography.mono),
+                  const SizedBox(height: 8),
+                  Text(
+                    'This is not part of the phrase, and the words alone will '
+                    'not bring it back. Without it your addresses come out at '
+                    'the wrong domain and your mail goes nowhere.',
+                    style: ShadowTypography.bodySm,
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           if (_revealed)
             ShadowButton(

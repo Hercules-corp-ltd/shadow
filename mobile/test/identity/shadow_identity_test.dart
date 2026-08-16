@@ -204,6 +204,50 @@ void main() {
       expect(identity.toString(), isNot(contains(identity.password)));
     });
 
+    test('a different passphrase is visibly a different identity', () {
+      // The failure this exists to catch: BIP-39 checksums the words, not the
+      // passphrase, so `Shadow` for `shadow` unlocks perfectly into an empty
+      // universe of accounts and says nothing.
+      final a = ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'shadow');
+      final b = ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'Shadow');
+
+      expect(a.passphraseVerifier, isNot(b.passphraseVerifier));
+      expect(a.fingerprint, isNot(b.fingerprint));
+    });
+
+    test('the same passphrase always gives the same verifier and label', () {
+      final a = ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'shadow');
+      final b = ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'shadow');
+
+      expect(a.passphraseVerifier, b.passphraseVerifier);
+      expect(a.fingerprint, b.fingerprint);
+    });
+
+    test('the fingerprint is four readable words, not a credential', () {
+      final identity = engine.forSite('twitter.com', aliasDomain: aliasDomain);
+      final fingerprint = engine.fingerprint;
+
+      expect(fingerprint.split(RegExp(r'[ ·]+')).length, 4);
+      expect(fingerprint, matches(RegExp(r'^[a-z]+ [a-z]+ · [a-z]+ [a-z]+$')));
+      // It names the identity; it must never carry anything derived for a
+      // site, because it is shown on screen and meant to be spoken about.
+      expect(fingerprint, isNot(contains(identity.password)));
+      expect(fingerprint, isNot(contains(identity.handle)));
+    });
+
+    test('the verifier does not expose the branch or any credential', () {
+      final identity = engine.forSite('twitter.com', aliasDomain: aliasDomain);
+      expect(engine.passphraseVerifier, isNot(contains(identity.password)));
+      expect(engine.passphraseVerifier.length, greaterThanOrEqualTo(12));
+      expect(engine.passphraseVerifier, matches(RegExp(r'^[a-z2-7]+$')));
+    });
+
+    test('fingerprint and verifier are refused after wipe', () {
+      final wiped = ShadowIdentity.fromMnemonic(testPhrase)..wipe();
+      expect(() => wiped.fingerprint, throwsStateError);
+      expect(() => wiped.passphraseVerifier, throwsStateError);
+    });
+
     test('refuses to derive after wipe instead of deriving from zeros', () {
       final wiped = ShadowIdentity.fromMnemonic(testPhrase);
       wiped.wipe();

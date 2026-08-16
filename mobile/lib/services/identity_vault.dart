@@ -19,6 +19,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class IdentityVault {
   static const String _phraseKey = 'shadow_identity_phrase';
   static const String _aliasDomainKey = 'shadow_identity_alias_domain';
+  static const String _verifierKey = 'shadow_identity_passphrase_verifier';
 
   static const FlutterSecureStorage _storage = FlutterSecureStorage(
     iOptions: IOSOptions(
@@ -47,9 +48,20 @@ class IdentityVault {
   Future<void> writeAliasDomain(String domain) =>
       _storage.write(key: _aliasDomainKey, value: domain.trim().toLowerCase());
 
+  /// Proof that a later unlock used the same passphrase as the first one.
+  ///
+  /// Written on first unlock and compared thereafter. See
+  /// `ShadowIdentity.passphraseVerifier` for what this does and does not
+  /// give away.
+  Future<String?> readPassphraseVerifier() => _storage.read(key: _verifierKey);
+
+  Future<void> writePassphraseVerifier(String verifier) =>
+      _storage.write(key: _verifierKey, value: verifier);
+
   /// Erases everything. Irreversible without the written-down phrase.
   Future<void> wipe() async {
     await _storage.delete(key: _phraseKey);
     await _storage.delete(key: _aliasDomainKey);
+    await _storage.delete(key: _verifierKey);
   }
 }

@@ -44,6 +44,26 @@ class HandleShaper {
     'wave', 'willow', 'window', 'wolf', 'wren',
   ];
 
+  /// Four words naming *which* identity is unlocked, such as
+  /// `quiet harbor · golden fern`.
+  ///
+  /// Not a credential and not a secret — a label, so a user can recognise
+  /// their own identity at a glance and notice when a mistyped passphrase
+  /// has handed them somebody else's empty universe. Words rather than hex
+  /// because the whole job is "does this look like what I saw last time",
+  /// and people are far better at that with language than with `a3f19c`.
+  ///
+  /// About 27 bits, which is ample: a wrong passphrase produces an unrelated
+  /// fingerprint essentially every time.
+  static String fingerprint(List<int> entropy) {
+    final stream = DeterministicBytes(entropy, domainSeparator: 'fingerprint');
+    final first = '${_adjectives[stream.nextInt(_adjectives.length)]} '
+        '${_nouns[stream.nextInt(_nouns.length)]}';
+    final second = '${_adjectives[stream.nextInt(_adjectives.length)]} '
+        '${_nouns[stream.nextInt(_nouns.length)]}';
+    return '$first · $second';
+  }
+
   /// Produces a handle such as `quietharbor4821`.
   ///
   /// [separator] is empty by default because many sites reject punctuation in

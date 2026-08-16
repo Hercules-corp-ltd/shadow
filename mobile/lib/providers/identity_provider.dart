@@ -94,7 +94,29 @@ class IdentityProvider with ChangeNotifier {
       return false;
     }
     try {
-      _engine = ShadowIdentity.fromMnemonic(phrase, passphrase: passphrase);
+      final engine = ShadowIdentity.fromMnemonic(phrase, passphrase: passphrase);
+
+      // BIP-39 checksums the words, not the passphrase, so a typo here does
+      // not fail — it succeeds into a different, empty universe of accounts.
+      // Without this check the user finds out weeks later, when a password
+      // stops working or a verification code never arrives at an address
+      // they can no longer derive.
+      final expected = await _vault.readPassphraseVerifier();
+      final actual = engine.passphraseVerifier;
+
+      if (expected == null) {
+        // First unlock. This passphrase is now the passphrase.
+        await _vault.writePassphraseVerifier(actual);
+      } else if (expected != actual) {
+        engine.wipe();
+        _error = 'That passphrase does not match the one this identity was '
+            'set up with. Continuing would create a different, empty set of '
+            'accounts rather than opening yours.';
+        notifyListeners();
+        return false;
+      }
+
+      _engine = engine;
       _state = IdentityLifecycle.unlocked;
       _error = null;
       notifyListeners();
@@ -105,6 +127,12 @@ class IdentityProvider with ChangeNotifier {
       return false;
     }
   }
+
+  /// A short label for the unlocked identity. Null while locked.
+  ///
+  /// Shown so the user can recognise their own identity. Display only —
+  /// it is a stable identifier and must not leave the device.
+  String? get fingerprint => _engine?.fingerprint;
 
   void lock() {
     _engine?.wipe();
