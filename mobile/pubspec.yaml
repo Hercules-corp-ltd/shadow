@@ -39,6 +39,7 @@ dependencies:
 
   # Browsing
   webview_flutter: ^4.14.1
+  webview_flutter_wkwebview: ^3.25.1
 
   # Networking
   http: ^1.1.2
@@ -67,6 +68,7 @@ flutter:
     - assets/icons/
     - assets/illustrations/
     - assets/gods/
+    - assets/blocklist/
 
   fonts:
     - family: Cinzel

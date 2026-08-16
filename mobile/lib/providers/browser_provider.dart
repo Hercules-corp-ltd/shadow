@@ -2,7 +2,9 @@ import 'dart:ui' show Color;
 
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
+import '../browser/tracker_blocking.dart';
 import '../browser/url_input.dart';
 
 /// One open tab, with its own web view.
@@ -26,6 +28,9 @@ class BrowserTabModel {
   bool canGoBack = false;
   bool canGoForward = false;
 
+  /// Set once the tracker rule list has been attached (or attempted).
+  bool blockingReady = false;
+
   /// The last navigation refused by the scheme allow-list, surfaced so a
   /// blocked link is visible rather than silently doing nothing.
   String? blockedNavigation;
@@ -38,12 +43,14 @@ class BrowserTabModel {
 /// Owns the open tabs and drives navigation.
 ///
 /// Privacy posture, stated plainly rather than implied by branding:
-/// cookies and site data persist across tabs and launches, exactly as in any
-/// ordinary browser, until [clearBrowsingData] is called. There is no tracker
-/// blocking here — webview_flutter exposes no request-interception hook, so
-/// content blocking needs either WKContentRuleList through a platform channel
-/// or a move to flutter_inappwebview. Until one of those lands, this is a
-/// working browser, not a private one, and the UI must not claim otherwise.
+///
+/// Tracker blocking is real on iOS — see [TrackerBlocking] — and absent on
+/// Android, where no request-interception hook is reachable from Dart. The
+/// UI reads its wording from the blocking state rather than assuming success.
+///
+/// Cookies and site data still persist across tabs and launches, exactly as
+/// in any ordinary browser, until [clearBrowsingData] is called. Tabs share
+/// one cookie store, so they are isolated in history but not in identity.
 class BrowserProvider with ChangeNotifier {
   final List<BrowserTabModel> _tabs = <BrowserTabModel>[];
   int _activeIndex = 0;
@@ -59,21 +66,23 @@ class BrowserProvider with ChangeNotifier {
   /// Opens [input] in the active tab, creating one if needed.
   ///
   /// Returns false when the input could not be resolved to an allowed URL.
-  bool open(String input) {
+  Future<bool> open(String input) async {
     final uri = UrlInput.resolve(input);
     if (uri == null) return false;
     final tab = activeTab ?? _createTab();
-    tab.controller.loadRequest(uri);
+    await _ensureBlocking(tab);
+    await tab.controller.loadRequest(uri);
     notifyListeners();
     return true;
   }
 
   /// Opens [input] in a brand-new tab.
-  bool openInNewTab(String input) {
+  Future<bool> openInNewTab(String input) async {
     final uri = UrlInput.resolve(input);
     if (uri == null) return false;
     final tab = _createTab();
-    tab.controller.loadRequest(uri);
+    await _ensureBlocking(tab);
+    await tab.controller.loadRequest(uri);
     notifyListeners();
     return true;
   }
@@ -81,6 +90,23 @@ class BrowserProvider with ChangeNotifier {
   void addBlankTab() {
     _createTab();
     notifyListeners();
+  }
+
+  /// Attaches the tracker rule list before the tab's first navigation.
+  ///
+  /// Awaited deliberately. Rule compilation is asynchronous, so starting a
+  /// load first means the first page of a cold start — the one a reviewer
+  /// screenshots — would fetch its trackers before the blocker was attached.
+  /// A failure here never blocks navigation: the user gets an unfiltered page
+  /// and an honest status, rather than a browser that refuses to work.
+  Future<void> _ensureBlocking(BrowserTabModel tab) async {
+    if (tab.blockingReady) return;
+    tab.blockingReady = true;
+    final controller = tab.controller.platform;
+    if (controller is WebKitWebViewController) {
+      await TrackerBlocking.install(webViewId: controller.webViewIdentifier);
+      notifyListeners();
+    }
   }
 
   BrowserTabModel _createTab() {

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../browser/autofill.dart';
+import '../../browser/tracker_blocking.dart';
 import '../../identity/site_identity.dart';
 import '../../providers/browser_provider.dart';
 import '../../providers/identity_provider.dart';
@@ -88,7 +89,8 @@ class _BrowserScreenState extends State<BrowserScreen> {
     if (input == null || input.trim().isEmpty) return;
     if (!context.mounted) return;
 
-    if (!browser.open(input)) {
+    if (!await browser.open(input)) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('That address uses a scheme Shadow will not open.'),
@@ -227,6 +229,23 @@ class _TopBar extends StatelessWidget {
               tab?.title ?? 'Browser',
               style: ShadowTypography.h4,
               overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          IconButton(
+            icon: Icon(
+              TrackerBlocking.state == BlockingState.active
+                  ? Icons.shield_rounded
+                  : Icons.shield_outlined,
+              size: 20,
+            ),
+            color: switch (TrackerBlocking.state) {
+              BlockingState.active => ShadowColors.success,
+              BlockingState.failed => ShadowColors.error,
+              _ => ShadowColors.textDisabled,
+            },
+            tooltip: TrackerBlocking.statusLabel,
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(TrackerBlocking.statusLabel)),
             ),
           ),
           IconButton(
