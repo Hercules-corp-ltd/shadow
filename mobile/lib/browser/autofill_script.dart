@@ -103,6 +103,22 @@ class AutofillScript {
     el.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
+  // Only ever write into a box a person types text into.
+  //
+  // This is a whitelist on purpose. <input type="submit" name="login"> and
+  // <input type="checkbox" name="email_updates"> are both ordinary markup,
+  // both match the name patterns below, and naming the bad types one at a
+  // time is a game you lose one form at a time. The consequences are not
+  // cosmetic either: a submit input's value is its visible label, and a
+  // ticked checkbox's value goes into the POST body, so a credential
+  // written into one is a credential sent to the site under another name.
+  var TEXT_ENTRY = { '': 1, 'text': 1, 'email': 1 };
+
+  function textEntry(el) {
+    if (el.tagName === 'TEXTAREA') return true;
+    return TEXT_ENTRY[(el.getAttribute('type') || '').toLowerCase()] === 1;
+  }
+
   var inputs = [];
   var all = document.querySelectorAll('input, textarea');
   for (var i = 0; i < all.length; i++) {
@@ -119,8 +135,8 @@ class AutofillScript {
     var h = hint(el);
 
     if (type === 'password') { passwords.push(el); continue; }
+    if (!textEntry(el)) continue;
     if (type === 'email' || /e-?mail/.test(h)) { emails.push(el); continue; }
-    if (type === 'search' || type === 'tel' || type === 'number') continue;
 
     // Only treat a plain text field as a username when it says so. Guessing
     // here means writing a handle into a "full name" or "company" box.
