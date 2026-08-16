@@ -100,56 +100,82 @@ class CodeFillScript {
     if (visible(all[i])) candidates.push(all[i]);
   }
 
-  // Split-digit boxes: six inputs of maxlength 1, one character each.
+  // Fields that contain the word "code" and are emphatically not this one.
   //
-  // Extremely common on verification screens, and exactly the shape a naive
-  // el.value = code gets wrong — it drops the whole code into the first box,
-  // which then truncates it to one character.
-  var boxes = [];
-  for (var b = 0; b < candidates.length; b++) {
-    var maxLength = parseInt(candidates[b].getAttribute('maxlength'), 10);
-    if (maxLength === 1) boxes.push(candidates[b]);
-  }
-  if (boxes.length >= input.code.length) {
-    for (var c = 0; c < input.code.length; c++) {
-      setValue(boxes[c], input.code.charAt(c));
-    }
-    return JSON.stringify({ filled: input.code.length, split: true });
+  // A discount box is the single most common false positive on a checkout
+  // or signup page, and "coupon_code" matches a naive /code/ rule perfectly.
+  function isDecoy(h) {
+    return /(coupon|promo|discount|voucher|gift|referral|invite|zip|postal)/
+      .test(h);
   }
 
-  // Otherwise one field, chosen in descending order of how explicitly it
-  // says what it is.
-  var best = null;
-  var bestRank = 0;
-
-  for (var j = 0; j < candidates.length; j++) {
-    var el = candidates[j];
+  function eligible(el) {
     var type = (el.getAttribute('type') || '').toLowerCase();
     if (type === 'password' || type === 'submit' || type === 'button' ||
-        type === 'checkbox' || type === 'radio' || type === 'email') {
-      continue;
+        type === 'checkbox' || type === 'radio' || type === 'email' ||
+        type === 'tel' || type === 'search') {
+      return false;
     }
+    return !isDecoy(hint(el));
+  }
 
+  // How explicitly a field says it is the one-time code field.
+  function rankOf(el) {
     var h = hint(el);
-    var rank = 0;
-
     // What both platforms' native autofill actually keys on.
-    if (/one-time-code/.test(h)) {
-      rank = 4;
-    } else if (/(^|[^a-z])(otp|verification|passcode)/.test(h)) {
-      rank = 3;
-    } else if (/(^|[^a-z])(code|pin|token)/.test(h)) {
-      rank = 2;
-    } else {
-      var inputMode = (el.getAttribute('inputmode') || '').toLowerCase();
-      var len = parseInt(el.getAttribute('maxlength'), 10);
-      if (inputMode === 'numeric' && len > 0 && len <= 8) rank = 1;
-    }
+    if (/one-time-code/.test(h)) return 4;
+    if (/(^|[^a-z])(otp|verification|passcode)/.test(h)) return 3;
+    if (/(^|[^a-z])(code|pin|token)/.test(h)) return 2;
+    var inputMode = (el.getAttribute('inputmode') || '').toLowerCase();
+    var len = parseInt(el.getAttribute('maxlength'), 10);
+    if (inputMode === 'numeric' && len > 0 && len <= 8) return 1;
+    return 0;
+  }
 
+  var usable = [];
+  for (var j = 0; j < candidates.length; j++) {
+    if (eligible(candidates[j])) usable.push(candidates[j]);
+  }
+
+  var best = null;
+  var bestRank = 0;
+  for (var k = 0; k < usable.length; k++) {
+    var rank = rankOf(usable[k]);
     if (rank > bestRank) {
       bestRank = rank;
-      best = el;
+      best = usable[k];
     }
+  }
+
+  // Split-digit boxes, found by shape rather than by name.
+  //
+  // Extremely common on verification screens, and exactly what a naive
+  // el.value = code gets wrong: the whole code lands in the first box and
+  // is truncated to one character. Names are no help — real ones are called
+  // everything from "otp-1" to "d1" — so what identifies a row is that it
+  // IS a row: enough sibling inputs, in document order, each holding one
+  // character. That structure is not something another kind of field
+  // accidentally has.
+  var row = [];
+  for (var m = 0; m < usable.length; m++) {
+    var el = usable[m];
+    if (parseInt(el.getAttribute('maxlength'), 10) === 1) {
+      if (row.length > 0 && row[row.length - 1].parentNode !== el.parentNode) {
+        row = [];
+      }
+      row.push(el);
+      if (row.length >= input.code.length) break;
+    } else if (row.length > 0) {
+      row = [];
+    }
+  }
+
+  // An explicitly named field beats structure; structure beats a guess.
+  if (bestRank < 3 && row.length >= input.code.length) {
+    for (var c = 0; c < input.code.length; c++) {
+      setValue(row[c], input.code.charAt(c));
+    }
+    return JSON.stringify({ filled: input.code.length, split: true });
   }
 
   if (!best) return JSON.stringify({ filled: 0, refused: 'no-field' });

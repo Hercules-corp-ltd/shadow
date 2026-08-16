@@ -40,6 +40,26 @@ void main() {
       expect(script, contains('twitter.com'));
     });
 
+    test('names the fields it must never mistake for a code field', () {
+      // A discount box is the most common false positive on a signup or
+      // checkout page, and `coupon_code` matches a naive /code/ rule
+      // perfectly. The device fixture caught exactly that: it outranked the
+      // real digit boxes and took the code. Behaviour is verified in
+      // test_fixtures/otp_testbed.html against a live DOM; this only stops
+      // the guard being deleted as redundant.
+      for (final decoy in <String>['coupon', 'promo', 'discount', 'voucher']) {
+        expect(script, contains(decoy), reason: 'must exclude $decoy fields');
+      }
+    });
+
+    test('finds a digit row by shape, not by name', () {
+      // Real split-digit rows are named everything from `otp-1` to `d1`, so
+      // matching on the name misses most of them. What identifies a row is
+      // that it is one: sibling inputs, in order, each one character wide.
+      expect(script, contains('parentNode'));
+      expect(script, contains('maxlength'));
+    });
+
     test('escapes a hostile code rather than embedding it as syntax', () {
       final nasty = CodeFillScript.build(
         code: r'''a"b'c\d</script>''',

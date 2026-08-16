@@ -1,0 +1,175 @@
+<!doctype html>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shadow code-fill testbed</title>
+
+<!--
+  A page for exercising lib/browser/code_fill_script.dart against a real DOM.
+
+  The Dart tests cover which code is found and where it may go. They cannot
+  cover the typing, because that is JavaScript running against a live
+  document — and the shapes that break naive implementations are all DOM
+  shapes: split-digit boxes, controlled inputs, decoy fields.
+
+  Expected: exactly one target filled per run, nothing else touched, and the
+  form never submitted. The banner at the bottom grades it.
+
+  Served over https via raw.githack.com, as autofill_testbed.html is.
+-->
+
+<style>
+  body { font: 16px system-ui; background: #111; color: #eee; margin: 0;
+         padding: 16px 16px 140px }
+  h1 { font-size: 20px }
+  h2 { font-size: 13px; color: #888; text-transform: uppercase;
+       letter-spacing: .08em; margin: 26px 0 6px }
+  label { display: block; margin: 12px 0 4px; color: #aaa; font-size: 13px }
+  input[type=text], input[type=tel], input[type=email] {
+    box-sizing: border-box; padding: 12px; font-size: 16px;
+    background: #1c1c1c; color: #fff; border: 1px solid #333;
+    border-radius: 6px; width: 100% }
+  .boxes input { width: 44px; text-align: center; display: inline-block;
+                 margin-right: 6px }
+  .trap input { border-color: #553 }
+  .note { color: #777; font-size: 12px; margin: 4px 0 0 }
+  button { margin-top: 18px; width: 100%; padding: 14px; font-size: 16px;
+    background: #e8590c; color: #fff; border: 0; border-radius: 6px }
+  #verdict { position: fixed; left: 0; right: 0; bottom: 0; padding: 14px 16px;
+    font: 14px/1.4 system-ui; background: #000; border-top: 2px solid #333 }
+  .pass { color: #40c057 } .fail { color: #ff6b6b }
+</style>
+
+<h1>Enter your verification code</h1>
+
+<p class=note>Add <code>?mode=split</code> to swap which shape this page uses.
+Real sites have one or the other, never both, and the hidden section
+also checks that <code>display:none</code> fields are skipped.</p>
+
+<div id=single-section>
+<h2>The obvious target</h2>
+<p class="note">What both platforms' native autofill keys on.</p>
+<label>Verification code</label>
+<input type="text" name="otc" autocomplete="one-time-code" inputmode="numeric"
+       maxlength="8" placeholder="000000">
+
+</div>
+
+<div id=split-section>
+<h2>Split digit boxes</h2>
+<p class="note">
+  Six inputs of <code>maxlength=1</code>. A naive <code>el.value = code</code>
+  drops the whole code into the first box, which truncates it to one
+  character.
+</p>
+<div class="boxes" id="split">
+  <input type="text" name="d1" maxlength="1" inputmode="numeric">
+  <input type="text" name="d2" maxlength="1" inputmode="numeric">
+  <input type="text" name="d3" maxlength="1" inputmode="numeric">
+  <input type="text" name="d4" maxlength="1" inputmode="numeric">
+  <input type="text" name="d5" maxlength="1" inputmode="numeric">
+  <input type="text" name="d6" maxlength="1" inputmode="numeric">
+</div>
+
+</div>
+
+<h2>A controlled input</h2>
+<p class="note">
+  Mirrors how React tracks a value: through the property descriptor, not the
+  attribute. Writing <code>el.value</code> directly updates the DOM and never
+  reaches the framework, so the field looks filled and then submits empty.
+</p>
+<label>Code</label>
+<input type="text" name="controlled" id="controlled" inputmode="numeric"
+       maxlength="6">
+<p class="note" id="controlled-state">framework state: (empty)</p>
+
+<h2>Should never be filled</h2>
+<div class="trap">
+  <p class=note>coupon_code is here because it caught a real bug: it matches a
+  naive /code/ rule and outranked the actual digit boxes.</p>
+  <label>Coupon code</label>
+  <input type="text" name="coupon_code" placeholder="SAVE20">
+
+  <label>Promo</label>
+  <input type="text" name="promo" placeholder="promo">
+
+  <label>Email</label>
+  <input type="email" name="email" placeholder="you@example.com">
+
+  <label>Phone</label>
+  <input type="tel" name="phone" placeholder="+44...">
+</div>
+
+<button type="button" onclick="document.title='SUBMITTED'">Verify</button>
+
+<div id="verdict">checking…</div>
+
+<script>
+  // One shape or the other, as a real site would have.
+  var mode = new URLSearchParams(location.search).get('mode') === 'split'
+    ? 'split' : 'single';
+  document.getElementById(
+    mode === 'split' ? 'single-section' : 'split-section').style.display = 'none';
+
+  // A controlled input, the React way: the framework owns the value and
+  // only learns about changes through the input event.
+  var frameworkState = '';
+  var controlled = document.getElementById('controlled');
+  Object.defineProperty(controlled, 'value', {
+    get: function () { return frameworkState; },
+    set: function (v) { frameworkState = v; },
+    configurable: true,
+  });
+  controlled.addEventListener('input', function () {
+    document.getElementById('controlled-state').textContent =
+      'framework state: ' + (frameworkState || '(empty)');
+  });
+
+  var NEVER = ['coupon_code', 'promo', 'email', 'phone'];
+  var before = {};
+  document.querySelectorAll('input').forEach(function (el) {
+    before[el.name] = el.value;
+  });
+
+  function splitValue() {
+    return Array.prototype.map
+      .call(document.querySelectorAll('#split input'), function (el) {
+        return el.value;
+      })
+      .join('');
+  }
+
+  function check() {
+    var notes = [], bad = [];
+
+    var otc = document.getElementsByName('otc')[0].value;
+    if (otc) notes.push('one-time-code: ' + otc);
+
+    var split = splitValue();
+    if (split) {
+      notes.push('split boxes: ' + split);
+      if (split.length < 2) bad.push('SPLIT BOXES GOT ONE CHARACTER');
+    }
+
+    if (frameworkState) notes.push('controlled: ' + frameworkState);
+
+    NEVER.forEach(function (n) {
+      var el = document.getElementsByName(n)[0];
+      if (el && el.value !== before[n]) bad.push('TOUCHED: ' + n);
+    });
+
+    if (document.title === 'SUBMITTED') bad.push('FORM WAS SUBMITTED');
+
+    var filled = notes.length;
+    if (filled > 1) bad.push('FILLED ' + filled + ' FIELDS, EXPECTED 1');
+
+    document.getElementById('verdict').innerHTML = bad.length
+      ? '<b class=fail>FAIL</b> ' + bad.join(' · ')
+      : filled === 0
+        ? 'waiting for a code…'
+        : '<b class=pass>PASS</b> ' + notes.join('; ') +
+          '; nothing else touched; not submitted';
+  }
+
+  check();
+  setInterval(check, 500);
+</script>
