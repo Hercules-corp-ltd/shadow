@@ -6,8 +6,10 @@ import 'package:provider/provider.dart';
 
 import '../../models/domain.dart';
 import '../../providers/domains_provider.dart';
+import '../../services/fetch_outcome.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
+import '../../widgets/empty_state.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/list_item_card.dart';
 import '../../widgets/shadow_button.dart';
@@ -24,13 +26,32 @@ class DomainDetailsScreen extends StatefulWidget {
 
 class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
   ShadowDomain? _d;
+  String? _error;
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final d = await context.read<DomainsProvider>().load(widget.domain);
-      if (mounted) setState(() => _d = d);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final outcome = await context.read<DomainsProvider>().load(widget.domain);
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+      switch (outcome) {
+        case FetchSuccess(value: final d):
+          _d = d;
+        case FetchNotFound():
+          _error = 'No domain registered as "${widget.domain}"';
+        case FetchUnreachable(reason: final reason):
+          _error = reason;
+      }
     });
   }
 
@@ -41,13 +62,23 @@ class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
 
     return ShadowScaffold(
       title: widget.domain,
-      subtitle: d == null
-          ? 'Loading...'
-          : d.isVerified
-              ? 'Verified domain'
-              : 'Unverified',
+      subtitle: switch ((d, _loading)) {
+        (final ShadowDomain domain, _) =>
+          domain.isVerified ? 'Verified domain' : 'Unverified',
+        (_, true) => 'Loading...',
+        _ => 'Unavailable',
+      },
       body: d == null
-          ? const Center(child: CircularProgressIndicator())
+          ? (_loading
+              ? const Center(child: CircularProgressIndicator())
+              : EmptyState(
+                  icon: Icons.cloud_off_rounded,
+                  tone: EmptyStateTone.error,
+                  title: 'Could not load this domain',
+                  message: _error ?? 'Something went wrong.',
+                  actionLabel: 'Try again',
+                  onAction: _load,
+                ))
           : ListView(
               padding: const EdgeInsets.only(bottom: 24),
               children: [

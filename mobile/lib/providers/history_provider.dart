@@ -43,9 +43,18 @@ class HistoryProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> clear() async {
-    await _service.clear();
-    _entries = const [];
+  /// Clears history. [range] of null or 'all' clears everything.
+  ///
+  /// The range must be threaded all the way through: the clear screen's picker
+  /// used to stop at local state, so every choice erased the lot.
+  Future<void> clear({String? range}) async {
+    await _service.clear(range: range);
+    if (range == null || range == 'all') {
+      _entries = const [];
+    } else {
+      await load();
+      return;
+    }
     notifyListeners();
   }
 }

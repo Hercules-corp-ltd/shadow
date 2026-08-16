@@ -1,16 +1,25 @@
 import '../models/domain.dart';
 import 'api_client.dart';
+import 'fetch_outcome.dart';
 
 /// Olympus domain management — register, resolve, transfer, renew.
 class DomainService {
   final ApiClient _api = ApiClient.instance;
 
-  Future<ShadowDomain?> get(String domain) async {
+  /// Looks up a single domain.
+  ///
+  /// Returns an outcome rather than a nullable domain. The old `null` meant
+  /// both "no such domain" and "the request blew up", and the details screen
+  /// treated null as still-loading — so any error left a spinner turning
+  /// forever under the subtitle "Loading...".
+  Future<FetchOutcome<ShadowDomain>> get(String domain) async {
     try {
       final res = await _api.get<Map<String, dynamic>>('/domains/$domain');
-      return ShadowDomain.fromJson(res.data ?? const {});
-    } catch (_) {
-      return null;
+      final data = res.data;
+      if (data == null || data.isEmpty) return const FetchNotFound();
+      return FetchSuccess(ShadowDomain.fromJson(data));
+    } catch (error) {
+      return outcomeFromDio<ShadowDomain>(error);
     }
   }
 

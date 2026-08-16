@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/domain.dart';
 import '../services/domain_service.dart';
+import '../services/fetch_outcome.dart';
 
 class DomainsProvider with ChangeNotifier {
   final DomainService _service = DomainService();
@@ -9,12 +10,16 @@ class DomainsProvider with ChangeNotifier {
   List<ShadowDomain> _myDomains = const [];
   List<ShadowDomain> _searchResults = const [];
   ShadowDomain? _active;
+  String? _activeError;
   bool _isLoading = false;
   String? _error;
 
   List<ShadowDomain> get myDomains => _myDomains;
   List<ShadowDomain> get searchResults => _searchResults;
   ShadowDomain? get active => _active;
+
+  /// Why [active] is null, when it is null because something went wrong.
+  String? get activeError => _activeError;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -45,10 +50,26 @@ class DomainsProvider with ChangeNotifier {
     }
   }
 
-  Future<ShadowDomain?> load(String domain) async {
-    _active = await _service.get(domain);
+  /// Loads one domain, recording why it failed if it did.
+  ///
+  /// Callers must check [activeError] before treating a null [_active] as
+  /// "still loading" — that conflation is what left the details screen
+  /// spinning forever on any error.
+  Future<FetchOutcome<ShadowDomain>> load(String domain) async {
+    final outcome = await _service.get(domain);
+    switch (outcome) {
+      case FetchSuccess(value: final d):
+        _active = d;
+        _activeError = null;
+      case FetchNotFound():
+        _active = null;
+        _activeError = 'No domain registered as "$domain"';
+      case FetchUnreachable(reason: final reason):
+        _active = null;
+        _activeError = reason;
+    }
     notifyListeners();
-    return _active;
+    return outcome;
   }
 
   Future<ShadowDomain> register({

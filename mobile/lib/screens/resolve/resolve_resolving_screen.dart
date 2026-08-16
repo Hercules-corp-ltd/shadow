@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../models/site.dart';
+import '../../services/fetch_outcome.dart';
 import '../../services/resolve_service.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
@@ -27,18 +27,27 @@ class _ResolveResolvingScreenState extends State<ResolveResolvingScreen> {
   }
 
   Future<void> _resolve() async {
-    Site? site;
     final id = widget.shadowId;
-    if (id.endsWith('.shadow')) {
-      site = await _service.resolveDomain(id);
-    } else {
-      site = await _service.resolveById(id);
-    }
+    final outcome = id.endsWith('.shadow')
+        ? await _service.resolveDomain(id)
+        : await _service.resolveById(id);
     if (!mounted) return;
-    if (site == null || site.contentCid.isEmpty) {
-      context.go('/resolve/failed?id=${Uri.encodeComponent(id)}');
-    } else {
-      context.go('/resolve/result?id=${Uri.encodeComponent(id)}');
+
+    final encoded = Uri.encodeComponent(id);
+    switch (outcome) {
+      case FetchSuccess(value: final site) when site.contentCid.isNotEmpty:
+        context.go('/resolve/result?id=$encoded');
+      case FetchSuccess():
+        // Registered, but nothing is pinned behind it. That is a genuine
+        // "no content" answer rather than a lookup failure.
+        context.go('/resolve/failed?id=$encoded&reason=unpinned');
+      case FetchNotFound():
+        context.go('/resolve/failed?id=$encoded&reason=notfound');
+      case FetchUnreachable(reason: final reason):
+        context.go(
+          '/resolve/failed?id=$encoded&reason=unreachable'
+          '&detail=${Uri.encodeComponent(reason)}',
+        );
     }
   }
 

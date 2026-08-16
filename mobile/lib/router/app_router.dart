@@ -285,7 +285,10 @@ class AppRouter {
             GoRoute(
               path: 'failed',
               builder: (ctx, s) => ResolveFailedScreen(
-                  shadowId: s.uri.queryParameters['id'] ?? ''),
+                shadowId: s.uri.queryParameters['id'] ?? '',
+                reason: ResolveFailure.parse(s.uri.queryParameters['reason']),
+                detail: s.uri.queryParameters['detail'],
+              ),
             ),
           ],
         ),

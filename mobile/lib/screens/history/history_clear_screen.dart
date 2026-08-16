@@ -75,7 +75,7 @@ class _HistoryClearScreenState extends State<HistoryClearScreen> {
             variant: ShadowButtonVariant.danger,
             size: ShadowButtonSize.lg,
             onPressed: () async {
-              await context.read<HistoryProvider>().clear();
+              await context.read<HistoryProvider>().clear(range: _range);
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('History cleared')),

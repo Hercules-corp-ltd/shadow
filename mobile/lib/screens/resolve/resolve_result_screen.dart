@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/site.dart';
 import '../../providers/bookmarks_provider.dart';
 import '../../services/history_service.dart';
+import '../../services/fetch_outcome.dart';
 import '../../services/resolve_service.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
@@ -35,21 +37,36 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
 
   Future<void> _load() async {
     final id = widget.shadowId;
-    Site? site;
-    if (id.endsWith('.shadow')) {
-      site = await _service.resolveDomain(id);
-    } else {
-      site = await _service.resolveById(id);
-    }
+    final outcome = id.endsWith('.shadow')
+        ? await _service.resolveDomain(id)
+        : await _service.resolveById(id);
     if (!mounted) return;
-    setState(() {
-      _site = site;
-      _loading = false;
-    });
-    if (site != null) {
-      try {
-        await _historyService.record(domain: site.domain, title: site.title);
-      } catch (_) {}
+
+    // This screen is only reached after the resolving screen already
+    // succeeded, so a failure here means something changed underneath us.
+    // Send the user back through the failure screen rather than rendering a
+    // half-empty result, which is what the previous null-swallowing did.
+    switch (outcome) {
+      case FetchSuccess(value: final site):
+        setState(() {
+          _site = site;
+          _loading = false;
+        });
+        try {
+          await _historyService.record(domain: site.domain, title: site.title);
+        } catch (_) {
+          // History is a convenience; failing to record must never interrupt
+          // the thing the user actually asked for.
+        }
+      case FetchNotFound():
+        context.go(
+          '/resolve/failed?id=${Uri.encodeComponent(id)}&reason=notfound',
+        );
+      case FetchUnreachable(reason: final reason):
+        context.go(
+          '/resolve/failed?id=${Uri.encodeComponent(id)}&reason=unreachable'
+          '&detail=${Uri.encodeComponent(reason)}',
+        );
     }
   }
 
