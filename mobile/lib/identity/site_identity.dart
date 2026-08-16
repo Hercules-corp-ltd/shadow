@@ -10,7 +10,8 @@ class SiteIdentity {
     required this.password,
     required this.handle,
     required this.accountIndex,
-    required this.version,
+    required this.passwordEpoch,
+    required this.aliasEpoch,
   });
 
   /// The domain this identity is keyed on, after normalisation.
@@ -29,16 +30,28 @@ class SiteIdentity {
   /// one. Index 0 is the default.
   final int accountIndex;
 
-  /// Bumped when a site forces a reset or suffers a breach. Changing it
-  /// changes the password and nothing else, which is why the counter has to
-  /// be recorded in the adapter rather than remembered by the user.
-  final int version;
+  /// Bumped when a site forces a reset or suffers a breach.
+  ///
+  /// Changes the password, and the derived handle along with it. It does
+  /// **not** touch the email address — that is the whole point of there
+  /// being two counters. One number for both meant that rotating a password
+  /// also moved the address the site had on file, so the reset mail went to
+  /// a mailbox that no longer existed.
+  ///
+  /// Has to be recorded in the adapter rather than remembered by the user.
+  final int passwordEpoch;
+
+  /// Bumped to burn the address — after a leak, or when a site starts
+  /// selling it on. Changes the address and its keys, and leaves the
+  /// password alone, so the account survives the mailbox being replaced.
+  final int aliasEpoch;
 
   /// A redacted form safe to log or screenshot.
   @override
   String toString() =>
-      'SiteIdentity($registrableDomain, account $accountIndex, v$version, '
+      'SiteIdentity($registrableDomain, account $accountIndex, '
+      'pw v$passwordEpoch, alias v$aliasEpoch, '
       'email: $email, password: ${'•' * password.length})';
 
-  bool get isRotated => version > 1;
+  bool get isRotated => passwordEpoch > 1 || aliasEpoch > 1;
 }

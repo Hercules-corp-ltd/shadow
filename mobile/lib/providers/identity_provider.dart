@@ -152,7 +152,8 @@ class IdentityProvider with ChangeNotifier {
   SiteIdentity? identityFor(
     String host, {
     int accountIndex = 0,
-    int version = 1,
+    int passwordEpoch = 1,
+    int aliasEpoch = 1,
     PasswordPolicy policy = PasswordPolicy.standard,
   }) {
     final engine = _engine;
@@ -163,7 +164,8 @@ class IdentityProvider with ChangeNotifier {
         host,
         aliasDomain: alias,
         accountIndex: accountIndex,
-        version: version,
+        passwordEpoch: passwordEpoch,
+        aliasEpoch: aliasEpoch,
         policy: policy,
       );
     } on FormatException {

@@ -139,14 +139,44 @@ void main() {
       expect(second.accountIndex, 1);
     });
 
-    test('version bump rotates the password after a breach', () {
+    test('rotating the password leaves the mailbox where it was', () {
+      // The bug this pair of counters exists to prevent. One number for both
+      // meant that changing a password after a breach also changed the
+      // address the site had on file — so the reset mail went to a mailbox
+      // that no longer existed, and the account was gone.
       final original = engine.forSite('twitter.com', aliasDomain: aliasDomain);
-      final rotated =
-          engine.forSite('twitter.com', aliasDomain: aliasDomain, version: 2);
+      final rotated = engine.forSite('twitter.com',
+          aliasDomain: aliasDomain, passwordEpoch: 2);
 
       expect(rotated.password, isNot(original.password));
+      expect(rotated.email, original.email);
       expect(rotated.isRotated, isTrue);
       expect(original.isRotated, isFalse);
+    });
+
+    test('burning the address leaves the password where it was', () {
+      // And the converse: replacing a leaked address must not lock the user
+      // out of the account it belongs to.
+      final original = engine.forSite('twitter.com', aliasDomain: aliasDomain);
+      final burned = engine.forSite('twitter.com',
+          aliasDomain: aliasDomain, aliasEpoch: 2);
+
+      expect(burned.email, isNot(original.email));
+      expect(burned.password, original.password);
+      expect(burned.handle, original.handle);
+      expect(burned.isRotated, isTrue);
+    });
+
+    test('the two counters are genuinely independent', () {
+      final both = engine.forSite('twitter.com',
+          aliasDomain: aliasDomain, passwordEpoch: 3, aliasEpoch: 2);
+      final passwordOnly = engine.forSite('twitter.com',
+          aliasDomain: aliasDomain, passwordEpoch: 3);
+      final aliasOnly = engine.forSite('twitter.com',
+          aliasDomain: aliasDomain, aliasEpoch: 2);
+
+      expect(both.password, passwordOnly.password);
+      expect(both.email, aliasOnly.email);
     });
 
     test('builds a usable alias on the configured catch-all domain', () {
@@ -155,8 +185,11 @@ void main() {
 
       expect(parts, hasLength(2));
       expect(parts[1], aliasDomain);
-      expect(parts[0], hasLength(12));
+      expect(parts[0], hasLength(SiteMailboxKeys.localPartLength));
       expect(parts[0], matches(RegExp(r'^[a-z2-7]+$')));
+      // The address is the mailbox, not a separate string that happens to
+      // look like one.
+      expect(parts[0], engine.mailboxKeysFor('twitter.com').localPart);
     });
 
     test('rejects a mistyped recovery phrase instead of deriving nonsense', () {
@@ -194,7 +227,7 @@ void main() {
         throwsArgumentError,
       );
       expect(
-        () => engine.forSite('a.com', aliasDomain: aliasDomain, version: 0),
+        () => engine.forSite('a.com', aliasDomain: aliasDomain, passwordEpoch: 0),
         throwsArgumentError,
       );
     });

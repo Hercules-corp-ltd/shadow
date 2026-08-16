@@ -15,7 +15,8 @@ SiteIdentity identityWith({
     password: password,
     handle: handle,
     accountIndex: 0,
-    version: 1,
+    passwordEpoch: 1,
+    aliasEpoch: 1,
   );
 }
 

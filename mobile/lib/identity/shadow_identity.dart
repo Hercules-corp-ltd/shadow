@@ -165,7 +165,8 @@ class ShadowIdentity {
     String host, {
     required String aliasDomain,
     int accountIndex = 0,
-    int version = 1,
+    int passwordEpoch = 1,
+    int aliasEpoch = 1,
     PasswordPolicy policy = PasswordPolicy.standard,
     String handleSeparator = '',
   }) {
@@ -173,8 +174,9 @@ class ShadowIdentity {
     if (accountIndex < 0) {
       throw ArgumentError.value(accountIndex, 'accountIndex', 'must not be negative');
     }
-    if (version < 1) {
-      throw ArgumentError.value(version, 'version', 'must be at least 1');
+    if (passwordEpoch < 1) {
+      throw ArgumentError.value(
+          passwordEpoch, 'passwordEpoch', 'must be at least 1');
     }
     final cleanAliasDomain = aliasDomain.trim().toLowerCase().replaceAll(RegExp(r'^@'), '');
     if (cleanAliasDomain.isEmpty || !cleanAliasDomain.contains('.')) {
@@ -189,28 +191,36 @@ class ShadowIdentity {
 
     // One derivation, split three ways, so the password cannot be recovered
     // from the alias or the handle even if either is public.
+    //
+    // Bytes 32..64 used to be the address. They are left as a hole rather
+    // than reclaimed: the handle sits at 64..96 and moving it would change
+    // every username already typed into a signup form. The address now comes
+    // off the mail branch instead, so that it can be burned on its own
+    // counter without touching the password.
     final material = ShadowKdf.derive(
       inputKeyMaterial: _branchKey,
       salt: domain,
-      info: '$schemeVersion|$domain|$accountIndex|$version',
+      info: '$schemeVersion|$domain|$accountIndex|$passwordEpoch',
       length: 96,
     );
 
     final passwordEntropy = material.sublist(0, 32);
-    final aliasEntropy = material.sublist(32, 64);
     final handleEntropy = material.sublist(64, 96);
 
-    // 12 base32 characters is 60 bits — far past any collision concern
-    // within one catch-all domain, and still short enough to read out loud.
-    final localPart = base32Encode(aliasEntropy).substring(0, 12);
+    final mailbox = mailboxKeysFor(
+      host,
+      accountIndex: accountIndex,
+      aliasEpoch: aliasEpoch,
+    );
 
     return SiteIdentity(
       registrableDomain: domain,
-      email: '$localPart@$cleanAliasDomain',
+      email: mailbox.addressAt(cleanAliasDomain),
       password: PasswordShaper.shape(entropy: passwordEntropy, policy: policy),
       handle: HandleShaper.shape(entropy: handleEntropy, separator: handleSeparator),
       accountIndex: accountIndex,
-      version: version,
+      passwordEpoch: passwordEpoch,
+      aliasEpoch: aliasEpoch,
     );
   }
 
