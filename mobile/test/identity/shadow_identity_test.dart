@@ -149,6 +149,32 @@ void main() {
       final identity = engine.forSite('twitter.com', aliasDomain: aliasDomain);
       expect(identity.toString(), isNot(contains(identity.password)));
     });
+
+    test('refuses to derive after wipe instead of deriving from zeros', () {
+      final wiped = ShadowIdentity.fromMnemonic(testPhrase);
+      wiped.wipe();
+      expect(
+        () => wiped.forSite('twitter.com', aliasDomain: aliasDomain),
+        throwsStateError,
+      );
+    });
+
+    test('a wiped engine cannot produce the same identity as another', () {
+      // The failure this guards against is not "wrong credentials" but
+      // "everyone's credentials are identical", because a zeroed branch key
+      // is the same zeroed branch key on every device. Two engines built
+      // from different phrases must not converge after wiping.
+      final a = ShadowIdentity.fromMnemonic(testPhrase)..wipe();
+      final b = ShadowIdentity.fromMnemonic(
+        'legal winner thank year wave sausage worth useful legal '
+        'winner thank yellow',
+      )..wipe();
+
+      expect(() => a.forSite('x.com', aliasDomain: aliasDomain),
+          throwsStateError);
+      expect(() => b.forSite('x.com', aliasDomain: aliasDomain),
+          throwsStateError);
+    });
   });
 
   group('PasswordShaper', () {

@@ -46,6 +46,20 @@ class ShadowIdentity {
 
   final Uint8List _branchKey;
 
+  /// Set by [wipe], and checked before every derivation.
+  ///
+  /// [wipe] zeroes the branch key in place. Without this flag a derivation
+  /// afterwards would not fail — it would succeed against 32 zero bytes and
+  /// return a plausible-looking identity that is *the same for every user on
+  /// earth*. A wrong password is the mild version of that. Once a derived
+  /// address is a real mailbox, it is a local part every installation
+  /// computes identically and then tries to claim.
+  ///
+  /// Today nothing reaches it, because `IdentityProvider.lock()` nulls the
+  /// engine immediately after wiping. That is luck, not design, and it is one
+  /// refactor away from not being true.
+  bool _wiped = false;
+
   /// Builds an engine from a BIP-39 recovery phrase.
   ///
   /// Throws [FormatException] if the phrase fails its checksum, which catches
@@ -94,6 +108,7 @@ class ShadowIdentity {
     PasswordPolicy policy = PasswordPolicy.standard,
     String handleSeparator = '',
   }) {
+    _assertUsable();
     if (accountIndex < 0) {
       throw ArgumentError.value(accountIndex, 'accountIndex', 'must not be negative');
     }
@@ -146,6 +161,16 @@ class ShadowIdentity {
   void wipe() {
     for (var i = 0; i < _branchKey.length; i++) {
       _branchKey[i] = 0;
+    }
+    _wiped = true;
+  }
+
+  /// Refuses to derive anything from a wiped key. See [_wiped].
+  void _assertUsable() {
+    if (_wiped) {
+      throw StateError(
+        'This identity has been wiped. Unlock again before deriving.',
+      );
     }
   }
 }
