@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug builds only. This file lives under src/debug, so it is never merged
+  into a release APK.
+
+  From targetSdk 28 onward Android blocks cleartext HTTP by default, and that
+  default is correct for this app: Shadow is a privacy browser, UrlInput
+  already upgrades bare hosts to https, and a release build has no business
+  talking plaintext to anything.
+
+  The exception is local development. A backend running on the developer's
+  machine is reachable from an emulator at 10.0.2.2 (and from a physical
+  device on the same network at its LAN address), over http, because nobody
+  runs a local dev server behind TLS. Without this, every call to the Shadow
+  API fails with "CLEARTEXT communication not permitted" and the app looks
+  broken for a reason that has nothing to do with the app.
+
+  Scoped to the loopback aliases only. Do not widen it to
+  cleartextTrafficPermitted="true" at the base level — that would apply to
+  the WebView too, and a privacy browser silently loading plaintext pages is
+  exactly the behaviour this config exists to avoid.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- The host machine, as seen from an Android emulator. -->
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <!-- Genymotion's equivalent. -->
+        <domain includeSubdomains="false">10.0.3.2</domain>
+        <!-- The emulator itself, for anything served on-device. -->
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+    </domain-config>
+</network-security-config>

@@ -89,6 +89,48 @@ jobs:
         run: flutter test --reporter=expanded
 
   # ----------------------------------------------------------------------
+  # Android: assemble a debug APK.
+  #
+  # The Gradle path in this project had never been executed by anything —
+  # no CI job, no local build (there is no JDK on the dev machine). This is
+  # the first thing that compiles it, and it catches the class of failure
+  # `flutter analyze` cannot see: manifest merge conflicts, NDK and SDK
+  # mismatches, plugin minSdk floors, and AGP/Kotlin drift.
+  # ----------------------------------------------------------------------
+  android:
+    name: Android (debug APK)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          # AGP 8.11 requires 17+; the app compiles Java and Kotlin at 17.
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Report APK size
+        run: du -h build/app/outputs/flutter-apk/app-debug.apk
+
+  # ----------------------------------------------------------------------
   # iOS: compile the real app on a macOS runner, unsigned.
   #
   # Development happens on Windows, where `flutter build ios` cannot run at
@@ -125,3 +167,14 @@ jobs:
 
       - name: Report app size
         run: du -sh build/ios/iphoneos/Runner.app
+
+      # Unsigned, so this cannot be installed on a device as-is — it needs
+      # re-signing first. Uploaded so the build can at least be inspected
+      # without a Mac, which is otherwise impossible from this project's
+      # development machine.
+      - name: Upload unsigned app
+        uses: actions/upload-artifact@v4
+        with:
+          name: Runner-unsigned-app
+          path: mobile/build/ios/iphoneos/Runner.app
+          retention-days: 7
