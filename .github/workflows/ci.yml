@@ -178,3 +178,60 @@ jobs:
           name: Runner-unsigned-app
           path: mobile/build/ios/iphoneos/Runner.app
           retention-days: 7
+
+  # The mail receiver.
+  #
+  # Worth its own job for a reason this repository has already learned the
+  # hard way: `cargo build` compiled the Rust backend happily for eight
+  # months while the binary exited on startup every single time, because no
+  # job ever ran it. A typecheck alone would repeat that mistake in
+  # TypeScript, so this boots the Worker under wrangler and drives the whole
+  # chain — register, deliver, poll, open the seal, and every refusal —
+  # through the same code path Cloudflare's email() handler uses.
+  #
+  # No domain, no DNS and no Cloudflare account are involved.
+  mail-worker:
+    name: Mail Worker
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/mail-worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: services/mail-worker/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Create the local database
+        run: npx wrangler d1 execute shadow-mail --env dev --local --file schema.sql
+
+      - name: Start the Worker
+        run: |
+          npx wrangler dev --env dev --local --port 8787 > wrangler.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf -o /dev/null -X POST http://127.0.0.1:8787/mail/probe \
+              -H 'content-type: application/json' -d '{}' \
+              || [ "$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+                   http://127.0.0.1:8787/mail/probe \
+                   -H 'content-type: application/json' -d '{}')" = "400" ]; then
+              echo "ready after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "worker never became ready"; cat wrangler.log; exit 1
+
+      - name: End-to-end probe
+        run: node tool/probe.mjs
+
+      - name: Worker log on failure
+        if: failure()
+        run: cat wrangler.log || true
