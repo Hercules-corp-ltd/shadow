@@ -1,0 +1,91 @@
+# Shadow's mail receiver.
+#
+# Inbound mail for the alias domain arrives here through a Cloudflare Email
+# Routing catch-all rule whose action is this Worker. Catch-all to a Worker
+# means no per-address routing rules exist, so the 200-rules-per-domain cap
+# never applies and the alias space is unbounded.
+#
+# Deliberately NOT part of the Rust backend. That service has never booted,
+# every persistence path in it leads to a MongoDB cluster whose credentials
+# have been public since 2025-12-02, and its only general-purpose "encrypt
+# some bytes" helper is a repeating XOR documented as AES-256-GCM.
+#
+# There is no outbound path here and there must never be one. Sending is
+# where alias services get abused into phishing infrastructure, and it is the
+# single largest risk reduction available.
+
+name = "shadow-mail"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+
+# Needed for WebCrypto Ed25519 and X25519.
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = false
+# Off on purpose. "We do not log it" is a claim about our code, not about the
+# stack it runs on: an invocation log would record request metadata for every
+# poll, and a subpoena reaches whatever the platform kept regardless of what
+# this Worker chose to write. See docs/decisions/0002.
+
+[vars]
+# The domain the catch-all is attached to. Overridden per environment.
+ALIAS_DOMAIN = "mail.shadow.test"
+
+# Sealed mail is deleted this many days after it arrives.
+#
+# Seven is the ceiling, not the target. Verification codes expire in ten to
+# thirty minutes; 48 hours covers "the phone was dead" without turning this
+# into an archive that can be seized. The threat analysis argues for 48 and
+# calls seven the outer edge of defensible.
+RETENTION_DAYS = "7"
+
+# Leading zero bits required on the registration proof of work. 20 bits is
+# roughly a second of phone CPU — nothing to a person creating a few dozen
+# mailboxes over a year, and about 100 CPU-days per ten million.
+POW_BITS = "20"
+
+# A mailbox that has never been polled accepts only this many messages.
+#
+# The best abuse control available here, because it touches no identity at
+# all. A real user polls within seconds of registering. Someone farming ten
+# thousand mailboxes has to poll ten thousand mailboxes, which makes storage
+# cost them something and is independently rate-limitable.
+PROVISIONAL_MESSAGE_CAP = "3"
+
+# Hard caps per mailbox for its whole life.
+MESSAGE_CAP = "50"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "shadow-mail"
+database_id = "PLACEHOLDER_CREATE_WITH_WRANGLER_D1_CREATE"
+
+[[r2_buckets]]
+binding = "SEALED"
+bucket_name = "shadow-mail-sealed"
+
+# Bindings are NOT inherited by named environments in wrangler, so the dev
+# environment has to repeat them. Leaving them out fails with a confusing
+# "couldn't find a D1 DB with the name or binding" rather than anything that
+# points at inheritance.
+[[env.dev.d1_databases]]
+binding = "DB"
+database_name = "shadow-mail"
+database_id = "local-only"
+
+[[env.dev.r2_buckets]]
+binding = "SEALED"
+bucket_name = "shadow-mail-sealed"
+
+[env.dev.vars]
+ALIAS_DOMAIN = "mail.shadow.test"
+RETENTION_DAYS = "7"
+POW_BITS = "8"
+PROVISIONAL_MESSAGE_CAP = "3"
+MESSAGE_CAP = "50"
+# Enables POST /_dev/inbound, which feeds raw MIME through the exact code
+# path Cloudflare's email() handler uses. It is the only way to prove the
+# whole chain without owning a domain yet. Guarded by this flag, absent from
+# production vars, and refused unless wrangler reports a local dev session.
+DEV_INBOUND = "1"

@@ -111,3 +111,8 @@ mobile/windows/flutter/ephemeral/
 !**/LICENSE.md
 !**/SECURITY.md
 
+
+# Cloudflare Worker local state. The Worker's own manifests are already
+# covered by the package.json / tsconfig.json allow-list above.
+services/**/.wrangler/
+services/**/node_modules/
