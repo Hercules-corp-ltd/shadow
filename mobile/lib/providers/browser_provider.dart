@@ -2,6 +2,7 @@ import 'dart:ui' show Color;
 
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import '../browser/tracker_blocking.dart';
@@ -44,9 +45,9 @@ class BrowserTabModel {
 ///
 /// Privacy posture, stated plainly rather than implied by branding:
 ///
-/// Tracker blocking is real on iOS — see [TrackerBlocking] — and absent on
-/// Android, where no request-interception hook is reachable from Dart. The
-/// UI reads its wording from the blocking state rather than assuming success.
+/// Tracker blocking is real on both platforms — see [TrackerBlocking]. The UI
+/// reads its wording from the blocking state rather than assuming success,
+/// because Android 7 still cannot support it and says so.
 ///
 /// Cookies and site data still persist across tabs and launches, exactly as
 /// in any ordinary browser, until [clearBrowsingData] is called. Tabs share
@@ -103,10 +104,20 @@ class BrowserProvider with ChangeNotifier {
     if (tab.blockingReady) return;
     tab.blockingReady = true;
     final controller = tab.controller.platform;
-    if (controller is WebKitWebViewController) {
-      await TrackerBlocking.install(webViewId: controller.webViewIdentifier);
-      notifyListeners();
-    }
+
+    // Both platforms hand over an identifier their own plugin can resolve
+    // back to the native view — WKWebView on iOS, android.webkit.WebView on
+    // Android. The identifier is all the bridges need; everything else about
+    // how blocking works is platform-side and different.
+    final int? webViewId = switch (controller) {
+      WebKitWebViewController() => controller.webViewIdentifier,
+      AndroidWebViewController() => controller.webViewIdentifier,
+      _ => null,
+    };
+    if (webViewId == null) return;
+
+    await TrackerBlocking.install(webViewId: webViewId);
+    notifyListeners();
   }
 
   BrowserTabModel _createTab() {

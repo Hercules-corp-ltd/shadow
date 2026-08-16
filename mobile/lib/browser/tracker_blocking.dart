@@ -36,15 +36,21 @@ enum BlockingState {
 /// Safari content blockers use — and WebKit drops matching requests inside its
 /// own network stack before they leave the device.
 ///
-/// **Android**: nothing. WKContentRuleList is WebKit-only, and webview_flutter
-/// exposes no request interception on Android, so there is no honest way to
-/// block from Dart. The state reports [BlockingState.unsupported] and the UI
-/// must say so plainly rather than showing a switch that does nothing. This is
-/// a real gap, not a rounding error, and it should not be papered over with
-/// JavaScript that patches fetch and XHR: the preload scanner dispatches
-/// requests for scripts and images in the raw HTML before any injected code
-/// can run, so that approach fails open and fails silently — the worst
-/// combination, because it demos perfectly and protects nobody.
+/// **Android**: also real, since `TrackerBlockingBridge.kt`. There is no
+/// WebKit rule list, but `WebViewFlutterAndroidExternalApi` hands Kotlin the
+/// underlying `WebView` — the exact counterpart of the call the iOS bridge
+/// makes — and `shouldInterceptRequest` sees every subresource before it goes
+/// out. The plugin's own `WebViewClient` is wrapped rather than replaced, so
+/// every navigation callback still reaches Dart.
+///
+/// Reading that client back needs Android 8, so on 7 the bridge reports
+/// unsupported instead of guessing. Both platforms send the same 58 domains,
+/// emitted from one list in one build-tool run so they cannot drift apart.
+///
+/// What this is still not: JavaScript that patches `fetch` and
+/// `XMLHttpRequest`. That shortcut fails open — the preload scanner
+/// dispatches requests for scripts and images in the raw HTML before any
+/// injected code can run — so it demos perfectly and protects nobody.
 class TrackerBlocking {
   TrackerBlocking._();
 
@@ -53,6 +59,10 @@ class TrackerBlocking {
 
   static const String _rulesAsset = 'assets/blocklist/trackers.json';
   static const String _metaAsset = 'assets/blocklist/trackers.meta.json';
+
+  /// The same rules as plain domains, for Android's request interception.
+  /// WKContentRuleList JSON means nothing to Android's WebView.
+  static const String _domainsAsset = 'assets/blocklist/trackers.domains.json';
 
   static BlockingState _state = BlockingState.idle;
   static String? _lastError;
@@ -67,7 +77,10 @@ class TrackerBlocking {
   /// be reported honestly.
   static int get ruleCount => _ruleCount;
 
-  static bool get isSupported => Platform.isIOS;
+  /// Both platforms are attempted now. Android may still come back
+  /// unsupported at run time on Android 7 — that is the bridge's answer to
+  /// give, not a guess to make from here.
+  static bool get isSupported => Platform.isIOS || Platform.isAndroid;
 
   /// Loads the bundled rules and installs them into the web view identified by
   /// [webViewId].
@@ -82,15 +95,8 @@ class TrackerBlocking {
 
     _state = BlockingState.installing;
     try {
-      final rules = await rootBundle.loadString(_rulesAsset);
       final meta = jsonDecode(await rootBundle.loadString(_metaAsset))
           as Map<String, dynamic>;
-
-      final decoded = jsonDecode(rules);
-      if (decoded is! List || decoded.isEmpty) {
-        throw const FormatException('Blocklist is empty or not a JSON array');
-      }
-      _ruleCount = decoded.length;
 
       // The identifier carries the rules' content hash, so a changed list
       // compiles under a new identifier and an unchanged one hits the
@@ -98,11 +104,46 @@ class TrackerBlocking {
       final hash = meta['contentHash'] as String? ?? 'unknown';
       _identifier = 'shadow-trackers-$hash';
 
-      await _channel.invokeMethod<Map<Object?, Object?>>('install', {
+      final args = <String, Object?>{
         'identifier': _identifier,
-        'rules': rules,
         'webViewId': webViewId,
-      });
+      };
+
+      if (Platform.isAndroid) {
+        final parsed = jsonDecode(await rootBundle.loadString(_domainsAsset));
+        if (parsed is! Map) {
+          throw const FormatException('Domain list is not a JSON object');
+        }
+        final entries = parsed['domains'];
+        if (entries is! List || entries.isEmpty) {
+          throw const FormatException('Domain list is empty');
+        }
+        // Cross-check the two assets against each other. They are emitted in
+        // one run from one array, so a mismatch means someone regenerated
+        // half of it — and a stale domain list is a blocker that looks
+        // healthy while missing whatever was added.
+        if (parsed['contentHash'] != hash) {
+          throw const FormatException(
+            'Domain list and rule list are from different builds',
+          );
+        }
+        _ruleCount = entries.length;
+        args['domains'] = <String>[
+          for (final entry in entries)
+            if (entry is Map && entry['domain'] is String)
+              entry['domain'] as String,
+        ];
+      } else {
+        final rules = await rootBundle.loadString(_rulesAsset);
+        final decoded = jsonDecode(rules);
+        if (decoded is! List || decoded.isEmpty) {
+          throw const FormatException('Blocklist is empty or not a JSON array');
+        }
+        _ruleCount = decoded.length;
+        args['rules'] = rules;
+      }
+
+      await _channel.invokeMethod<Map<Object?, Object?>>('install', args);
 
       // Old lists persist on disk across launches, so sweep them once the new
       // one is safely installed.
@@ -161,7 +202,7 @@ class TrackerBlocking {
         return 'Preparing the blocklist…';
       case BlockingState.unsupported:
         return Platform.isAndroid
-            ? 'Not available on Android yet — see Settings for why'
+            ? 'Needs Android 8 or later'
             : 'Not available on this platform';
       case BlockingState.failed:
         return 'Not blocking — ${_lastError ?? 'installation failed'}';

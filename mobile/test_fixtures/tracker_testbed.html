@@ -1,0 +1,142 @@
+<!doctype html>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shadow tracker-blocking testbed</title>
+
+<!--
+  A page for checking that tracker blocking actually blocks, on a device.
+
+  ## How it can tell
+
+  A blocked request is answered locally with an empty 200. So a <script> that
+  points at a path which would really 404:
+
+    * fires ONLOAD if Shadow answered it     — an empty script parses fine
+    * fires ONERROR if it reached the server — a 404 has no script to run
+
+  That inversion is the whole test, and it is unambiguous in a way that an
+  <img> is not: an image fails to decode whether it was blocked or the
+  network was down.
+
+  The control row points at a domain that is NOT on the blocklist and must
+  always report "reached". If the control ever says "blocked", the blocker is
+  matching too much and would be breaking real sites.
+
+  Third-party only, as the EasyPrivacy rules are scoped: this page must be
+  served from some other domain — raw.githack.com does the job.
+-->
+
+<style>
+  body { font: 15px system-ui; background: #111; color: #eee; margin: 0;
+         padding: 16px 16px 120px }
+  h1 { font-size: 19px }
+  h2 { font-size: 12px; color: #888; text-transform: uppercase;
+       letter-spacing: .08em; margin: 22px 0 6px }
+  .row { display: flex; justify-content: space-between; gap: 12px;
+         padding: 7px 0; border-bottom: 1px solid #222; font-size: 14px }
+  .host { color: #bbb; font-family: ui-monospace, monospace }
+  .blocked { color: #40c057 } .reached { color: #ff6b6b } .pending { color: #666 }
+  .control .blocked { color: #ff6b6b } .control .reached { color: #40c057 }
+  .note { color: #777; font-size: 12px; margin: 6px 0 0 }
+  #verdict { position: fixed; left: 0; right: 0; bottom: 0; padding: 14px 16px;
+    font: 14px/1.4 system-ui; background: #000; border-top: 2px solid #333 }
+  .pass { color: #40c057 } .fail { color: #ff6b6b }
+</style>
+
+<h1>Tracker blocking</h1>
+<p class="note">
+  Each row loads a script from a path that does not exist. "Blocked" means
+  Shadow answered it locally; "reached" means the request left the device.
+</p>
+
+<h2>Should be blocked</h2>
+<div id="trackers"></div>
+
+<h2>Control — must always be reached</h2>
+<div id="controls" class="control"></div>
+
+<div id="verdict">testing…</div>
+
+<script>
+  // On the blocklist.
+  var TRACKERS = [
+    'google-analytics.com',
+    'criteo.com',
+    'hotjar.com',
+    'taboola.com',
+    'scorecardresearch.com',
+    'quantserve.com',
+  ];
+
+  // Deliberately not on it. A blocker that catches these is over-matching,
+  // which is how a blocker starts breaking the sites people came for.
+  var CONTROLS = [
+    'example.com',
+    // Shares a suffix with a blocked domain without being one. Guards the
+    // "criteo.com.evil.test cannot match" boundary from the other side.
+    'notcriteo.com',
+  ];
+
+  var results = {};
+
+  function probe(host, containerId) {
+    var row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = '<span class=host>' + host + '</span>' +
+      '<span class=pending id="r-' + host + '">testing…</span>';
+    document.getElementById(containerId).appendChild(row);
+
+    var script = document.createElement('script');
+    // A path that will not exist on any of these hosts, plus a cache buster
+    // so a second run is not answered from the cache.
+    script.src = 'https://' + host + '/shadow-block-probe-' + Date.now() + '.js';
+
+    script.onload = function () { settle(host, 'blocked'); };
+    script.onerror = function () { settle(host, 'reached'); };
+    document.head.appendChild(script);
+
+    // A request that neither loads nor errors within the timeout was almost
+    // certainly dropped by the network rather than by us. Reported as its
+    // own state rather than quietly counted as a win.
+    setTimeout(function () { settle(host, 'timeout'); }, 8000);
+  }
+
+  function settle(host, state) {
+    if (results[host]) return;
+    results[host] = state;
+    var el = document.getElementById('r-' + host);
+    el.className = state === 'blocked' ? 'blocked'
+      : state === 'reached' ? 'reached' : 'pending';
+    el.textContent = state;
+    check();
+  }
+
+  function check() {
+    var done = Object.keys(results).length;
+    var total = TRACKERS.length + CONTROLS.length;
+    if (done < total) {
+      document.getElementById('verdict').textContent =
+        'testing… ' + done + '/' + total;
+      return;
+    }
+
+    var blocked = TRACKERS.filter(function (h) { return results[h] === 'blocked'; });
+    var leaked = TRACKERS.filter(function (h) { return results[h] === 'reached'; });
+    var overreach = CONTROLS.filter(function (h) { return results[h] === 'blocked'; });
+    var unclear = Object.keys(results).filter(function (h) {
+      return results[h] === 'timeout';
+    });
+
+    var bad = [];
+    if (leaked.length) bad.push('LEAKED: ' + leaked.join(', '));
+    if (overreach.length) bad.push('OVER-BLOCKED: ' + overreach.join(', '));
+    if (unclear.length) bad.push('no answer: ' + unclear.join(', '));
+
+    document.getElementById('verdict').innerHTML = bad.length
+      ? '<b class=fail>FAIL</b> ' + bad.join(' · ')
+      : '<b class=pass>PASS</b> blocked ' + blocked.length + '/' +
+        TRACKERS.length + '; controls reached';
+  }
+
+  TRACKERS.forEach(function (h) { probe(h, 'trackers'); });
+  CONTROLS.forEach(function (h) { probe(h, 'controls'); });
+</script>

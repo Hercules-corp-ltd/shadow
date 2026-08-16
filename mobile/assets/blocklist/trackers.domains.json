@@ -1,0 +1,242 @@
+{
+  "contentHash": "11a221ff5a3b9ff3",
+  "domains": [
+    {
+      "domain": "2o7.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "addthis.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "agkn.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "amplitude.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "bidswitch.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "bluekai.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "branch.io",
+      "resourceTypes": []
+    },
+    {
+      "domain": "chartbeat.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "clarity.ms",
+      "resourceTypes": []
+    },
+    {
+      "domain": "clicktale.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "contentsquare.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "coremetrics.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "crazyegg.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "criteo.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "criteo.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "crwdcntrl.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "cxense.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "demdex.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "everesttech.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "exelator.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "fullstory.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "gemius.pl",
+      "resourceTypes": []
+    },
+    {
+      "domain": "getclicky.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "glassboxdigital.io",
+      "resourceTypes": []
+    },
+    {
+      "domain": "google-analytics.com",
+      "resourceTypes": [
+        "script",
+        "raw"
+      ]
+    },
+    {
+      "domain": "heapanalytics.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "histats.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "hotjar.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "imrworldwide.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "inspectlet.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "kissmetrics.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "kissmetrics.io",
+      "resourceTypes": []
+    },
+    {
+      "domain": "krxd.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "logrocket.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "luckyorange.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "lytics.io",
+      "resourceTypes": []
+    },
+    {
+      "domain": "mathtag.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "media.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "mixpanel.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "mouseflow.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "newrelic.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "nr-data.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "omtrdc.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "openstat.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "outbrain.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "permutive.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "quantserve.com",
+      "resourceTypes": [
+        "script"
+      ]
+    },
+    {
+      "domain": "quantummetric.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "scorecardresearch.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "semasio.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "sessioncam.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "singular.net",
+      "resourceTypes": []
+    },
+    {
+      "domain": "smartlook.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "statcounter.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "taboola.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "tapad.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "webtrends.com",
+      "resourceTypes": []
+    },
+    {
+      "domain": "zeotap.com",
+      "resourceTypes": []
+    }
+  ]
+}

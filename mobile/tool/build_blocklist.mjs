@@ -185,6 +185,35 @@ const json = JSON.stringify(emitted, null, 2);
 const hash = createHash('sha256').update(json).digest('hex').slice(0, 16);
 
 writeFileSync('assets/blocklist/trackers.json', `${json}\n`);
+
+// The same rules, as plain domains, for Android.
+//
+// WKContentRuleList is a WebKit format and means nothing to Android's
+// WebView, which blocks by inspecting each request in shouldInterceptRequest
+// and therefore wants a host to compare against. The alternative — having
+// Kotlin reverse the `url-filter` regexes back into domains — would couple
+// the Android blocker to the exact regex shape emitted above, so that a
+// harmless change here would silently stop blocking anything.
+//
+// Emitted from the same `domains` array as the WebKit rules, in the same
+// run, so the two lists cannot drift apart.
+writeFileSync(
+  'assets/blocklist/trackers.domains.json',
+  `${JSON.stringify(
+    {
+      contentHash: hash,
+      domains: emitted.map((rule) => ({
+        domain: rule.trigger['url-filter']
+          .replace(/^\^\[\^:\]\+:\/\/\+\(\[\^:\/\]\+\\\.\)\?/, '')
+          .replace(/\[:\/\]$/, '')
+          .replace(/\\\./g, '.'),
+        resourceTypes: rule.trigger['resource-type'] ?? [],
+      })),
+    },
+    null,
+    2,
+  )}\n`,
+);
 writeFileSync(
   'assets/blocklist/trackers.meta.json',
   `${JSON.stringify({
