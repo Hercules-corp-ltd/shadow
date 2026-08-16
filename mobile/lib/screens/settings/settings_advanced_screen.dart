@@ -51,6 +51,35 @@ class SettingsAdvancedScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text('Shadow API address', style: ShadowTypography.h4),
+                const SizedBox(height: 4),
+                Text(
+                  'Where the Shadow backend lives. Leave empty for the '
+                  'built-in default. On an Android emulator, the machine '
+                  'running the server is 10.0.2.2, not localhost.',
+                  style: ShadowTypography.bodySm,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  initialValue: s.apiBaseUrl,
+                  autocorrect: false,
+                  keyboardType: TextInputType.url,
+                  style: ShadowTypography.mono,
+                  decoration: const InputDecoration(
+                    hintText: 'http://10.0.2.2:8080/api',
+                  ),
+                  onFieldSubmitted: (v) =>
+                      provider.update(s.copyWith(apiBaseUrl: v.trim())),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          GlassCard(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text('Log level', style: ShadowTypography.h4),
                 const SizedBox(height: 8),
                 Wrap(

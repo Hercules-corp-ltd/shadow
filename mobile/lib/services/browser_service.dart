@@ -2,10 +2,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../utils/constants.dart';
+
 class BrowserService {
   final String baseUrl;
   
-  BrowserService({this.baseUrl = 'http://localhost:8080/api'});
+  /// Defaults to the same place as everything else. This used to carry its
+  /// own copy of the localhost URL, so fixing the address in one place fixed
+  /// only half the app.
+  BrowserService({String? baseUrl})
+      : baseUrl = baseUrl ?? ShadowConstants.defaultApiUrl;
   
   // History management
   Future<List<Map<String, dynamic>>> getHistory(String authToken, {int limit = 50}) async {

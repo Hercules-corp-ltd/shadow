@@ -12,6 +12,9 @@ class ShadowSettings {
   // Network
   final String network; // mainnet | devnet | testnet
   final String rpcUrl;
+
+  /// Where the Shadow backend lives. Empty means use the compiled default.
+  final String apiBaseUrl;
   final bool useTor;
   final bool ipfsEnabled;
   final bool arweaveEnabled;
@@ -32,12 +35,15 @@ class ShadowSettings {
   final String logLevel; // debug | info | warn | error
 
   const ShadowSettings({
-    this.analyticsEnabled = true,
+    // Off by default. An anonymity product that opts its users into
+    // analytics unless they find the switch has already lost the argument.
+    this.analyticsEnabled = false,
     this.telemetryEnabled = false,
     this.autoUpdateEnabled = true,
     this.language = 'en',
     this.network = 'mainnet',
     this.rpcUrl = 'https://api.mainnet-beta.solana.com',
+    this.apiBaseUrl = '',
     this.useTor = false,
     this.ipfsEnabled = true,
     this.arweaveEnabled = true,
@@ -59,6 +65,7 @@ class ShadowSettings {
     String? language,
     String? network,
     String? rpcUrl,
+    String? apiBaseUrl,
     bool? useTor,
     bool? ipfsEnabled,
     bool? arweaveEnabled,
@@ -79,6 +86,7 @@ class ShadowSettings {
         language: language ?? this.language,
         network: network ?? this.network,
         rpcUrl: rpcUrl ?? this.rpcUrl,
+        apiBaseUrl: apiBaseUrl ?? this.apiBaseUrl,
         useTor: useTor ?? this.useTor,
         ipfsEnabled: ipfsEnabled ?? this.ipfsEnabled,
         arweaveEnabled: arweaveEnabled ?? this.arweaveEnabled,
@@ -100,6 +108,7 @@ class ShadowSettings {
         'language': language,
         'network': network,
         'rpc_url': rpcUrl,
+        'api_base_url': apiBaseUrl,
         'use_tor': useTor,
         'ipfs_enabled': ipfsEnabled,
         'arweave_enabled': arweaveEnabled,
@@ -115,12 +124,13 @@ class ShadowSettings {
       };
 
   factory ShadowSettings.fromJson(Map<String, dynamic> j) => ShadowSettings(
-        analyticsEnabled: j['analytics_enabled'] ?? true,
+        analyticsEnabled: j['analytics_enabled'] ?? false,
         telemetryEnabled: j['telemetry_enabled'] ?? false,
         autoUpdateEnabled: j['auto_update_enabled'] ?? true,
         language: j['language'] ?? 'en',
         network: j['network'] ?? 'mainnet',
         rpcUrl: j['rpc_url'] ?? 'https://api.mainnet-beta.solana.com',
+        apiBaseUrl: j['api_base_url'] ?? '',
         useTor: j['use_tor'] ?? false,
         ipfsEnabled: j['ipfs_enabled'] ?? true,
         arweaveEnabled: j['arweave_enabled'] ?? true,

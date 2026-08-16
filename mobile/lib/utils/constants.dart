@@ -1,8 +1,23 @@
 // Constants for Shadow mobile app
 class ShadowConstants {
   // API endpoints
-  static const String defaultApiUrl = 'http://localhost:8080/api';
-  static const String defaultSolanaRpc = 'https://api.devnet.solana.com';
+  //
+  // Overridable at build time with:
+  //   flutter run --dart-define=SHADOW_API_URL=http://10.0.2.2:8080/api
+  //
+  // and at run time from Settings, which persists to ShadowSettings.apiBaseUrl.
+  // Both matter: `localhost` on an Android emulator is the emulator itself,
+  // so the default below reaches nothing from a device. The host machine is
+  // 10.0.2.2 from an AVD.
+  static const String defaultApiUrl = String.fromEnvironment(
+    'SHADOW_API_URL',
+    defaultValue: 'http://localhost:8080/api',
+  );
+
+  static const String defaultSolanaRpc = String.fromEnvironment(
+    'SHADOW_SOLANA_RPC',
+    defaultValue: 'https://api.devnet.solana.com',
+  );
   
   // Storage keys
   static const String walletKey = 'shadow_wallet';

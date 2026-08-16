@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
+import '../../widgets/unbuilt_tile.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/shadow_scaffold.dart';
 
@@ -78,13 +79,13 @@ class _SettingsNetworkScreenState extends State<SettingsNetworkScreen> {
             padding: const EdgeInsets.all(8),
             child: Column(
               children: [
-                SwitchListTile(
-                  value: s.useTor,
-                  title: Text('Route traffic through Tor',
-                      style: ShadowTypography.body),
-                  subtitle: Text('Slower but more private',
-                      style: ShadowTypography.bodySm),
-                  onChanged: (v) => provider.update(s.copyWith(useTor: v)),
+                const UnbuiltTile(
+                  icon: Icons.shield_outlined,
+                  title: 'Route traffic through Tor',
+                  reason:
+                      'No Tor client ships with Shadow yet, so this switch '
+                      'would change nothing. Your IP is visible to sites you '
+                      'visit.',
                 ),
                 const Divider(height: 1, color: ShadowColors.border),
                 SwitchListTile(
