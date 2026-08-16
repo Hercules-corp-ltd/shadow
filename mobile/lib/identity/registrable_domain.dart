@@ -1,41 +1,36 @@
+import 'public_suffix_data.dart';
+
 /// Reduces any URL or host to the domain that identities are keyed on.
 ///
 /// This is load-bearing: the registrable domain is the derivation key, so
 /// `twitter.com`, `www.twitter.com` and `https://twitter.com/settings` must
 /// all collapse to the same string or the user gets a different password
 /// depending on how they happened to arrive at the site.
+///
+/// ## Why the full Public Suffix List, and not a curated subset
+///
+/// It used to hold ~60 hand-picked two-label suffixes with a fallback to
+/// "last two labels". That is wrong in one direction that matters: on a
+/// multi-tenant host the PSL knows about but the subset did not — say
+/// `alice.myshopify.com` and `bob.myshopify.com` — two unrelated shops
+/// collapse to `myshopify.com` and receive *the same derived identity*.
+///
+/// Sharing a password there is already bad. Sharing a **mailbox** is worse:
+/// whoever runs shop A can ask shop B for a password reset on the user's
+/// account and read the code out of a mailbox they also own. So the real
+/// list ships, generated into [kPublicSuffixRules] by `tool/build_psl.mjs`.
 class RegistrableDomain {
   RegistrableDomain._();
 
-  /// Public suffixes with two labels, where the registrable domain therefore
-  /// needs three.
-  ///
-  /// This is a deliberately small subset of the Public Suffix List covering
-  /// the suffixes real users actually sign up under. The full list is ~10k
-  /// entries and changes monthly; shipping it belongs in an adapter bundle
-  /// that can be updated without an app release, not compiled in here.
-  /// Anything unlisted falls back to the last two labels, which is correct
-  /// for every single-label suffix (.com, .org, .app, .io, …).
-  static const Set<String> _twoLabelSuffixes = <String>{
-    'co.uk', 'org.uk', 'me.uk', 'ac.uk', 'gov.uk', 'net.uk', 'sch.uk',
-    'co.jp', 'or.jp', 'ne.jp', 'ac.jp', 'go.jp',
-    'com.au', 'net.au', 'org.au', 'edu.au', 'gov.au',
-    'co.nz', 'net.nz', 'org.nz', 'govt.nz',
-    'com.br', 'net.br', 'org.br', 'gov.br',
-    'com.cn', 'net.cn', 'org.cn', 'gov.cn', 'edu.cn',
-    'co.in', 'net.in', 'org.in', 'gen.in', 'firm.in',
-    'com.mx', 'com.ar', 'com.co', 'com.tr', 'com.tw',
-    'com.sg', 'com.hk', 'com.my', 'com.ph', 'com.vn',
-    'co.za', 'org.za', 'net.za',
-    'co.kr', 'or.kr', 'ne.kr',
-    'com.pl', 'net.pl', 'org.pl',
-    'co.il', 'org.il', 'net.il',
-    'com.ua', 'com.ru', 'com.es', 'com.pt', 'com.gr',
-    'github.io', 'gitlab.io', 'pages.dev', 'workers.dev',
-    'vercel.app', 'netlify.app', 'herokuapp.com', 'web.app',
-    'firebaseapp.com', 'appspot.com', 'azurewebsites.net',
-    's3.amazonaws.com', 'cloudfront.net',
-  };
+  /// Built once, lazily — ~10k entries parsed on first derivation rather
+  /// than at import time, so a test that never touches a domain pays
+  /// nothing.
+  static final Set<String> _rules = _lines(kPublicSuffixRules);
+  static final Set<String> _wildcardParents = _lines(kWildcardParents);
+  static final Set<String> _exceptions = _lines(kSuffixExceptions);
+
+  static Set<String> _lines(String data) =>
+      data.split('\n').where((line) => line.isNotEmpty).toSet();
 
   /// Extracts the registrable domain from [input].
   ///
@@ -78,11 +73,50 @@ class RegistrableDomain {
     final labels = value.split('.').where((l) => l.isNotEmpty).toList();
     if (labels.length <= 1) return value;
 
-    final lastTwo = labels.sublist(labels.length - 2).join('.');
-    if (labels.length >= 3 && _twoLabelSuffixes.contains(lastTwo)) {
-      return labels.sublist(labels.length - 3).join('.');
+    final suffixLabels = _publicSuffixLabelCount(labels);
+
+    // The host is itself a public suffix (`co.uk`, `foo.ck`). There is no
+    // registrable domain below it, so it is its own key.
+    if (labels.length <= suffixLabels) return value;
+
+    return labels.sublist(labels.length - suffixLabels - 1).join('.');
+  }
+
+  /// How many trailing labels of [labels] form the public suffix.
+  ///
+  /// Implements the matching rules from publicsuffix.org/list: an exception
+  /// beats everything, otherwise the longest matching rule wins, and an
+  /// unlisted TLD falls back to the implicit `*` rule.
+  static int _publicSuffixLabelCount(List<String> labels) {
+    // Exceptions first, because the spec says an exception prevails over any
+    // other matching rule regardless of length. There are only eight, all of
+    // the form `!city.kobe.jp`, and each means "this host is registrable
+    // after all" — so the suffix is the rule minus its leftmost label.
+    for (var i = 0; i < labels.length; i++) {
+      if (_exceptions.contains(labels.sublist(i).join('.'))) {
+        return labels.length - i - 1;
+      }
     }
-    return lastTwo;
+
+    // Longest match otherwise. Starting from the front yields the longest
+    // candidate first, so the first hit is already the prevailing rule.
+    for (var i = 0; i < labels.length; i++) {
+      if (_rules.contains(labels.sublist(i).join('.'))) {
+        return labels.length - i;
+      }
+      // A wildcard rule `*.ck` says any single label under `ck` is itself a
+      // public suffix, so the question to ask of a candidate is whether its
+      // PARENT is a wildcard — which is why the generator stores parents.
+      if (i + 1 < labels.length &&
+          _wildcardParents.contains(labels.sublist(i + 1).join('.'))) {
+        return labels.length - i;
+      }
+    }
+
+    // The implicit `*` rule: an unknown TLD is its own public suffix, so the
+    // registrable domain is the last two labels. Same answer the old curated
+    // subset gave, now as a documented fallback rather than the whole design.
+    return 1;
   }
 
   /// Best-effort variant that returns null instead of throwing.

@@ -12,7 +12,7 @@
 //
 // EasyPrivacy carries ~47,000 plain domain rules. WKContentRuleList tops out
 // around 150,000, so the full list would technically fit — but it costs
-// roughly a hundred times the on-device compile time and, far more важно, a
+// roughly a hundred times the on-device compile time and, far more importantly, a
 // hundred times the breakage surface, in exchange for a long tail of
 // near-zero-prevalence domains. For scale: DuckDuckGo's entire iOS blocklist
 // is ~3,700 rules and Firefox Focus ships ~2,600. Starting small and honest

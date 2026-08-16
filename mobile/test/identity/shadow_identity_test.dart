@@ -26,6 +26,60 @@ void main() {
       }
     });
 
+    test('separates tenants on multi-tenant hosts', () {
+      // The reason the full Public Suffix List ships. Under the old curated
+      // subset these collapsed to one registrable domain, so two unrelated
+      // shops shared one derived identity — and, once addresses are real,
+      // one mailbox. Whoever ran shop A could reset the user's password at
+      // shop B and read the code.
+      expect(RegistrableDomain.of('alice.myshopify.com'),
+          'alice.myshopify.com');
+      expect(RegistrableDomain.of('bob.myshopify.com'), 'bob.myshopify.com');
+      expect(
+        RegistrableDomain.of('alice.myshopify.com'),
+        isNot(RegistrableDomain.of('bob.myshopify.com')),
+      );
+
+      for (final host in <String>[
+        'someone.blogspot.com',
+        'someone.notion.site',
+        'someone.wixsite.com',
+        'someone.github.io',
+        'someone.pages.dev',
+      ]) {
+        expect(RegistrableDomain.of(host), host, reason: host);
+      }
+    });
+
+    test('separates tenants the PSL itself does not list', () {
+      // The PSL's private section is opt-in, and these operators never
+      // submitted. Without the supplement in tool/build_psl.mjs they would
+      // still collapse, so this test is what stops the supplement being
+      // dropped as redundant.
+      expect(RegistrableDomain.of('alice.wordpress.com'),
+          'alice.wordpress.com');
+      expect(RegistrableDomain.of('someones.substack.com'),
+          'someones.substack.com');
+      expect(RegistrableDomain.of('acme.atlassian.net'), 'acme.atlassian.net');
+    });
+
+    test('a company keeps one identity across its own subdomains', () {
+      // The opposite failure. Over-splitting would give the user different
+      // credentials for the login page and the account page of one site.
+      expect(RegistrableDomain.of('accounts.google.com'), 'google.com');
+      expect(RegistrableDomain.of('mail.google.com'), 'google.com');
+      expect(RegistrableDomain.of('shop.example.co.uk'), 'example.co.uk');
+    });
+
+    test('handles wildcard and exception rules', () {
+      // `*.ck` makes any label under ck a public suffix...
+      expect(RegistrableDomain.of('anything.ck'), 'anything.ck');
+      expect(RegistrableDomain.of('shop.anything.ck'), 'shop.anything.ck');
+      // ...except www.ck, which `!www.ck` hands back as registrable.
+      expect(RegistrableDomain.of('www.ck'), 'www.ck');
+      expect(RegistrableDomain.of('city.kobe.jp'), 'city.kobe.jp');
+    });
+
     test('keeps the registrable label for multi-part public suffixes', () {
       expect(RegistrableDomain.of('www.bbc.co.uk'), 'bbc.co.uk');
       expect(RegistrableDomain.of('shop.example.com.au'), 'example.com.au');
