@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../browser/autofill.dart';
+import '../../identity/site_identity.dart';
 import '../../providers/browser_provider.dart';
+import '../../providers/identity_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_spacing.dart';
 import '../../theme/shadow_typography.dart';
 import '../../widgets/browser_bottom_bar.dart';
+import '../../widgets/shadow_button.dart';
 
 /// The actual browser. Renders live web content and drives it from the
 /// existing bottom chrome, which until now was decorative.
@@ -93,6 +97,54 @@ class _BrowserScreenState extends State<BrowserScreen> {
     }
   }
 
+  /// Shows what would be filled, then fills only if the user says so.
+  ///
+  /// The preview is not ceremony. These credentials are what the account
+  /// becomes, and the user needs to see the address that mail will arrive at
+  /// before it is committed to a signup form.
+  Future<void> _fillIdentity(BuildContext context) async {
+    final browser = context.read<BrowserProvider>();
+    final identityProvider = context.read<IdentityProvider>();
+    final tab = browser.activeTab;
+    final pageUrl = tab?.url;
+
+    if (tab == null || pageUrl == null || pageUrl.host.isEmpty) {
+      _toast(context, 'Open a site before filling.');
+      return;
+    }
+    if (!identityProvider.isUnlocked) {
+      _toast(context, 'Unlock your identity first, then try again.');
+      return;
+    }
+
+    final SiteIdentity? identity = identityProvider.identityFor(pageUrl.host);
+    if (identity == null) {
+      _toast(context, 'Could not derive an identity for ${pageUrl.host}.');
+      return;
+    }
+
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: ShadowColors.surfaceElevated,
+      isScrollControlled: true,
+      builder: (sheetContext) => _FillPreview(identity: identity),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final result = await Autofill.fill(
+      controller: tab.controller,
+      pageUrl: pageUrl,
+      identity: identity,
+    );
+    if (!context.mounted) return;
+    _toast(context, result.message);
+  }
+
+  void _toast(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final browser = context.watch<BrowserProvider>();
@@ -104,7 +156,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
         bottom: false,
         child: Column(
           children: [
-            _TopBar(tab: tab),
+            _TopBar(tab: tab, onFill: () => _fillIdentity(context)),
             if (tab != null && tab.isLoading)
               LinearProgressIndicator(
                 value: tab.progress / 100,
@@ -151,12 +203,16 @@ class _BrowserScreenState extends State<BrowserScreen> {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({this.tab});
+  const _TopBar({this.tab, required this.onFill});
 
   final BrowserTabModel? tab;
+  final VoidCallback onFill;
 
   @override
   Widget build(BuildContext context) {
+    final unlocked = context.watch<IdentityProvider>().isUnlocked;
+    final onPage = tab != null && !(tab?.isBlank ?? true);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 4, 8, 4),
       child: Row(
@@ -174,6 +230,14 @@ class _TopBar extends StatelessWidget {
             ),
           ),
           IconButton(
+            icon: const Icon(Icons.fingerprint_rounded, size: 22),
+            color: unlocked && onPage
+                ? ShadowColors.primary
+                : ShadowColors.textDisabled,
+            tooltip: 'Fill my identity for this site',
+            onPressed: onPage ? onFill : null,
+          ),
+          IconButton(
             icon: const Icon(Icons.cleaning_services_rounded, size: 20),
             color: ShadowColors.textSecondary,
             tooltip: 'Clear cookies and site data',
@@ -187,6 +251,101 @@ class _TopBar extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Confirmation sheet shown before anything is written into a page.
+class _FillPreview extends StatelessWidget {
+  const _FillPreview({required this.identity});
+
+  final SiteIdentity identity;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Fill ${identity.registrableDomain}',
+                style: ShadowTypography.h3),
+            const SizedBox(height: 6),
+            Text(
+              'This identity exists only for this domain. A lookalike site '
+              'would get a different one, so filling on the wrong page cannot '
+              'leak the right credentials.',
+              style: ShadowTypography.bodySm,
+            ),
+            const SizedBox(height: 18),
+            _PreviewRow(label: 'Email', value: identity.email),
+            const SizedBox(height: 12),
+            _PreviewRow(label: 'Username', value: identity.handle),
+            const SizedBox(height: 12),
+            _PreviewRow(
+              label: 'Password',
+              value: '${'•' * 12}  (${identity.password.length} characters)',
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: ShadowColors.surface,
+                borderRadius: BorderRadius.circular(ShadowRadius.sm),
+                border: Border.all(color: ShadowColors.border),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.pan_tool_rounded,
+                      size: 16, color: ShadowColors.textSecondary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Shadow fills the fields and stops. You press the '
+                      'sign-up button yourself.',
+                      style: ShadowTypography.caption,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            ShadowButton(
+              label: 'Fill the form',
+              onPressed: () => Navigator.pop(context, true),
+            ),
+            const SizedBox(height: 8),
+            ShadowButton(
+              label: 'Cancel',
+              variant: ShadowButtonVariant.ghost,
+              onPressed: () => Navigator.pop(context, false),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewRow extends StatelessWidget {
+  const _PreviewRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label.toUpperCase(),
+            style: ShadowTypography.caption.copyWith(
+                letterSpacing: 1.2, color: ShadowColors.textTertiary)),
+        const SizedBox(height: 4),
+        Text(value, style: ShadowTypography.mono),
+      ],
     );
   }
 }
