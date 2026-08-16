@@ -53,9 +53,12 @@ class AutofillScript {
   }
 
   /// Produces an IIFE that returns a JSON summary of what it filled.
-  static String build(SiteIdentity identity) {
+  ///
+  /// [skipEmail] omits the address entirely — not blanked in the page, but
+  /// never sent to it. See `Autofill.fill` for when that is right.
+  static String build(SiteIdentity identity, {bool skipEmail = false}) {
     final payload = harden(jsonEncode(<String, String>{
-      'email': identity.email,
+      if (!skipEmail) 'email': identity.email,
       'password': identity.password,
       'handle': identity.handle,
     }));
@@ -146,9 +149,14 @@ class AutofillScript {
     }
   }
 
-  for (var k = 0; k < emails.length; k++) {
-    setValue(emails[k], creds.email);
-    filled.email++;
+  // An absent address is not an empty one. When the mailbox could not be
+  // registered the value is never sent to the page at all, so there is
+  // nothing here to leak and nothing to accidentally write.
+  if (typeof creds.email === 'string') {
+    for (var k = 0; k < emails.length; k++) {
+      setValue(emails[k], creds.email);
+      filled.email++;
+    }
   }
 
   for (var m = 0; m < handles.length; m++) {

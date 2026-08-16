@@ -15,6 +15,10 @@ class ShadowSettings {
 
   /// Where the Shadow backend lives. Empty means use the compiled default.
   final String apiBaseUrl;
+
+  /// Where derived mailboxes are registered and polled. Empty means the
+  /// compiled default. A different operator from [apiBaseUrl], on purpose.
+  final String mailBaseUrl;
   final bool useTor;
   final bool ipfsEnabled;
   final bool arweaveEnabled;
@@ -44,6 +48,7 @@ class ShadowSettings {
     this.network = 'mainnet',
     this.rpcUrl = 'https://api.mainnet-beta.solana.com',
     this.apiBaseUrl = '',
+    this.mailBaseUrl = '',
     this.useTor = false,
     this.ipfsEnabled = true,
     this.arweaveEnabled = true,
@@ -66,6 +71,7 @@ class ShadowSettings {
     String? network,
     String? rpcUrl,
     String? apiBaseUrl,
+    String? mailBaseUrl,
     bool? useTor,
     bool? ipfsEnabled,
     bool? arweaveEnabled,
@@ -87,6 +93,7 @@ class ShadowSettings {
         network: network ?? this.network,
         rpcUrl: rpcUrl ?? this.rpcUrl,
         apiBaseUrl: apiBaseUrl ?? this.apiBaseUrl,
+        mailBaseUrl: mailBaseUrl ?? this.mailBaseUrl,
         useTor: useTor ?? this.useTor,
         ipfsEnabled: ipfsEnabled ?? this.ipfsEnabled,
         arweaveEnabled: arweaveEnabled ?? this.arweaveEnabled,
@@ -109,6 +116,7 @@ class ShadowSettings {
         'network': network,
         'rpc_url': rpcUrl,
         'api_base_url': apiBaseUrl,
+        'mail_base_url': mailBaseUrl,
         'use_tor': useTor,
         'ipfs_enabled': ipfsEnabled,
         'arweave_enabled': arweaveEnabled,
@@ -131,6 +139,7 @@ class ShadowSettings {
         network: j['network'] ?? 'mainnet',
         rpcUrl: j['rpc_url'] ?? 'https://api.mainnet-beta.solana.com',
         apiBaseUrl: j['api_base_url'] ?? '',
+        mailBaseUrl: j['mail_base_url'] ?? '',
         useTor: j['use_tor'] ?? false,
         ipfsEnabled: j['ipfs_enabled'] ?? true,
         arweaveEnabled: j['arweave_enabled'] ?? true,

@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import 'providers/browser_provider.dart';
 import 'providers/identity_provider.dart';
+import 'providers/mailbox_provider.dart';
+import 'providers/site_adapter_provider.dart';
 import 'providers/activity_provider.dart';
 import 'providers/bookmarks_provider.dart';
 import 'providers/deploy_provider.dart';
@@ -49,6 +51,19 @@ class ShadowApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ActivityProvider()),
         ChangeNotifierProvider(create: (_) => DeployProvider()),
         ChangeNotifierProvider(create: (_) => IdentityProvider()),
+        ChangeNotifierProvider(create: (_) => SiteAdapterProvider()),
+        // Reads the mail address rather than being handed it, so a change in
+        // Settings takes effect on the next call with no wiring in between.
+        // Deliberately not sharing ApiClient: its interceptor stamps
+        // X-Shadow-Auth on everything, which would link every mailbox to one
+        // account.
+        ChangeNotifierProxyProvider<SettingsProvider, MailboxProvider>(
+          create: (ctx) => MailboxProvider(
+            mailBaseUrl: () =>
+                ctx.read<SettingsProvider>().mailBaseUrl,
+          ),
+          update: (_, __, mailbox) => mailbox!,
+        ),
         ChangeNotifierProvider(create: (_) => BrowserProvider()),
       ],
       child: Builder(

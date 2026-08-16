@@ -175,6 +175,34 @@ class IdentityProvider with ChangeNotifier {
     }
   }
 
+  /// The mailbox keys for [host]. Null when locked or underivable.
+  ///
+  /// Separate from [identityFor] because the keys are needed for things the
+  /// credentials are not: claiming the address, signing a poll, opening what
+  /// comes back. Returning them from the same call would mean deriving key
+  /// material every time a preview is rendered.
+  SiteMailboxKeys? mailboxKeysFor(
+    String host, {
+    int accountIndex = 0,
+    int aliasEpoch = 1,
+  }) {
+    final engine = _engine;
+    if (engine == null) return null;
+    try {
+      return engine.mailboxKeysFor(
+        host,
+        accountIndex: accountIndex,
+        aliasEpoch: aliasEpoch,
+      );
+    } on FormatException {
+      return null;
+    } on ArgumentError {
+      return null;
+    } on StateError {
+      return null;
+    }
+  }
+
   /// Removes the phrase from this device entirely.
   Future<void> forget() async {
     _engine?.wipe();

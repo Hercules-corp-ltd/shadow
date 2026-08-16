@@ -64,6 +64,23 @@ void main() {
       expect(script, isNot(contains('</script>@y.z')));
     });
 
+    test('omits the address entirely when the mailbox is not usable', () {
+      // Not blanked in the page — never sent to it. If the mailbox could not
+      // be registered, an address written into a signup form produces an
+      // account whose reset link goes nowhere, unrecoverable and with no
+      // error at any point to say so.
+      final script = AutofillScript.build(
+        identityWith(email: 'unusable@mail.shadow.test'),
+        skipEmail: true,
+      );
+
+      expect(script, isNot(contains('unusable@mail.shadow.test')));
+      // The password and handle do not depend on the mail server, so
+      // refusing those too would make the feature hostage to our own uptime.
+      expect(script, contains('Aa1!bcdefghijklm'));
+      expect(script, contains('quietharbor4821'));
+    });
+
     test('embeds all three credentials', () {
       final script = AutofillScript.build(
         identityWith(

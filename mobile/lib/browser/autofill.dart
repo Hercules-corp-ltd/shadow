@@ -111,17 +111,29 @@ class Autofill {
     return null;
   }
 
+  /// Fills [identity] into the page.
+  ///
+  /// [skipEmail] leaves the address fields alone while still filling the
+  /// password and username. It exists for one situation: the mailbox could
+  /// not be registered. Writing an address into a signup form when nothing
+  /// can receive at it produces an account whose reset link goes nowhere —
+  /// unrecoverable, and with no error at any point to say so. The password
+  /// and handle do not depend on the mail server, so refusing those too
+  /// would make the whole feature hostage to our own uptime, which this
+  /// codebase has repeatedly declined to do.
   static Future<AutofillResult> fill({
     required WebViewController controller,
     required Uri? pageUrl,
     required SiteIdentity? identity,
+    bool skipEmail = false,
   }) async {
     final refusal =
         refusalFor(pageUrl: pageUrl, identityUnlocked: identity != null);
     if (refusal != null) return AutofillResult.refused(refusal);
 
-    final raw = await controller
-        .runJavaScriptReturningResult(AutofillScript.build(identity!));
+    final raw = await controller.runJavaScriptReturningResult(
+      AutofillScript.build(identity!, skipEmail: skipEmail),
+    );
 
     final summary = _decode(raw);
     if (summary == null) {

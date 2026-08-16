@@ -14,6 +14,20 @@ class ShadowConstants {
     defaultValue: 'http://localhost:8080/api',
   );
 
+  /// Where derived mailboxes are registered and polled.
+  ///
+  /// Separate from [defaultApiUrl] and deliberately so. The mail service is
+  /// a different operator concern with a different trust story, and the two
+  /// must never share a client — `ApiClient` stamps `X-Shadow-Auth` on every
+  /// request it makes, which on a mailbox poll would link every address to
+  /// one account.
+  ///
+  ///   flutter run --dart-define=SHADOW_MAIL_URL=http://10.0.2.2:8787
+  static const String defaultMailUrl = String.fromEnvironment(
+    'SHADOW_MAIL_URL',
+    defaultValue: 'http://localhost:8787',
+  );
+
   static const String defaultSolanaRpc = String.fromEnvironment(
     'SHADOW_SOLANA_RPC',
     defaultValue: 'https://api.devnet.solana.com',

@@ -39,4 +39,14 @@ class SettingsProvider with ChangeNotifier {
       configured.isEmpty ? ShadowConstants.defaultApiUrl : configured,
     );
   }
+
+  /// Where the mail service lives, resolved.
+  ///
+  /// Read rather than pushed, unlike the API address. `MailboxApi` is
+  /// constructed per use with no global instance, precisely so there is no
+  /// shared client that could accumulate a shared header.
+  String get mailBaseUrl {
+    final configured = _settings.mailBaseUrl.trim();
+    return configured.isEmpty ? ShadowConstants.defaultMailUrl : configured;
+  }
 }

@@ -2,11 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'package:flutter/services.dart';
+
 import '../../browser/autofill.dart';
+import '../../browser/code_fill_script.dart';
+import '../../mail/code_extraction.dart';
 import '../../browser/tracker_blocking.dart';
 import '../../identity/site_identity.dart';
 import '../../providers/browser_provider.dart';
+import '../../mail/poll_schedule.dart';
+import '../../models/site_adapter_record.dart';
 import '../../providers/identity_provider.dart';
+import '../../providers/mailbox_provider.dart';
+import '../../providers/site_adapter_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_spacing.dart';
 import '../../theme/shadow_typography.dart';
@@ -92,7 +100,20 @@ class _BrowserScreenState extends State<BrowserScreen> {
       return;
     }
 
-    final SiteIdentity? identity = identityProvider.identityFor(pageUrl!.host);
+    // The adapter carries this site's rotation counters and its password
+    // policy. Until now every caller passed the defaults, so a site that had
+    // forced a reset kept being handed the pre-reset password.
+    final adapters = context.read<SiteAdapterProvider>();
+    final record = await adapters.resolve(pageUrl!.host);
+    if (!context.mounted) return;
+
+    final SiteIdentity? identity = identityProvider.identityFor(
+      pageUrl.host,
+      accountIndex: record.accountIndex,
+      passwordEpoch: record.account.passwordEpoch,
+      aliasEpoch: record.account.aliasEpoch,
+      policy: record.policy.passwordPolicy,
+    );
     if (identity == null) {
       _toast(context, 'Could not derive an identity for ${pageUrl.host}.');
       return;
@@ -106,13 +127,161 @@ class _BrowserScreenState extends State<BrowserScreen> {
     );
     if (confirmed != true || !context.mounted) return;
 
+    // Confirming is the consent moment for minting a mailbox, and it has to
+    // happen before the fill rather than after: plenty of sites validate an
+    // address on blur and send mail before anything is submitted.
+    final mailbox = context.read<MailboxProvider>();
+    final keys = identityProvider.mailboxKeysFor(
+      pageUrl.host,
+      accountIndex: record.accountIndex,
+      aliasEpoch: record.account.aliasEpoch,
+    );
+
+    RegistrationOutcome? registration;
+    if (keys != null) {
+      registration = await mailbox.ensureRegistered(
+        keys: keys,
+        domain: identity.registrableDomain,
+        aliasDomain: identityProvider.aliasDomain ?? '',
+        accountIndex: record.accountIndex,
+      );
+    }
+    if (!context.mounted) return;
+
     final result = await Autofill.fill(
       controller: tab!.controller,
       pageUrl: pageUrl,
       identity: identity,
+      // A signup form needs a mailbox that works. Filling one that does not
+      // produces an account whose reset link goes nowhere — unrecoverable,
+      // with no error at any point. A login form needs no such thing: the
+      // mailbox was claimed when the account was created.
+      skipEmail: registration != null && !registration.succeeded,
     );
     if (!context.mounted) return;
-    _toast(context, result.message);
+
+    if (result.filledEmail == 0 &&
+        result.passwordFieldsSeen >= 2 &&
+        registration != null &&
+        !registration.succeeded) {
+      _toast(
+        context,
+        'Filled the password and username, but not the address: '
+        '${registration.detail} A code sent there would not arrive.',
+      );
+    } else {
+      _toast(context, result.message);
+    }
+
+    // Remember what was actually used, so the UI shows that rather than a
+    // freshly derived stranger after the next password rotation.
+    if (result.filledHandle > 0) {
+      await adapters.recordSignup(
+        identity.registrableDomain,
+        handleUsed: identity.handle,
+        accountIndex: record.accountIndex,
+      );
+    }
+    if (record.account.mode == SiteMode.off && result.totalFilled > 0) {
+      await adapters.setMode(
+        identity.registrableDomain,
+        SiteMode.masked,
+        accountIndex: record.accountIndex,
+      );
+    }
+
+    // The browser just watched a form get filled, which is the only reason
+    // it ever has to expect mail. Nothing polls on a schedule of its own.
+    if (keys != null &&
+        result.filledEmail > 0 &&
+        (registration?.succeeded ?? false)) {
+      mailbox.watch(
+        keys: keys,
+        domain: identity.registrableDomain,
+        trigger: PollSchedule.triggerForFill(
+          passwordFieldsSeen: result.passwordFieldsSeen,
+        ),
+        accountIndex: record.accountIndex,
+      );
+    }
+  }
+
+  /// Types an arrived code into the page, on an explicit tap and never
+  /// otherwise.
+  ///
+  /// A code arriving is a *server-timed* event. Letting something the server
+  /// chose the moment of write into a page unprompted is the line between a
+  /// credential manager and an agent, and it is the same line the credential
+  /// fill refuses to cross.
+  Future<void> _fillCode(BuildContext context, OneTimeCode code) async {
+    final browser = context.read<BrowserProvider>();
+    final mailbox = context.read<MailboxProvider>();
+    final tab = browser.activeTab;
+    final domain = mailbox.foundForDomain;
+
+    if (tab == null || domain == null) return;
+
+    // Re-checked here as well as inside the injected script. The page can
+    // navigate between the code arriving and the user tapping.
+    if (!CodeFillScript.mayOffer(pageUrl: tab.url, mailboxDomain: domain)) {
+      _toast(
+        context,
+        'That code is for $domain. Shadow will not type it into another site.',
+      );
+      return;
+    }
+
+    await tab.controller.runJavaScriptReturningResult(
+      CodeFillScript.build(code: code.value, expectedDomain: domain),
+    );
+    if (!context.mounted) return;
+
+    mailbox.clearFound();
+    _toast(context, 'Filled the code. Press the button yourself.');
+  }
+
+  /// Opens a magic link, on an explicit tap, in an ordinary tab.
+  ///
+  /// Never prefetched, HEAD-ed or unfurled on the way — many are single-use,
+  /// and any request at all burns the link and locks the user out of the
+  /// account they were trying to reach.
+  Future<void> _openMagicLink(BuildContext context, MagicLink link) async {
+    final browser = context.read<BrowserProvider>();
+    final mailbox = context.read<MailboxProvider>();
+    final expected = mailbox.foundForDomain;
+
+    if (expected != null &&
+        link.host != expected &&
+        !link.host.endsWith('.$expected')) {
+      final proceed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          backgroundColor: ShadowColors.surfaceElevated,
+          title: Text('This link leaves $expected',
+              style: ShadowTypography.h3),
+          content: Text(
+            'The mail was for $expected, but this link goes to ${link.host}.\n\n'
+            'That is what a phishing link looks like. Shadow can tell because '
+            'it knows which site this mailbox belongs to.',
+            style: ShadowTypography.bodySm,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Open anyway'),
+            ),
+          ],
+        ),
+      );
+      if (proceed != true || !context.mounted) return;
+    }
+
+    mailbox.clearFound();
+    await browser.openInNewTab(link.url.toString());
   }
 
   void _toast(BuildContext context, String message) {
@@ -144,6 +313,10 @@ class _BrowserScreenState extends State<BrowserScreen> {
                 url: tab!.blockedNavigation!,
                 onDismiss: browser.dismissBlockedNotice,
               ),
+            _CodeBanner(
+              onFillCode: (code) => _fillCode(context, code),
+              onOpenLink: (link) => _openMagicLink(context, link),
+            ),
             Expanded(
               child: tab == null
                   ? const SizedBox.shrink()
@@ -368,6 +541,75 @@ class _BlockedBanner extends StatelessWidget {
           GestureDetector(
             onTap: onDismiss,
             child: Text('Dismiss', style: ShadowTypography.label),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Offers a code that has arrived, in Shadow's own chrome.
+///
+/// A banner rather than a modal or a notification: the user is mid-flow on
+/// the page that is asking for the code, and interrupting them to hand it
+/// over would be a worse version of going to fetch it themselves.
+///
+/// Nothing here happens without a tap. Nothing is copied to the clipboard
+/// unless asked, because other apps read the clipboard.
+class _CodeBanner extends StatelessWidget {
+  const _CodeBanner({required this.onFillCode, required this.onOpenLink});
+
+  final void Function(OneTimeCode code) onFillCode;
+  final void Function(MagicLink link) onOpenLink;
+
+  @override
+  Widget build(BuildContext context) {
+    final mailbox = context.watch<MailboxProvider>();
+    final found = mailbox.found;
+    final domain = mailbox.foundForDomain;
+    if (found.isEmpty || domain == null) return const SizedBox.shrink();
+
+    final code = found.whereType<OneTimeCode>().firstOrNull;
+    final link = found.whereType<MagicLink>().firstOrNull;
+
+    return Container(
+      width: double.infinity,
+      color: ShadowColors.primary.withValues(alpha: 0.15),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        children: <Widget>[
+          const Icon(Icons.mark_email_read_outlined,
+              size: 16, color: ShadowColors.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              code != null
+                  ? 'Code ${code.value} arrived for $domain'
+                  : 'A sign-in link arrived for $domain',
+              style: ShadowTypography.caption,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (code != null) ...<Widget>[
+            GestureDetector(
+              onTap: () => Clipboard.setData(ClipboardData(text: code.value)),
+              child: Text('Copy', style: ShadowTypography.label),
+            ),
+            const SizedBox(width: 14),
+            GestureDetector(
+              onTap: () => onFillCode(code),
+              child: Text('Fill', style: ShadowTypography.label),
+            ),
+          ] else if (link != null)
+            GestureDetector(
+              onTap: () => onOpenLink(link),
+              child: Text('Open ${link.host}', style: ShadowTypography.label),
+            ),
+          const SizedBox(width: 14),
+          GestureDetector(
+            onTap: mailbox.clearFound,
+            child: const Icon(Icons.close_rounded,
+                size: 16, color: ShadowColors.textSecondary),
           ),
         ],
       ),
