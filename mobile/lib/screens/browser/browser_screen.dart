@@ -79,16 +79,20 @@ class _BrowserScreenState extends State<BrowserScreen> {
     final tab = browser.activeTab;
     final pageUrl = tab?.url;
 
-    if (tab == null || pageUrl == null || pageUrl.host.isEmpty) {
-      _toast(context, 'Open a site before filling.');
-      return;
-    }
-    if (!identityProvider.isUnlocked) {
-      _toast(context, 'Unlock your identity first, then try again.');
+    // Ask the one policy, in its one order, before deriving anything. Doing
+    // the checks by hand here used to put them in a different order to
+    // Autofill's own, so an http page got all the way to the preview — the
+    // password was rendered on screen and only then refused.
+    final refusal = Autofill.refusalFor(
+      pageUrl: pageUrl,
+      identityUnlocked: identityProvider.isUnlocked,
+    );
+    if (refusal != null) {
+      _toast(context, AutofillResult.refused(refusal).message);
       return;
     }
 
-    final SiteIdentity? identity = identityProvider.identityFor(pageUrl.host);
+    final SiteIdentity? identity = identityProvider.identityFor(pageUrl!.host);
     if (identity == null) {
       _toast(context, 'Could not derive an identity for ${pageUrl.host}.');
       return;
@@ -103,7 +107,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
     if (confirmed != true || !context.mounted) return;
 
     final result = await Autofill.fill(
-      controller: tab.controller,
+      controller: tab!.controller,
       pageUrl: pageUrl,
       identity: identity,
     );

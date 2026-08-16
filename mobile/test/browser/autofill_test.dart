@@ -105,12 +105,12 @@ void main() {
   group('Autofill policy — checked before any script is built', () {
     test('refuses when no page is open', () {
       expect(
-        Autofill.refusalFor(pageUrl: null, identity: identityWith()),
+        Autofill.refusalFor(pageUrl: null, identityUnlocked: true),
         AutofillRefusal.noPage,
       );
       expect(
         Autofill.refusalFor(
-            pageUrl: Uri.parse('about:blank'), identity: identityWith()),
+            pageUrl: Uri.parse('about:blank'), identityUnlocked: true),
         AutofillRefusal.noPage,
       );
     });
@@ -119,7 +119,7 @@ void main() {
       expect(
         Autofill.refusalFor(
           pageUrl: Uri.parse('http://twitter.com/signup'),
-          identity: identityWith(),
+          identityUnlocked: true,
         ),
         AutofillRefusal.insecurePage,
       );
@@ -129,7 +129,7 @@ void main() {
       expect(
         Autofill.refusalFor(
           pageUrl: Uri.parse('https://twitter.com/signup'),
-          identity: null,
+          identityUnlocked: false,
         ),
         AutofillRefusal.identityLocked,
       );
@@ -139,9 +139,23 @@ void main() {
       expect(
         Autofill.refusalFor(
           pageUrl: Uri.parse('https://twitter.com/signup'),
-          identity: identityWith(),
+          identityUnlocked: true,
         ),
         isNull,
+      );
+    });
+
+    test('http is refused ahead of the lock, even when both are wrong', () {
+      // Order matters beyond tidiness. The browser screen shows a preview
+      // of the derived password once this returns null, so an http page has
+      // to be turned away on the scheme alone — before anything about the
+      // identity is consulted, derived or rendered.
+      expect(
+        Autofill.refusalFor(
+          pageUrl: Uri.parse('http://twitter.com/signup'),
+          identityUnlocked: false,
+        ),
+        AutofillRefusal.insecurePage,
       );
     });
   });

@@ -96,15 +96,18 @@ class Autofill {
   /// Decides whether filling is allowed, without touching the page.
   ///
   /// Kept separate from [fill] so the policy is checked — and testable —
-  /// before any script is built or evaluated. Returns null when filling may
+  /// before any script is built or evaluated. It takes [identityUnlocked]
+  /// rather than an identity so callers can consult it *before* deriving
+  /// one: the UI has to be able to refuse an http page without first
+  /// putting the derived password on screen. Returns null when filling may
   /// proceed.
   static AutofillRefusal? refusalFor({
     required Uri? pageUrl,
-    required SiteIdentity? identity,
+    required bool identityUnlocked,
   }) {
     if (pageUrl == null || pageUrl.host.isEmpty) return AutofillRefusal.noPage;
     if (pageUrl.scheme != 'https') return AutofillRefusal.insecurePage;
-    if (identity == null) return AutofillRefusal.identityLocked;
+    if (!identityUnlocked) return AutofillRefusal.identityLocked;
     return null;
   }
 
@@ -113,7 +116,8 @@ class Autofill {
     required Uri? pageUrl,
     required SiteIdentity? identity,
   }) async {
-    final refusal = refusalFor(pageUrl: pageUrl, identity: identity);
+    final refusal =
+        refusalFor(pageUrl: pageUrl, identityUnlocked: identity != null);
     if (refusal != null) return AutofillResult.refused(refusal);
 
     final raw = await controller
