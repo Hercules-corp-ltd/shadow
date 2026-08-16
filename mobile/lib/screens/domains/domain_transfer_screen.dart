@@ -72,6 +72,12 @@ class _DomainTransferScreenState extends State<DomainTransferScreen> {
                 const SizedBox(height: 8),
                 TextField(
                   controller: _addressCtrl,
+                  autocorrect: false,
+                  // The Transfer button is gated on this being non-empty, and
+                  // this screen has no other setState outside _transfer
+                  // itself — so without this the button could never enable
+                  // and the screen was entirely inert.
+                  onChanged: (_) => setState(() {}),
                   decoration: const InputDecoration(
                     hintText: 'Public key (base58)',
                   ),

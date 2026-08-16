@@ -90,7 +90,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                             leadingIcon: Icons.bookmark_rounded,
                             leadingColor: ShadowColors.primary,
                             onTap: () => context.push(
-                                '/resolve?id=${Uri.encodeComponent(b.domain)}'),
+                                '/resolve/resolving?id=${Uri.encodeComponent(b.domain)}'),
                             trailing: IconButton(
                               icon: const Icon(Icons.more_vert_rounded,
                                   color: ShadowColors.textTertiary),
@@ -121,7 +121,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
               title: const Text('Open'),
               onTap: () {
                 Navigator.pop(context);
-                context.push('/resolve?id=${Uri.encodeComponent(domain)}');
+                context.push('/resolve/resolving?id=${Uri.encodeComponent(domain)}');
               },
             ),
             ListTile(

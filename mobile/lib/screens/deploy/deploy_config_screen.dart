@@ -56,6 +56,10 @@ class _DeployConfigScreenState extends State<DeployConfigScreen> {
                 const SizedBox(height: 8),
                 TextField(
                   controller: _nameCtrl,
+                  // Continue is gated on this field being non-empty, so
+                  // without a rebuild on every keystroke the button stays
+                  // disabled no matter what you type.
+                  onChanged: (_) => setState(() {}),
                   decoration: const InputDecoration(
                     hintText: 'My awesome site',
                   ),

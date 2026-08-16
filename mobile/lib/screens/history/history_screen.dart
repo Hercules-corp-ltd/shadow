@@ -112,7 +112,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           leadingIcon: Icons.public_rounded,
           leadingColor: ShadowColors.tileCyan,
           timeLabel: DateFormat('HH:mm').format(e.visitedAt),
-          onTap: () => context.push('/resolve?id=${Uri.encodeComponent(e.domain)}'),
+          onTap: () => context.push('/resolve/resolving?id=${Uri.encodeComponent(e.domain)}'),
         );
       },
       separatorBuilder: (_, __) => const SizedBox(height: 8),

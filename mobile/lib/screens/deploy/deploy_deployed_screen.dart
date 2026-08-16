@@ -106,7 +106,7 @@ class DeployDeployedScreen extends StatelessWidget {
             size: ShadowButtonSize.lg,
             leading: Icons.open_in_new_rounded,
             onPressed: () => context
-                .push('/resolve?id=${Uri.encodeComponent(domain)}'),
+                .push('/resolve/resolving?id=${Uri.encodeComponent(domain)}'),
           ),
           const SizedBox(height: 8),
           ShadowButton(

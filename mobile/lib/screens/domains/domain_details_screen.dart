@@ -164,7 +164,7 @@ class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
                   size: ShadowButtonSize.lg,
                   leading: Icons.open_in_new_rounded,
                   onPressed: () => context.push(
-                    '/resolve?id=${Uri.encodeComponent(d.domain)}',
+                    '/resolve/resolving?id=${Uri.encodeComponent(d.domain)}',
                   ),
                 ),
               ],

@@ -24,11 +24,19 @@ class _DomainRegisterScreenState extends State<DomainRegisterScreen> {
   bool _submitting = false;
   String? _error;
 
+  bool _prefilled = false;
+
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // GoRouterState.of does an inherited-widget lookup, which is illegal from
+    // initState and trips an assertion in debug builds. This is the earliest
+    // point it is safe; the flag keeps it to one prefill so the field is not
+    // reset out from under someone typing.
+    if (_prefilled) return;
+    _prefilled = true;
     final q = GoRouterState.of(context).uri.queryParameters['q'];
-    if (q != null) _domainCtrl.text = q;
+    if (q != null && q.isNotEmpty) _domainCtrl.text = q;
   }
 
   @override
