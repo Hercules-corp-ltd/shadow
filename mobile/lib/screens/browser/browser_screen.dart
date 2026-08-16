@@ -41,51 +41,20 @@ class _BrowserScreenState extends State<BrowserScreen> {
 
   Future<void> _promptForUrl(BuildContext context) async {
     final browser = context.read<BrowserProvider>();
-    final controller =
-        TextEditingController(text: browser.activeTab?.url?.toString() ?? '');
 
+    // The sheet owns its own TextEditingController. Creating one here and
+    // disposing it when showModalBottomSheet returns crashes the app: the
+    // route is still animating out, its TextField still depends on the
+    // controller, and Flutter asserts '_dependents.isEmpty'.
     final input = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: ShadowColors.surfaceElevated,
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 16,
-          bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 16,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Go to', style: ShadowTypography.h4),
-            const SizedBox(height: 4),
-            Text(
-              'A web address, or anything else to search DuckDuckGo',
-              style: ShadowTypography.caption,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              autofocus: true,
-              autocorrect: false,
-              keyboardType: TextInputType.url,
-              textInputAction: TextInputAction.go,
-              style: ShadowTypography.body,
-              decoration: const InputDecoration(
-                hintText: 'shadow.app or "how does hkdf work"',
-                prefixIcon:
-                    Icon(Icons.search_rounded, color: ShadowColors.textSecondary),
-              ),
-              onSubmitted: (value) => Navigator.pop(sheetContext, value),
-            ),
-          ],
-        ),
+      builder: (_) => _UrlPromptSheet(
+        initialValue: browser.activeTab?.url?.toString() ?? '',
       ),
     );
 
-    controller.dispose();
     if (input == null || input.trim().isEmpty) return;
     if (!context.mounted) return;
 
@@ -431,6 +400,69 @@ class _StartPage extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The address bar's input sheet.
+///
+/// Stateful so the controller's lifetime matches the sheet's own. See the
+/// comment in _promptForUrl for why the previous inline version crashed.
+class _UrlPromptSheet extends StatefulWidget {
+  const _UrlPromptSheet({required this.initialValue});
+
+  final String initialValue;
+
+  @override
+  State<_UrlPromptSheet> createState() => _UrlPromptSheetState();
+}
+
+class _UrlPromptSheetState extends State<_UrlPromptSheet> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialValue);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Go to', style: ShadowTypography.h4),
+          const SizedBox(height: 4),
+          Text(
+            'A web address, or anything else to search DuckDuckGo',
+            style: ShadowTypography.caption,
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            autocorrect: false,
+            keyboardType: TextInputType.url,
+            textInputAction: TextInputAction.go,
+            style: ShadowTypography.body,
+            decoration: const InputDecoration(
+              hintText: 'shadow.app or "how does hkdf work"',
+              prefixIcon:
+                  Icon(Icons.search_rounded, color: ShadowColors.textSecondary),
+            ),
+            onSubmitted: (value) => Navigator.pop(context, value),
+          ),
+        ],
       ),
     );
   }
