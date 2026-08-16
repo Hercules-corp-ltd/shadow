@@ -88,7 +88,26 @@ mobile/windows/flutter/ephemeral/
 # TypeScript
 *.tsbuildinfo
 
-# Documentation (keep only README.md)
+# Documentation
+#
+# This was "*.md with !README.md" and it silently destroyed every document
+# this project ever tried to keep. DESIGNER_NOTES.md, DEVELOPER_GUIDE.md,
+# STATUS.md, EXAMPLES.md and all five files the docs index links to are
+# referenced by committed READMEs and exist nowhere in the repository —
+# almost certainly written, then swallowed by this rule without a word.
+#
+# It is the same failure as the *.json rule above, which is why no
+# package.json ever survived either. `git add` reports nothing and exits
+# zero, so the loss is invisible until someone clones the repo and finds
+# half of it missing.
+#
+# Scratch notes are still ignored at the root; anything under docs/ and the
+# conventional project files are kept.
 *.md
 !README.md
+!docs/**/*.md
+!**/CONTRIBUTING.md
+!**/CHANGELOG.md
+!**/LICENSE.md
+!**/SECURITY.md
 
