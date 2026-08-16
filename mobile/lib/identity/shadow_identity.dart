@@ -8,6 +8,7 @@ import 'password_policy.dart';
 import 'password_shaper.dart';
 import 'registrable_domain.dart';
 import 'site_identity.dart';
+import 'site_mailbox_keys.dart';
 
 /// Derives a distinct, unlinkable identity for every site from one recovery
 /// phrase.
@@ -39,7 +40,21 @@ class ShadowIdentity {
 
   /// Bumping this re-derives every credential for every site, so it changes
   /// only if the construction below is found to be unsound.
+  ///
+  /// Note for anyone adding a new kind of derived secret: give it its own
+  /// scheme constant below rather than touching this one. This string feeds
+  /// the password, so editing it to accommodate something unrelated changes
+  /// every password ever issued.
   static const String schemeVersion = 'cred/v1';
+
+  /// Independent of [schemeVersion] on purpose. Bumping this changes every
+  /// address and orphans every mailbox; bumping that one changes every
+  /// password. They must never be the same knob.
+  static const String mailboxSchemeVersion = 'mail/v1';
+
+  /// The one shareable address, which is not keyed on any site.
+  static const String handleSchemeVersion = 'handle/v1';
+  static const String _handleSalt = 'shadow.handle';
 
   static const String _rootSalt = 'shadow.identity.v1';
   static const String _branchInfo = 'credential-branch';
@@ -196,6 +211,64 @@ class ShadowIdentity {
       handle: HandleShaper.shape(entropy: handleEntropy, separator: handleSeparator),
       accountIndex: accountIndex,
       version: version,
+    );
+  }
+
+  /// Derives the mailbox keys for [host].
+  ///
+  /// A separate HKDF from [forSite] rather than more bytes on the same one,
+  /// and the reason is the counter rather than tidiness. The info string is
+  /// where the rotation counter lives, so sharing one string means sharing
+  /// one counter — and rotating a password after a breach would then change
+  /// the address the site mails, silently orphaning the mailbox. Separate
+  /// counters require separate strings.
+  ///
+  /// [aliasEpoch] burns the address and nothing else. It is deliberately not
+  /// the same number as the password's epoch.
+  SiteMailboxKeys mailboxKeysFor(
+    String host, {
+    int accountIndex = 0,
+    int aliasEpoch = 1,
+  }) {
+    _assertUsable();
+    if (accountIndex < 0) {
+      throw ArgumentError.value(
+          accountIndex, 'accountIndex', 'must not be negative');
+    }
+    if (aliasEpoch < 1) {
+      throw ArgumentError.value(aliasEpoch, 'aliasEpoch', 'must be at least 1');
+    }
+
+    final domain = RegistrableDomain.of(host);
+    return SiteMailboxKeys.fromMaterial(
+      ShadowKdf.derive(
+        inputKeyMaterial: _branchKey,
+        salt: domain,
+        info: '$mailboxSchemeVersion|$domain|$accountIndex|$aliasEpoch',
+        length: SiteMailboxKeys.materialLength,
+      ),
+    );
+  }
+
+  /// Derives the keys for the user's one shareable address.
+  ///
+  /// Unlike a per-site mailbox this one is meant to be given out, so it is
+  /// not keyed on any site. That also means it cannot be unlinkable: it is a
+  /// single permanent identifier by construction, which is exactly the trade
+  /// a user makes in exchange for an address they can say out loud.
+  SiteMailboxKeys handleMailboxKeys({int handleEpoch = 1}) {
+    _assertUsable();
+    if (handleEpoch < 1) {
+      throw ArgumentError.value(
+          handleEpoch, 'handleEpoch', 'must be at least 1');
+    }
+    return SiteMailboxKeys.fromMaterial(
+      ShadowKdf.derive(
+        inputKeyMaterial: _branchKey,
+        salt: _handleSalt,
+        info: '$handleSchemeVersion|$handleEpoch',
+        length: SiteMailboxKeys.materialLength,
+      ),
     );
   }
 

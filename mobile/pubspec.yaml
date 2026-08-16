@@ -19,6 +19,18 @@ dependencies:
   # Crypto & Storage
   pointycastle: ^3.7.3
   crypto: ^3.0.3
+  # X25519 and XChaCha20-Poly1305 for sealing mail to a per-site key.
+  # pointycastle has no Curve25519 at all — only short-Weierstrass curves —
+  # and hand-writing constant-time field arithmetic is the last thing that
+  # should be hand-written. This package is ALREADY in the tree, pulled in
+  # transitively by solana, and it is plain Dart with no `flutter:` section,
+  # so nothing enters the CocoaPods graph and iOS stays buildable in CI.
+  # Declared directly because importing a transitive-only package trips
+  # depend_on_referenced_packages, which is info-level and therefore breaks
+  # the required clean `flutter analyze`. Pinned exactly: upstream
+  # maintenance is intermittent and this sits under the mailbox.
+  # Do NOT add cryptography_flutter — that one IS a plugin.
+  cryptography: 2.9.0
   shared_preferences: ^2.2.2
   flutter_secure_storage: ^9.2.2
 
