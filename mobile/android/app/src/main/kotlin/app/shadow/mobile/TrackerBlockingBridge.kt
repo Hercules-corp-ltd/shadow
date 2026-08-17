@@ -82,8 +82,47 @@ class TrackerBlockingBridge(private val engine: FlutterEngine) :
             // to sweep — succeed quietly rather than making the Dart side
             // branch on platform for a no-op.
             "purgeExcept" -> result.success(emptyList<String>())
+            "thirdPartyCookies" -> thirdPartyCookies(call, result)
             else -> result.notImplemented()
         }
+    }
+
+    /**
+     * Turns third-party cookies off, and reports what is actually true after.
+     *
+     * The Dart-side doc for `setAcceptThirdPartyCookies` says it defaults to
+     * false. That is the platform default for a modern target SDK, not a
+     * guarantee about this WebView, and "we assume the default is what we
+     * want" is how a privacy claim quietly stops being true. So it is set
+     * explicitly and then read back — the value returned is measured, not
+     * asserted, and the UI can say it without hedging.
+     *
+     * This is the storage isolation that is actually reachable here. A real
+     * per-site partition needs separate WebView profiles, which the plugin
+     * does not expose; blocking third-party cookies is what stops a tracker
+     * embedded on one site reading what it set on another, which is the part
+     * that matters.
+     */
+    private fun thirdPartyCookies(call: MethodCall, result: MethodChannel.Result) {
+        val webViewId = call.argument<Number>("webViewId")?.toLong()
+        if (webViewId == null) {
+            result.error("no-webview-id", "webViewId is required", null)
+            return
+        }
+        val webView = WebViewFlutterAndroidExternalApi.getWebView(engine, webViewId)
+        if (webView == null) {
+            result.error("no-webview", "No WebView with identifier $webViewId", null)
+            return
+        }
+
+        val cookies = android.webkit.CookieManager.getInstance()
+        cookies.setAcceptThirdPartyCookies(webView, false)
+        result.success(
+            mapOf(
+                "acceptsThirdParty" to cookies.acceptThirdPartyCookies(webView),
+                "acceptsAny" to cookies.acceptCookie(),
+            ),
+        )
     }
 
     private fun install(call: MethodCall, result: MethodChannel.Result) {

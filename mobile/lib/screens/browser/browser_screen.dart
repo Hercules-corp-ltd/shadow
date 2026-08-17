@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../../browser/autofill.dart';
 import '../../browser/code_fill_script.dart';
+import '../../browser/storage_isolation.dart';
 import '../../mail/code_extraction.dart';
 import '../../browser/tracker_blocking.dart';
 import '../../identity/site_identity.dart';
@@ -403,8 +404,16 @@ class _TopBar extends StatelessWidget {
               _ => ShadowColors.textDisabled,
             },
             tooltip: TrackerBlocking.statusLabel,
+            // Both facts, together, because the shield is where someone
+            // looks to find out what protection they actually have — and
+            // storage isolation is the half that is still partial.
             onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(TrackerBlocking.statusLabel)),
+              SnackBar(
+                content: Text(
+                  '${TrackerBlocking.statusLabel}\n'
+                  '${StorageIsolationPolicy.current.label}',
+                ),
+              ),
             ),
           ),
           IconButton(

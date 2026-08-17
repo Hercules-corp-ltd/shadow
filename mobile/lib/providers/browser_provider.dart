@@ -5,6 +5,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
+import '../browser/storage_isolation.dart';
 import '../browser/tracker_blocking.dart';
 import '../browser/url_input.dart';
 
@@ -117,6 +118,7 @@ class BrowserProvider with ChangeNotifier {
     if (webViewId == null) return;
 
     await TrackerBlocking.install(webViewId: webViewId);
+    await StorageIsolationPolicy.apply(webViewId: webViewId);
     notifyListeners();
   }
 
