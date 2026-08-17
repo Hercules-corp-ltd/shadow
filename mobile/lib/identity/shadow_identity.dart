@@ -60,6 +60,7 @@ class ShadowIdentity {
   static const String _branchInfo = 'credential-branch';
   static const String _fingerprintInfo = 'identity-fingerprint/v1';
   static const String _verifierInfo = 'identity-verifier/v1';
+  static const String _backupInfo = 'adapter-backup/v1';
 
   /// A short, memorable label for *which* identity this is.
   ///
@@ -279,6 +280,25 @@ class ShadowIdentity {
         info: '$handleSchemeVersion|$handleEpoch',
         length: SiteMailboxKeys.materialLength,
       ),
+    );
+  }
+
+  /// The key an adapter backup is encrypted to.
+  ///
+  /// Derived from the phrase rather than from a password the user picks,
+  /// because a backup of which sites you have accounts on is exactly as
+  /// sensitive as the accounts, and a second password is a second thing to
+  /// lose. The phrase already restores everything else; this makes it
+  /// restore the rotation state too.
+  ///
+  /// Its own info string, so the bytes are unrelated to any credential.
+  Uint8List backupKey() {
+    _assertUsable();
+    return ShadowKdf.derive(
+      inputKeyMaterial: _branchKey,
+      salt: _rootSalt,
+      info: _backupInfo,
+      length: 32,
     );
   }
 
