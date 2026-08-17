@@ -88,6 +88,10 @@ export function isClaimableName(name: string): boolean {
   // lowercases the recipient before it looks a row up, so a row stored with
   // any uppercase in it could never be reached by mail at all.
   if (!/^[a-z2-7]+$/.test(name)) return false;
+  // Not redundant with the bounds above. At today's mask length of 20 the
+  // bounds already exclude every mask, and this line never fires. It is what
+  // holds the rule if a future truncation lands *inside* 5..19 — the one way
+  // the disjointness argument could quietly stop being true.
   if (MASK_LOCAL_PART_LENGTHS.includes(name.length)) return false;
   return !RESERVED_NAMES.has(name);
 }

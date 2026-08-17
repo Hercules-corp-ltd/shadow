@@ -13,6 +13,7 @@ import 'providers/domains_provider.dart';
 import 'providers/downloads_provider.dart';
 import 'providers/extensions_provider.dart';
 import 'providers/history_provider.dart';
+import 'providers/public_address_provider.dart';
 import 'providers/settings_provider.dart';
 import 'services/settings_service.dart';
 import 'providers/tokens_provider.dart';
@@ -63,6 +64,12 @@ class ShadowApp extends StatelessWidget {
                 ctx.read<SettingsProvider>().mailBaseUrl,
           ),
           update: (_, __, mailbox) => mailbox!,
+        ),
+        ChangeNotifierProxyProvider<SettingsProvider, PublicAddressProvider>(
+          create: (ctx) => PublicAddressProvider(
+            mailBaseUrl: () => ctx.read<SettingsProvider>().mailBaseUrl,
+          ),
+          update: (_, __, addresses) => addresses!,
         ),
         ChangeNotifierProvider(create: (_) => BrowserProvider()),
       ],

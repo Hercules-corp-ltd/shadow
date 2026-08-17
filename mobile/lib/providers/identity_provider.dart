@@ -184,6 +184,24 @@ class IdentityProvider with ChangeNotifier {
     }
   }
 
+  /// The keys behind the one address a person can hand out. Null while locked.
+  ///
+  /// Derived on the `handle/v1` branch, which is separate from every per-site
+  /// mask on purpose: this address is deliberately linkable across everywhere
+  /// it is used, and a key shared with the masks would extend that linkability
+  /// to them.
+  SiteMailboxKeys? publicAddressKeys({int epoch = 1}) {
+    final engine = _engine;
+    if (engine == null) return null;
+    try {
+      return engine.handleMailboxKeys(handleEpoch: epoch);
+    } on ArgumentError {
+      return null;
+    } on StateError {
+      return null;
+    }
+  }
+
   /// The mailbox keys for [host]. Null when locked or underivable.
   ///
   /// Separate from [identityFor] because the keys are needed for things the

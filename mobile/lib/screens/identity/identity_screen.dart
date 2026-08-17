@@ -160,6 +160,13 @@ class _SetupViewState extends State<_SetupView> {
                   decoration: const InputDecoration(
                     hintText: 'twelve words separated by spaces',
                   ),
+                  // Restore's enabled state is computed from this controller
+                  // during build, and a controller change is not a rebuild.
+                  // Without this the button reads the field as empty forever:
+                  // the card appears after the domain is already filled, so
+                  // nothing else triggers a build, and someone typing a
+                  // perfectly good phrase watches the only button stay dead.
+                  onChanged: (_) => setState(() {}),
                 ),
               ],
             ),
@@ -367,6 +374,17 @@ class _DeriveViewState extends State<_DeriveView> {
           padding: EdgeInsets.zero,
           child: Column(
             children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.alternate_email_rounded, size: 20),
+                title: Text('Public address', style: ShadowTypography.body),
+                subtitle: Text(
+                  'One name you give to people, rather than to sites. Claimed '
+                  'once and permanent.',
+                  style: ShadowTypography.caption,
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded, size: 18),
+                onTap: () => context.push('/identity/public-address'),
+              ),
               ListTile(
                 leading: const Icon(Icons.list_alt_rounded, size: 20),
                 title: Text('Your sites', style: ShadowTypography.body),

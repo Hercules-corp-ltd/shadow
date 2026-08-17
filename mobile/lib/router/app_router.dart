@@ -9,6 +9,7 @@ import '../screens/identity/identity_screen.dart';
 import '../screens/identity/identity_backup_screen.dart';
 import '../screens/identity/identity_phrase_screen.dart';
 import '../screens/identity/site_detail_screen.dart';
+import '../screens/identity/public_address_screen.dart';
 import '../screens/identity/site_list_screen.dart';
 import '../screens/activity/activity_logs_screen.dart';
 import '../screens/activity/activity_screen.dart';
@@ -114,6 +115,10 @@ class AppRouter {
         GoRoute(
           path: '/identity/backup',
           builder: (_, __) => const IdentityBackupScreen(),
+        ),
+        GoRoute(
+          path: '/identity/public-address',
+          builder: (_, __) => const PublicAddressScreen(),
         ),
         GoRoute(
           path: '/identity/sites',

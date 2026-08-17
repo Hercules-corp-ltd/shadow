@@ -101,6 +101,108 @@ class MailboxApi {
     );
   }
 
+  /// Claims a name the user chose, or recovers the one they already hold.
+  ///
+  /// The two are the same request. One identity may hold one name, so a claim
+  /// from a key that already holds one is answered with the name it holds
+  /// rather than taking the name asked for. That is what makes a reinstall
+  /// survivable — and it means the caller must always read [ClaimHeld.name]
+  /// rather than assuming it got what it asked for.
+  Future<ClaimResult> claim({
+    required SiteMailboxKeys keys,
+    required String name,
+    required String powNonce,
+  }) async {
+    final timestamp = _now();
+    final edPub = keys.ed25519PublicKey;
+    final x25519 = await keys.x25519PublicKey();
+    final signature = keys.sign(
+      utf8.encode(
+        'mail-claim/v1|$name|${_b64(edPub)}|${_b64(x25519)}|$timestamp',
+      ),
+    );
+
+    return _claimResult(() => _dio.post<dynamic>(
+          '/mail/claim',
+          data: <String, dynamic>{
+            'local_part': name,
+            'ed25519_pub': _b64(edPub),
+            'x25519_pub': _b64(x25519),
+            'pow': powNonce,
+            'timestamp': timestamp,
+            'signature': _b64(signature),
+          },
+        ));
+  }
+
+  /// Asks which name this key holds, without claiming anything.
+  ///
+  /// Not an oracle: the request is signed by the key being asked about, so
+  /// only whoever holds its private half can ask, and the answer is something
+  /// they already own. It exists so a fresh install can find out whether this
+  /// identity already has a name — the alternative is attempting a claim, and
+  /// attempting a claim while holding nothing takes the name you guessed with.
+  Future<ClaimResult> claimedName({required SiteMailboxKeys keys}) async {
+    final timestamp = _now();
+    final edPub = keys.ed25519PublicKey;
+    final signature = keys.sign(
+      utf8.encode('mail-claimed/v1|${_b64(edPub)}|$timestamp'),
+    );
+
+    return _claimResult(() => _dio.post<dynamic>(
+          '/mail/claimed',
+          data: <String, dynamic>{
+            'ed25519_pub': _b64(edPub),
+            'timestamp': timestamp,
+            'signature': _b64(signature),
+          },
+        ));
+  }
+
+  /// Maps a claim or lookup response.
+  ///
+  /// Deliberately a type of its own rather than another `FetchOutcome`
+  /// variant. Adding one to that sealed type would force a branch into every
+  /// exhaustive switch in the app — including the domain and resolve screens,
+  /// which never touch mail — and one of those switches decides whether an
+  /// alias burn is reported as finished. A local type costs a few lines and
+  /// cannot reach any of that.
+  Future<ClaimResult> _claimResult(
+    Future<Response<dynamic>> Function() send,
+  ) async {
+    try {
+      final response = await send();
+      final status = response.statusCode;
+      final data = response.data;
+
+      if (status == 409) return const ClaimTaken();
+      if (status == 402) return const ClaimRefused(ClaimRefusal.needsMoreWork);
+      if (status == 401) return const ClaimRefused(ClaimRefusal.rejectedKey);
+      if (status == 400) return const ClaimRefused(ClaimRefusal.refusedName);
+      if (status == null || status < 200 || status >= 300 || data is! Map) {
+        return const ClaimUnreachable('The mail service did not answer.');
+      }
+
+      final json = Map<String, dynamic>.from(data);
+      if (json['ok'] != true) {
+        return const ClaimUnreachable('The mail service refused the request.');
+      }
+
+      // The lookup says so explicitly; a claim never answers 200 without one.
+      if (json['claimed'] == false) return const ClaimNone();
+
+      final name = json['local_part'] as String?;
+      if (name == null || name.isEmpty) {
+        return const ClaimUnreachable('The mail service sent no name back.');
+      }
+      return ClaimHeld(name: name, retired: json['retired'] == true);
+    } on DioException catch (error) {
+      return ClaimUnreachable(describeDioFailure(error));
+    } catch (_) {
+      return const ClaimUnreachable('Could not reach the mail service.');
+    }
+  }
+
   /// Fetches everything newer than [cursor].
   ///
   /// Cursor-based rather than time-based on purpose: the server returns what
@@ -213,6 +315,59 @@ class MailboxApi {
       return const FetchUnreachable('Could not reach the mail server.');
     }
   }
+}
+
+/// Why a claim was refused by the server.
+enum ClaimRefusal {
+  /// The server would not have this name. Reserved, or the wrong shape.
+  ///
+  /// The client checks the shape itself before mining, so by the time this
+  /// arrives the likely causes are a reserved name or a clock too far out —
+  /// which is why the copy for it must not tell the user to pick another name.
+  refusedName,
+
+  /// The proof of work was not enough. Retryable with more.
+  needsMoreWork,
+
+  /// The signature did not verify against the key presented.
+  rejectedKey,
+}
+
+/// The result of claiming a name, or of asking which name a key holds.
+sealed class ClaimResult {
+  const ClaimResult();
+}
+
+/// This key holds [name]. Not necessarily the name that was asked for.
+final class ClaimHeld extends ClaimResult {
+  const ClaimHeld({required this.name, required this.retired});
+
+  final String name;
+
+  /// True when the owner has stopped it accepting mail. Still theirs.
+  final bool retired;
+}
+
+/// This key holds no name. Only ever an answer to a lookup.
+final class ClaimNone extends ClaimResult {
+  const ClaimNone();
+}
+
+/// Somebody else got there first, and there is no way to appeal it.
+final class ClaimTaken extends ClaimResult {
+  const ClaimTaken();
+}
+
+final class ClaimRefused extends ClaimResult {
+  const ClaimRefused(this.reason);
+  final ClaimRefusal reason;
+}
+
+/// Nothing could be established. Critically **not** "nothing was claimed":
+/// the request may have landed and the reply been lost.
+final class ClaimUnreachable extends ClaimResult {
+  const ClaimUnreachable(this.detail);
+  final String detail;
 }
 
 /// What the server hands back when an address is claimed.
