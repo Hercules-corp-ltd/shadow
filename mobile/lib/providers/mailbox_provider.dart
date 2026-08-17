@@ -166,6 +166,61 @@ class MailboxProvider with ChangeNotifier {
     );
   }
 
+  /// Works out which alias epoch a site is really on, after the local
+  /// record has been lost.
+  ///
+  /// ## Why this is lazy and per site, not a sweep at launch
+  ///
+  /// The obvious design — walk every known site on startup and probe them —
+  /// cannot work and should not. It cannot, because after the store is gone
+  /// there is no list of sites: nothing else records which ones the user
+  /// has, and that absence is deliberate. And it should not, because a burst
+  /// of probes from one IP within a few seconds hands the operator a perfect
+  /// grouping of that user's entire mailbox set, which is exactly the
+  /// linkage the rest of the design goes out of its way not to create.
+  ///
+  /// So it runs when the user is standing on a site and about to derive for
+  /// it — one domain, at a moment the operator learns about anyway because
+  /// registration or polling for that same site is about to happen.
+  ///
+  /// ## What this cannot recover
+  ///
+  /// The password epoch. It is not in the mail derivation, so the server has
+  /// never seen anything derived from it and no probe can find it. That
+  /// failure is at least loud — a stale password is rejected by the site,
+  /// visibly — where a stale address fails silently, mail going nowhere with
+  /// nothing to indicate it. Recovering the password epoch needs the
+  /// encrypted export instead.
+  Future<int?> recoverAliasEpoch({
+    required SiteMailboxKeys? Function(int aliasEpoch) derive,
+    int maxEpoch = 8,
+  }) async {
+    int? highest;
+
+    for (var epoch = 1; epoch <= maxEpoch; epoch++) {
+      // Null means the identity locked partway through. Stop rather than
+      // report a highest found so far, which would be a partial answer
+      // presented as a complete one.
+      final keys = derive(epoch);
+      if (keys == null) return null;
+
+      final outcome = await _api.probe(keys: keys);
+
+      switch (outcome) {
+        case FetchSuccess<bool>(value: final exists):
+          if (exists) highest = epoch;
+        case FetchNotFound<bool>():
+          break;
+        case FetchUnreachable<bool>():
+          // Cannot ask. Returning what has been found so far would be a
+          // guess dressed as an answer, and adopting a too-low epoch writes
+          // a wrong address into a form.
+          return null;
+      }
+    }
+    return highest;
+  }
+
   /// Starts watching a mailbox, because something is expected to arrive.
   ///
   /// Foreground only, and only after the browser has watched something

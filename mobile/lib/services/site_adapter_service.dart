@@ -90,6 +90,32 @@ class SiteAdapterService {
     ));
   }
 
+  /// Writes back an alias epoch worked out by probing the mail server.
+  ///
+  /// Marks the mailbox registered, because that is what the probe proved —
+  /// the address exists and answers to this key. Not `upsert` with a whole
+  /// record, so that a recovery can never quietly overwrite state that
+  /// survived.
+  Future<SiteAdapterRecord> adoptRecoveredAliasEpoch(
+    String domain, {
+    required int aliasEpoch,
+    int accountIndex = 0,
+  }) async {
+    final record = await resolve(domain, accountIndex: accountIndex);
+    if (aliasEpoch <= record.account.aliasEpoch &&
+        !record.account.isUnrecorded) {
+      return record;
+    }
+    return upsert(record.copyWith(
+      account: record.account.copyWith(
+        aliasEpoch: aliasEpoch,
+        mailbox: record.account.mailbox.copyWith(
+          state: MailboxState.registered,
+        ),
+      ),
+    ));
+  }
+
   /// Step one of replacing a leaked address.
   ///
   /// Records the *next* epoch without adopting it, so both mailboxes are

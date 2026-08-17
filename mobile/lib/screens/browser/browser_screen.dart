@@ -10,6 +10,7 @@ import '../../browser/storage_isolation.dart';
 import '../../browser/url_input.dart';
 import '../../mail/code_extraction.dart';
 import '../../browser/tracker_blocking.dart';
+import '../../identity/registrable_domain.dart';
 import '../../identity/site_identity.dart';
 import '../../providers/browser_provider.dart';
 import '../../mail/poll_schedule.dart';
@@ -113,8 +114,33 @@ class _BrowserScreenState extends State<BrowserScreen> {
     // policy. Until now every caller passed the defaults, so a site that had
     // forced a reset kept being handed the pre-reset password.
     final adapters = context.read<SiteAdapterProvider>();
-    final record = await adapters.resolve(pageUrl!.host);
+    final mailbox = context.read<MailboxProvider>();
+    var record = await adapters.resolve(pageUrl!.host);
     if (!context.mounted) return;
+
+    // A site with no record at all is either genuinely new, or one whose
+    // record was lost — clearing app storage, a reinstall, a new phone. The
+    // two are indistinguishable from here, and getting it wrong the second
+    // way is silent: a stale alias epoch derives an address nothing receives
+    // at, so the code never comes and nothing says why.
+    //
+    // So ask, once, for this one site. See MailboxProvider.recoverAliasEpoch
+    // for why this is not a sweep at launch.
+    if (record.account.isUnrecorded) {
+      final recovered = await mailbox.recoverAliasEpoch(
+        derive: (epoch) => identityProvider.mailboxKeysFor(
+          pageUrl.host,
+          aliasEpoch: epoch,
+        ),
+      );
+      if (recovered != null && recovered > record.account.aliasEpoch) {
+        record = await adapters.adoptRecoveredAliasEpoch(
+          RegistrableDomain.of(pageUrl.host),
+          aliasEpoch: recovered,
+        );
+      }
+      if (!context.mounted) return;
+    }
 
     final SiteIdentity? identity = identityProvider.identityFor(
       pageUrl.host,
@@ -139,7 +165,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
     // Confirming is the consent moment for minting a mailbox, and it has to
     // happen before the fill rather than after: plenty of sites validate an
     // address on blur and send mail before anything is submitted.
-    final mailbox = context.read<MailboxProvider>();
+
     final keys = identityProvider.mailboxKeysFor(
       pageUrl.host,
       accountIndex: record.accountIndex,

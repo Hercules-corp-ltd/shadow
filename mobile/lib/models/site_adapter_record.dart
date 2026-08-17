@@ -161,6 +161,19 @@ class SiteAccountState {
 
   bool get isBurning => pendingAliasEpoch != null;
 
+  /// Nothing has ever been written for this site.
+  ///
+  /// Cannot distinguish "never visited" from "record lost" — and that is the
+  /// point of checking it. The two look identical from here, and the second
+  /// one fails silently, so both are worth one probe.
+  bool get isUnrecorded =>
+      mode == SiteMode.off &&
+      passwordEpoch == 1 &&
+      aliasEpoch == 1 &&
+      pendingAliasEpoch == null &&
+      registeredHandle == null &&
+      mailbox.state == MailboxState.none;
+
   SiteAccountState copyWith({
     SiteMode? mode,
     int? passwordEpoch,

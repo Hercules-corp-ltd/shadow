@@ -42,6 +42,21 @@ class SiteAdapterProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Writes back an alias epoch recovered from the mail server.
+  Future<SiteAdapterRecord> adoptRecoveredAliasEpoch(
+    String domain, {
+    required int aliasEpoch,
+    int accountIndex = 0,
+  }) async {
+    final record = await _service.adoptRecoveredAliasEpoch(
+      domain,
+      aliasEpoch: aliasEpoch,
+      accountIndex: accountIndex,
+    );
+    notifyListeners();
+    return record;
+  }
+
   /// After a site forces a reset. Leaves the address alone.
   Future<void> rotatePassword(String domain, {int accountIndex = 0}) async {
     await _service.bumpPasswordEpoch(domain, accountIndex: accountIndex);
