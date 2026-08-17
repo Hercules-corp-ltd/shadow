@@ -56,6 +56,17 @@ PROVISIONAL_MESSAGE_CAP = "3"
 # Hard caps per mailbox for its whole life.
 MESSAGE_CAP = "50"
 
+# Work required on a claim, as opposed to a mask registration.
+#
+# Higher than POW_BITS on purpose. A mask address is unguessable, so nobody
+# competes for a particular one and the work is only an anti-farming cost. A
+# short readable name is scarce, and the first person to mine one keeps it
+# forever — so the price of grinding through a dictionary of desirable names
+# has to be worth more than a second each. 22 bits is roughly four seconds of
+# phone CPU: unnoticeable once in a lifetime, about 50 CPU-days per million
+# names.
+CLAIM_POW_BITS = "22"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "shadow-mail"
@@ -84,7 +95,8 @@ RETENTION_DAYS = "7"
 POW_BITS = "8"
 PROVISIONAL_MESSAGE_CAP = "3"
 MESSAGE_CAP = "50"
-# Enables POST /_dev/inbound, which feeds raw MIME through the exact code
+CLAIM_POW_BITS = "10"
+# Enables POST/ /_dev/inbound, which feeds raw MIME through the exact code
 # path Cloudflare's email() handler uses. It is the only way to prove the
 # whole chain without owning a domain yet. Guarded by this flag, absent from
 # production vars, and refused unless wrangler reports a local dev session.

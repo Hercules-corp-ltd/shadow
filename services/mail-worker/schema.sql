@@ -73,3 +73,24 @@ CREATE TABLE IF NOT EXISTS message (
 
 CREATE INDEX IF NOT EXISTS message_expiry ON message (expires_day);
 CREATE INDEX IF NOT EXISTS mailbox_expiry ON mailbox (expires_day);
+
+-- One claimed name per identity.
+--
+-- Two kinds of local part share this table. A mask is a hash of its own key,
+-- so it needs no such rule: the key already determines the name, and one key
+-- yields exactly one mask per epoch. A name a person typed determines nothing,
+-- so without this index one identity could accumulate names — and, worse, the
+-- reinstall path could not answer "which one is mine?" because there could be
+-- several.
+--
+-- The predicate is the disjointness rule from auth.ts restated in SQL, which
+-- cannot import it: masks are exactly 20 characters, claimable names never
+-- are. If MASK_LOCAL_PART_LENGTHS ever gains a length, this has to change with
+-- it, and tool/probe.mjs fails if they drift.
+--
+-- An index, not a column: this file is all CREATE ... IF NOT EXISTS and gets
+-- re-run against live databases, and SQLite has no ALTER that would add a
+-- column to an existing table here. An index applies to a populated table
+-- exactly as it does to an empty one.
+CREATE UNIQUE INDEX IF NOT EXISTS mailbox_claimed_key
+  ON mailbox (ed25519_pub) WHERE length(local_part) <> 20;

@@ -17,6 +17,81 @@ const LOCAL_PART_CONTEXT = 'shadow.mail.localpart.v1';
 const LOCAL_PART_LENGTH = 20;
 const BASE32 = 'abcdefghijklmnopqrstuvwxyz234567';
 
+/**
+ * Every length a derived mask address has ever been truncated to.
+ *
+ * Append here and never edit — a mask that used to be issued is still out in
+ * the world on somebody's account, and its row may not exist yet. This array
+ * is the whole disjointness argument: a name a person can claim is refused if
+ * its length appears here, so no claim can ever land on a mask address.
+ */
+export const MASK_LOCAL_PART_LENGTHS: readonly number[] = [LOCAL_PART_LENGTH];
+
+/** Bounds on a name a person types. Deliberately excludes every mask length. */
+export const CLAIM_MIN_LENGTH = 5;
+export const CLAIM_MAX_LENGTH = 19;
+
+/**
+ * Names the mail service keeps for itself.
+ *
+ * `postmaster` and `abuse` are not optional politeness: RFC 2142 requires a
+ * domain to answer them, and a provider that cannot reach either one starts
+ * treating the whole domain as unattended. The rest are the addresses people
+ * assume belong to whoever runs the service, which is exactly why handing one
+ * to a stranger is a phishing primitive.
+ *
+ * Anything shorter than CLAIM_MIN_LENGTH — root, mail, help, info, team — is
+ * already unclaimable on length and is left out rather than listed twice.
+ */
+export const RESERVED_NAMES: ReadonlySet<string> = new Set([
+  'abuse',
+  'administrator',
+  'billing',
+  'contact',
+  'hostmaster',
+  'mailer',
+  'noreply',
+  'postmaster',
+  'privacy',
+  'security',
+  'shadow',
+  'staff',
+  'support',
+  'webmaster',
+]);
+
+/** True for a string shaped like a derived mask address. */
+export function isMaskShaped(localPart: string): boolean {
+  return (
+    MASK_LOCAL_PART_LENGTHS.includes(localPart.length) &&
+    /^[a-z2-7]+$/.test(localPart)
+  );
+}
+
+/**
+ * Whether a person is allowed to claim this name.
+ *
+ * The alphabet is the mask alphabet rather than the wider `[a-z0-9-]` a
+ * username field would allow, and that is a deliberate cost. It removes every
+ * confusable pair at a stroke — no `0`/`o`, no `1`/`l`, no uppercase, and no
+ * hyphen, so `alice-support` cannot exist alongside `alicesupport`. On an
+ * address a person hands out and other people type from memory, impersonation
+ * is the harm that matters more than expressiveness.
+ *
+ * What it costs, said plainly: nobody can claim `alice1` or `bob-smith`.
+ */
+export function isClaimableName(name: string): boolean {
+  if (name.length < CLAIM_MIN_LENGTH || name.length > CLAIM_MAX_LENGTH) {
+    return false;
+  }
+  // Byte-identical to its own canonical form. Never folded: deliver()
+  // lowercases the recipient before it looks a row up, so a row stored with
+  // any uppercase in it could never be reached by mail at all.
+  if (!/^[a-z2-7]+$/.test(name)) return false;
+  if (MASK_LOCAL_PART_LENGTHS.includes(name.length)) return false;
+  return !RESERVED_NAMES.has(name);
+}
+
 /** Freshness window on a signed request, in seconds, either direction. */
 export const CLOCK_SKEW_SECONDS = 60;
 
