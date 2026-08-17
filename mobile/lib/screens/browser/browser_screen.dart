@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../../browser/autofill.dart';
 import '../../browser/code_fill_script.dart';
 import '../../browser/storage_isolation.dart';
+import '../../browser/url_input.dart';
 import '../../mail/code_extraction.dart';
 import '../../browser/tracker_blocking.dart';
 import '../../identity/site_identity.dart';
@@ -59,7 +60,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: ShadowColors.surfaceElevated,
-      builder: (_) => _UrlPromptSheet(
+      builder: (_) => UrlPromptSheet(
         initialValue: browser.activeTab?.url?.toString() ?? '',
       ),
     );
@@ -69,9 +70,16 @@ class _BrowserScreenState extends State<BrowserScreen> {
 
     if (!await browser.open(input)) {
       if (!context.mounted) return;
+      // Say which of the two things went wrong. The old copy blamed the
+      // scheme for everything, including input that simply was not an
+      // address, which told a confused user nothing they could act on.
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('That address uses a scheme Shadow will not open.'),
+        SnackBar(
+          content: Text(
+            UrlInput.hasDisallowedScheme(input)
+                ? 'Shadow will not open ${Uri.tryParse(input)?.scheme} links.'
+                : 'That is not an address Shadow can open.',
+          ),
         ),
       );
     }
@@ -677,18 +685,37 @@ class _StartPage extends StatelessWidget {
 ///
 /// Stateful so the controller's lifetime matches the sheet's own. See the
 /// comment in _promptForUrl for why the previous inline version crashed.
-class _UrlPromptSheet extends StatefulWidget {
-  const _UrlPromptSheet({required this.initialValue});
+/// The address bar's input sheet.
+///
+/// Public only so a widget test can open it directly. Its selection
+/// behaviour is the fix for a bug that made the browser unnavigable, and
+/// that behaviour is worth a test that does not need the whole screen and
+/// every provider behind it.
+@visibleForTesting
+class UrlPromptSheet extends StatefulWidget {
+  const UrlPromptSheet({super.key, required this.initialValue});
 
   final String initialValue;
 
   @override
-  State<_UrlPromptSheet> createState() => _UrlPromptSheetState();
+  State<UrlPromptSheet> createState() => UrlPromptSheetState();
 }
 
-class _UrlPromptSheetState extends State<_UrlPromptSheet> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initialValue);
+class UrlPromptSheetState extends State<UrlPromptSheet> {
+  /// Prefilled with the current address, and selected in full.
+  ///
+  /// The selection is the whole fix for a bug that made the browser
+  /// unusable. Every address bar ever built selects its contents when you
+  /// focus it, so typing replaces. Without that, typing *inserts* — so from
+  /// bbc.com, typing "wikipedia.org" navigated to `bbc.com/wikipedia.org`
+  /// and returned a 404. The effect was that once a page was open, you could
+  /// not go anywhere else, and nothing in the UI explained why.
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue,
+  )..selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: widget.initialValue.length,
+    );
 
   @override
   void dispose() {
@@ -723,10 +750,22 @@ class _UrlPromptSheetState extends State<_UrlPromptSheet> {
             keyboardType: TextInputType.url,
             textInputAction: TextInputAction.go,
             style: ShadowTypography.body,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'shadow.app or "how does hkdf work"',
-              prefixIcon:
-                  Icon(Icons.search_rounded, color: ShadowColors.textSecondary),
+              prefixIcon: const Icon(Icons.search_rounded,
+                  color: ShadowColors.textSecondary),
+              // A way out that does not depend on the selection surviving.
+              suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _controller,
+                builder: (context, value, _) => value.text.isEmpty
+                    ? const SizedBox.shrink()
+                    : IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 18),
+                        color: ShadowColors.textSecondary,
+                        tooltip: 'Clear',
+                        onPressed: _controller.clear,
+                      ),
+              ),
             ),
             onSubmitted: (value) => Navigator.pop(context, value),
           ),

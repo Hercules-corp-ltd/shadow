@@ -60,6 +60,25 @@ class UrlInput {
     return Uri.parse(searchEndpoint + Uri.encodeQueryComponent(input));
   }
 
+  /// Whether [resolve] refused this because of its scheme specifically.
+  ///
+  /// Only so the UI can say which of the two things went wrong. "Shadow will
+  /// not open javascript: links" is actionable; "that address uses a scheme
+  /// Shadow will not open", said about a typo, is not.
+  static bool hasDisallowedScheme(String raw) {
+    final input = raw.trim();
+    final match = RegExp(r'^([a-zA-Z][a-zA-Z0-9+.-]*):').firstMatch(input);
+    if (match == null) return false;
+
+    final scheme = match.group(1)!.toLowerCase();
+    if (allowedSchemes.contains(scheme)) return false;
+
+    // "localhost:3000" is a host and a port, not a scheme.
+    final rest = input.substring(match.end);
+    if (RegExp(r'^\d+(/.*)?$').hasMatch(rest)) return false;
+    return true;
+  }
+
   /// True when [input] reads as a hostname rather than a search phrase.
   static bool _looksLikeHost(String input) {
     if (input.contains(' ')) return false;

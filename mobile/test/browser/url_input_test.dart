@@ -81,4 +81,32 @@ void main() {
       expect(UrlInput.isSecure(null), isFalse);
     });
   });
+
+  group('UrlInput.hasDisallowedScheme — for saying which thing went wrong', () {
+    test('true only for a scheme we refuse', () {
+      for (final input in <String>[
+        'javascript:alert(1)',
+        'data:text/html,<b>x</b>',
+        'file:///etc/passwd',
+        'myapp://open',
+      ]) {
+        expect(UrlInput.hasDisallowedScheme(input), isTrue, reason: input);
+      }
+    });
+
+    test('false for anything that simply is not an address', () {
+      // The old copy blamed the scheme for these too, which told a confused
+      // user nothing they could act on.
+      for (final input in <String>[
+        'bbc.co.uk',
+        'https://bbc.co.uk',
+        'how does hkdf work',
+        'localhost:3000',
+        'about:blank',
+        '',
+      ]) {
+        expect(UrlInput.hasDisallowedScheme(input), isFalse, reason: input);
+      }
+    });
+  });
 }
