@@ -253,6 +253,17 @@ class MailboxProvider with ChangeNotifier {
     _watching = null;
   }
 
+  /// Closes a mailbox server-side, so mail to it is refused rather than
+  /// stored. Part of committing an alias burn.
+  ///
+  /// The outcome is passed through rather than flattened to a bool. A
+  /// mailbox the server has never heard of is already as closed as it can
+  /// be; a server we could not reach has closed nothing. Collapsing those
+  /// two into "failed" would either block a burn that is already finished or
+  /// report one that never started.
+  Future<FetchOutcome<void>> retire({required SiteMailboxKeys keys}) =>
+      _api.retire(keys: keys);
+
   /// Drops findings once they have been used or dismissed.
   void clearFound() {
     if (_found.isEmpty) return;

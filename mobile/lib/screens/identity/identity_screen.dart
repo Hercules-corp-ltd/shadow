@@ -364,6 +364,36 @@ class _DeriveViewState extends State<_DeriveView> {
         ),
         const SizedBox(height: 16),
         GlassCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.list_alt_rounded, size: 20),
+                title: Text('Your sites', style: ShadowTypography.body),
+                subtitle: Text(
+                  'Change how Shadow behaves on a site, rotate a password, '
+                  'or replace an address that has started getting spam.',
+                  style: ShadowTypography.caption,
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded, size: 18),
+                onTap: () => context.push('/identity/sites'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.backup_outlined, size: 20),
+                title: Text('Backup', style: ShadowTypography.body),
+                subtitle: Text(
+                  'Your words rebuild the credentials. This carries which '
+                  'ones are current.',
+                  style: ShadowTypography.caption,
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded, size: 18),
+                onTap: () => context.push('/identity/backup'),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        GlassCard(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

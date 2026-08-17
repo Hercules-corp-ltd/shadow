@@ -6,7 +6,10 @@ import '../providers/identity_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../screens/browser/browser_screen.dart';
 import '../screens/identity/identity_screen.dart';
+import '../screens/identity/identity_backup_screen.dart';
 import '../screens/identity/identity_phrase_screen.dart';
+import '../screens/identity/site_detail_screen.dart';
+import '../screens/identity/site_list_screen.dart';
 import '../screens/activity/activity_logs_screen.dart';
 import '../screens/activity/activity_screen.dart';
 import '../screens/bookmarks/bookmarks_clear_screen.dart';
@@ -107,6 +110,25 @@ class AppRouter {
         GoRoute(
           path: '/identity',
           builder: (_, __) => const IdentityScreen(),
+        ),
+        GoRoute(
+          path: '/identity/backup',
+          builder: (_, __) => const IdentityBackupScreen(),
+        ),
+        GoRoute(
+          path: '/identity/sites',
+          builder: (_, __) => const SiteListScreen(),
+        ),
+        GoRoute(
+          // The domain is a path segment, so it arrives encoded — a bare
+          // one would swallow the rest of the path on anything with a dot
+          // and a slash in it.
+          path: '/identity/sites/:domain',
+          builder: (_, state) => SiteDetailScreen(
+            domain: Uri.decodeComponent(state.pathParameters['domain'] ?? ''),
+            accountIndex:
+                int.tryParse(state.uri.queryParameters['account'] ?? '') ?? 0,
+          ),
         ),
         GoRoute(
           path: '/identity/phrase',

@@ -175,6 +175,15 @@ class IdentityProvider with ChangeNotifier {
     }
   }
 
+  /// The key an adapter backup is encrypted to. Null while locked.
+  Uint8List? backupKey() {
+    try {
+      return _engine?.backupKey();
+    } on StateError {
+      return null;
+    }
+  }
+
   /// The mailbox keys for [host]. Null when locked or underivable.
   ///
   /// Separate from [identityFor] because the keys are needed for things the

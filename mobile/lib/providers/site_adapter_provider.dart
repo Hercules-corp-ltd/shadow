@@ -15,6 +15,20 @@ class SiteAdapterProvider with ChangeNotifier {
 
   final SiteAdapterService _service;
 
+  int _revision = 0;
+
+  /// Bumped on every write.
+  ///
+  /// Reads are futures, so a list rebuilt by `notifyListeners` alone would
+  /// re-issue the same future and show the same stale answer. Keying the
+  /// builder on this makes a change elsewhere actually re-read.
+  int get revision => _revision;
+
+  void _changed() {
+    _revision++;
+    notifyListeners();
+  }
+
   Future<SiteAdapterRecord> resolve(String host, {int accountIndex = 0}) =>
       _service.resolve(host, accountIndex: accountIndex);
 
@@ -26,7 +40,7 @@ class SiteAdapterProvider with ChangeNotifier {
     int accountIndex = 0,
   }) async {
     await _service.setMode(domain, mode, accountIndex: accountIndex);
-    notifyListeners();
+    _changed();
   }
 
   Future<void> recordSignup(
@@ -39,7 +53,7 @@ class SiteAdapterProvider with ChangeNotifier {
       handleUsed: handleUsed,
       accountIndex: accountIndex,
     );
-    notifyListeners();
+    _changed();
   }
 
   /// Writes back an alias epoch recovered from the mail server.
@@ -53,35 +67,41 @@ class SiteAdapterProvider with ChangeNotifier {
       aliasEpoch: aliasEpoch,
       accountIndex: accountIndex,
     );
-    notifyListeners();
+    _changed();
     return record;
   }
 
   /// After a site forces a reset. Leaves the address alone.
   Future<void> rotatePassword(String domain, {int accountIndex = 0}) async {
     await _service.bumpPasswordEpoch(domain, accountIndex: accountIndex);
-    notifyListeners();
+    _changed();
   }
 
   /// Step one of replacing a leaked address. Both mailboxes stay live until
   /// the user confirms the site has been updated.
   Future<void> beginAliasBurn(String domain, {int accountIndex = 0}) async {
     await _service.beginAliasBurn(domain, accountIndex: accountIndex);
-    notifyListeners();
+    _changed();
   }
 
   Future<void> commitAliasBurn(String domain, {int accountIndex = 0}) async {
     await _service.commitAliasBurn(domain, accountIndex: accountIndex);
-    notifyListeners();
+    _changed();
   }
 
   Future<void> abandonAliasBurn(String domain, {int accountIndex = 0}) async {
     await _service.abandonAliasBurn(domain, accountIndex: accountIndex);
-    notifyListeners();
+    _changed();
+  }
+
+  /// Writes a record wholesale. Used by a restore.
+  Future<void> upsert(SiteAdapterRecord record) async {
+    await _service.upsert(record);
+    _changed();
   }
 
   Future<void> forget(String domain, {int accountIndex = 0}) async {
     await _service.forget(domain, accountIndex: accountIndex);
-    notifyListeners();
+    _changed();
   }
 }
