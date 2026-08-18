@@ -35,7 +35,9 @@ class ShadowTheme {
 
     return base.copyWith(
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: ShadowColors.background,
+      // Transparent so the app-wide AmbientLight shows through. The light
+      // paints its own black base, so nothing is left unpainted.
+      scaffoldBackgroundColor: Colors.transparent,
       canvasColor: ShadowColors.background,
       textTheme: base.textTheme.apply(
         fontFamily: ShadowTypography.bodyFamily,

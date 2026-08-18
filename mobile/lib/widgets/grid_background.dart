@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/shadow_colors.dart';
-
 /// Subtle dotted "+" grid background seen on onboarding screens.
 class GridBackground extends StatelessWidget {
   const GridBackground({super.key, this.child, this.spacing = 40});
@@ -11,12 +9,13 @@ class GridBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: ShadowColors.background,
-      child: CustomPaint(
-        painter: _CrossGridPainter(spacing: spacing),
-        child: child ?? const SizedBox.expand(),
-      ),
+    // No fill of its own. This used to paint ShadowColors.background, which
+    // is opaque black, and that sat on top of the app-wide AmbientLight and
+    // hid it — so the screens using this grid stayed flat while every other
+    // screen was lit. The grid is a texture over the light, not a backdrop.
+    return CustomPaint(
+      painter: _CrossGridPainter(spacing: spacing),
+      child: child ?? const SizedBox.expand(),
     );
   }
 }

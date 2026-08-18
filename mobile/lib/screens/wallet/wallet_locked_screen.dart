@@ -50,7 +50,7 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
     final addr = wallet.walletAddress ?? '';
 
     return Scaffold(
-      backgroundColor: ShadowColors.background,
+      backgroundColor: Colors.transparent,
       body: GridBackground(
         child: SafeArea(
           child: Padding(
