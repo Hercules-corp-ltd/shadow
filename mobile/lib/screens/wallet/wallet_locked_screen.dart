@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/wallet_provider.dart';
+import '../../services/quick_unlock.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
 import '../../widgets/grid_background.dart';
@@ -17,13 +18,74 @@ class WalletLockedScreen extends StatefulWidget {
 
 class _WalletLockedScreenState extends State<WalletLockedScreen> {
   final _password = TextEditingController();
+  final QuickUnlock _quick = QuickUnlock(slot: QuickUnlockSlot.wallet);
+
   bool _loading = false;
   String? _error;
+  bool _remember = false;
+  bool _canRemember = false;
+  bool _armed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _readQuickState();
+  }
 
   @override
   void dispose() {
     _password.dispose();
     super.dispose();
+  }
+
+  Future<void> _readQuickState() async {
+    final available = await _quick.isAvailable();
+    final armed = await _quick.isEnabled();
+    if (!mounted) return;
+    setState(() {
+      _canRemember = available;
+      _armed = armed;
+    });
+    // Offered straight away when armed. Making somebody reach for a button to
+    // avoid typing a password they asked not to type is most of the friction
+    // back again.
+    if (armed) await _unlockWithDevice();
+  }
+
+  Future<void> _unlockWithDevice() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final result = await _quick.unlock();
+    if (!mounted) return;
+
+    if (!result.succeeded) {
+      setState(() => _loading = false);
+      final problem = result.problem;
+      if (problem != null && problem != QuickUnlockProblem.notSet) {
+        setState(() => _error = QuickUnlock.explain(problem));
+      }
+      return;
+    }
+
+    try {
+      await context.read<WalletProvider>().unlockWallet(result.passphrase!);
+      if (!mounted) return;
+      context.go('/home');
+    } catch (_) {
+      // The stored password no longer opens this wallet — changed, or the
+      // wallet was replaced. Drop it rather than going on offering a
+      // fingerprint that cannot work again.
+      await _quick.disable();
+      if (!mounted) return;
+      setState(() {
+        _armed = false;
+        _loading = false;
+        _error = 'The remembered password no longer opens this wallet, so '
+            'Shadow has forgotten it. Type it instead.';
+      });
+    }
   }
 
   Future<void> _unlock() async {
@@ -34,6 +96,23 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
     });
     try {
       await context.read<WalletProvider>().unlockWallet(_password.text);
+      if (!mounted) return;
+      // Stored only after a password that actually opened the wallet, and
+      // before navigating, so the screen is still alive to say so if the
+      // device check is refused.
+      if (_remember && !_armed) {
+        final stored = await _quick.enable(_password.text);
+        if (!mounted) return;
+        if (!stored) {
+          final detail = _quick.lastError;
+          setState(() {
+            _error = detail == null
+                ? 'The phone did not confirm it was you, so the password was '
+                    'not remembered.'
+                : 'Could not remember the password: $detail';
+          });
+        }
+      }
       if (!mounted) return;
       context.go('/home');
     } catch (e) {
@@ -53,10 +132,19 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
       backgroundColor: Colors.transparent,
       body: GridBackground(
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
+          // Scrollable, with a floor of the viewport height so the Spacers
+          // still centre things when there is room. Adding the remember
+          // checkbox pushed this 21px past the screen with the keyboard up —
+          // a real overflow on a short handset, not just on the emulator.
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
                 const Spacer(),
                 Container(
                   width: 96,
@@ -93,6 +181,42 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
                       style: ShadowTypography.bodySm
                           .copyWith(color: ShadowColors.error)),
                 ],
+                // A checkbox rather than a card offered afterwards: this screen
+                // is replaced the instant the wallet opens, so anything shown
+                // after a successful unlock cannot be read. Asked before, it
+                // is also just the familiar "remember me".
+                if (_canRemember && !_armed) ...<Widget>[
+                  const SizedBox(height: 8),
+                  InkWell(
+                    onTap: () => setState(() => _remember = !_remember),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        children: <Widget>[
+                          Checkbox(
+                            value: _remember,
+                            onChanged: (v) =>
+                                setState(() => _remember = v ?? false),
+                          ),
+                          Expanded(
+                            child: Text(
+                              'Remember this password and unlock with my '
+                              'fingerprint',
+                              style: ShadowTypography.bodySm,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_remember)
+                    Text(
+                      'Stored on this phone. Anything that opens the phone '
+                      'then opens the wallet.',
+                      style: ShadowTypography.caption
+                          .copyWith(color: ShadowColors.warning),
+                    ),
+                ],
                 const SizedBox(height: 16),
                 ShadowButton(
                   label: 'Unlock',
@@ -100,6 +224,14 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
                   onPressed: _loading ? null : _unlock,
                   size: ShadowButtonSize.lg,
                 ),
+                if (_armed) ...<Widget>[
+                  const SizedBox(height: 10),
+                  ShadowButton(
+                    label: 'Use my fingerprint',
+                    variant: ShadowButtonVariant.secondary,
+                    onPressed: _loading ? null : _unlockWithDevice,
+                  ),
+                ],
                 const Spacer(),
                 TextButton(
                   onPressed: () async {
@@ -135,7 +267,11 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
                   },
                   child: const Text('Forgot password? Delete wallet'),
                 ),
-              ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),

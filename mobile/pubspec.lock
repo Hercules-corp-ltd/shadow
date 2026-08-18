@@ -473,7 +473,7 @@ packages:
     source: hosted
     version: "1.6.1"
   local_auth_platform_interface:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: local_auth_platform_interface
       sha256: f98b8e388588583d3f781f6806e4f4c9f9e189d898d27f0c249b93a1973dd122

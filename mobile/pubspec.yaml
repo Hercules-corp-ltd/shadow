@@ -35,6 +35,8 @@ dependencies:
   flutter_secure_storage: ^9.2.2
   # Device biometric or PIN, used only to gate reading a stored passphrase.
   local_auth: ^2.3.0
+  # Imported directly by quick_unlock_test to type the fake authenticator.
+  local_auth_platform_interface: ^1.0.10
 
   # State Management
   provider: ^6.1.1

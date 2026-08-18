@@ -1,5 +1,15 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
+
+/// Which secret a [QuickUnlock] is holding.
+enum QuickUnlockSlot {
+  /// The passphrase that opens the identity and derives every account.
+  identity,
+
+  /// The password that opens the wallet keypair.
+  wallet,
+}
 
 /// Why a quick unlock could not happen.
 enum QuickUnlockProblem {
@@ -58,10 +68,17 @@ class QuickUnlockResult {
 /// not have would be worse than not having it.
 class QuickUnlock {
   QuickUnlock({
+    this.slot = QuickUnlockSlot.identity,
     FlutterSecureStorage? storage,
     LocalAuthentication? auth,
   })  : _storage = storage ?? _defaultStorage,
         _auth = auth ?? LocalAuthentication();
+
+  /// Which secret this instance holds. Two separate slots rather than one
+  /// combined blob, because they protect different things and a user may
+  /// reasonably want the phone to remember the wallet password while still
+  /// typing the passphrase that guards every derived account.
+  final QuickUnlockSlot slot;
 
   static const FlutterSecureStorage _defaultStorage = FlutterSecureStorage(
     iOptions: IOSOptions(
@@ -72,7 +89,10 @@ class QuickUnlock {
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
 
-  static const String _key = 'shadow_identity_quick_passphrase';
+  String get _key => switch (slot) {
+        QuickUnlockSlot.identity => 'shadow_identity_quick_passphrase',
+        QuickUnlockSlot.wallet => 'shadow_wallet_quick_password',
+      };
 
   final FlutterSecureStorage _storage;
   final LocalAuthentication _auth;
@@ -126,7 +146,17 @@ class QuickUnlock {
     return QuickUnlockResult.ok(stored);
   }
 
+  /// Why the last check failed, when the platform said something useful.
+  ///
+  /// Kept because swallowing it made a real failure indistinguishable from a
+  /// user tapping cancel: the switch slid back either way and the screen had
+  /// nothing to say. A `PlatformException` here is usually a setup problem —
+  /// no enrolled biometric, no fragment activity — and those need different
+  /// words than "that did not check out".
+  String? lastError;
+
   Future<bool> _authenticate(String reason) async {
+    lastError = null;
     try {
       return await _auth.authenticate(
         localizedReason: reason,
@@ -136,7 +166,11 @@ class QuickUnlock {
           useErrorDialogs: true,
         ),
       );
-    } on Exception {
+    } on PlatformException catch (e) {
+      lastError = '${e.code}: ${e.message ?? ''}'.trim();
+      return false;
+    } on Exception catch (e) {
+      lastError = e.toString();
       return false;
     }
   }

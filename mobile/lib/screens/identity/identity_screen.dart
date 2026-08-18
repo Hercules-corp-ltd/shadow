@@ -784,12 +784,17 @@ class _QuickUnlockRowState extends State<_QuickUnlockRow> {
     // switch that lies: the user tried something, it did not happen, and the
     // screen said nothing. The device check is the only way this fails here.
     if (!stored) {
+      final detail = _quick.lastError;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'The phone did not confirm it was you, so nothing was stored. '
-            'Your passphrase is unchanged.',
+            detail == null
+                ? 'The phone did not confirm it was you, so nothing was '
+                    'stored. Your passphrase is unchanged.'
+                : 'The phone could not check it was you, so nothing was '
+                    'stored: $detail',
           ),
+          duration: const Duration(seconds: 8),
         ),
       );
     }
