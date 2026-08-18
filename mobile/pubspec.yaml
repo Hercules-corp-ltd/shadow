@@ -33,6 +33,7 @@ dependencies:
   cryptography: 2.9.0
   shared_preferences: ^2.2.2
   flutter_secure_storage: ^9.2.2
+  local_auth: ^2.3.0
 
   # State Management
   provider: ^6.1.1

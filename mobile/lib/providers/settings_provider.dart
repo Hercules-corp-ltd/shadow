@@ -13,6 +13,15 @@ class SettingsProvider with ChangeNotifier {
   ShadowSettings get settings => _settings;
   bool get isLoaded => _isLoaded;
 
+  Future<void>? _loadFuture;
+
+  /// One shared load for the process — cold start and the lock screen must
+  /// not each race a separate [load] and read defaults mid-flight.
+  Future<void> ensureLoaded() {
+    _loadFuture ??= load();
+    return _loadFuture!;
+  }
+
   Future<void> load() async {
     _settings = await _service.load();
     _isLoaded = true;

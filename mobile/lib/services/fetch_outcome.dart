@@ -59,6 +59,7 @@ String describeDioFailure(DioException error) {
       return 'Timed out connecting to the server';
     case DioExceptionType.receiveTimeout:
     case DioExceptionType.sendTimeout:
+    case DioExceptionType.transformTimeout:
       return 'The server stopped responding';
     case DioExceptionType.badCertificate:
       return 'The server presented an invalid certificate';
