@@ -8,10 +8,9 @@ plugins {
 android {
     namespace = "app.shadow.mobile"
     compileSdk = flutter.compileSdkVersion
-    // Pinned rather than tracking flutter.ndkVersion (28.2.13676358), which
-    // is not installed locally and is a ~1 GB download. Nothing in this app
-    // uses the NDK directly; this only has to satisfy the plugins.
-    ndkVersion = "27.1.12297006"
+    // jni (pulled in by local_auth) requires 28.2.13676358. Plugins are
+    // backward compatible, so pin the highest version they ask for.
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

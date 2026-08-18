@@ -96,8 +96,10 @@ class AppRouter {
           return '/wallet/locked';
         }
 
-        // Unlocked — prevent staying on splash or onboarding.
-        if (onSplash || onOnboarding) return '/home';
+        // Unlocked — leave splash, onboarding, and the lock screen.
+        if (onSplash || onOnboarding || path == '/wallet/locked') {
+          return '/home';
+        }
         return null;
       },
       routes: [
@@ -168,7 +170,10 @@ class AppRouter {
         ),
         GoRoute(
           path: '/wallet/locked',
-          builder: (_, __) => const WalletLockedScreen(),
+          pageBuilder: (context, state) => NoTransitionPage<void>(
+            key: state.pageKey,
+            child: const WalletLockedScreen(),
+          ),
         ),
         GoRoute(
           path: '/wallet',
@@ -189,7 +194,13 @@ class AppRouter {
         ),
 
         // Home
-        GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+        GoRoute(
+          path: '/home',
+          pageBuilder: (context, state) => NoTransitionPage<void>(
+            key: state.pageKey,
+            child: const HomeScreen(),
+          ),
+        ),
 
         // History
         GoRoute(path: '/history', builder: (_, __) => const HistoryScreen()),
