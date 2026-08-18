@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/shadow_colors.dart';
 import '../theme/shadow_spacing.dart';
 import '../theme/shadow_typography.dart';
+import 'ambient_light.dart';
 
 /// A consistent dark scaffold with optional back button + title + subtitle.
 /// Used on almost every inner screen (History, Bookmarks, etc.).
@@ -38,7 +39,10 @@ class ShadowScaffold extends StatelessWidget {
       bottomNavigationBar: bottomBar,
       body: Stack(
         children: [
-          if (background != null) Positioned.fill(child: background!),
+          // The light, on every screen that has not asked for something else.
+          // It is a default rather than an opt-in because a card lit on one
+          // screen and flat on the next reads as a rendering bug.
+          Positioned.fill(child: background ?? const AmbientLight()),
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,

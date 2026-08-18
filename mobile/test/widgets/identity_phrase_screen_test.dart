@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shadow_mobile/widgets/ambient_light.dart';
 
 import 'package:shadow_mobile/screens/identity/identity_phrase_screen.dart';
 
@@ -10,6 +11,10 @@ const String phrase =
 Widget _wrap(Widget child) => MaterialApp(home: child);
 
 void main() {
+  // The drifting background never settles, so pumpAndSettle would wait on it
+  // rather than on anything this file is about.
+  setUpAll(() => AmbientLight.motion = false);
+
   testWidgets('keeps the words covered until the user asks', (tester) async {
     await tester.pumpWidget(_wrap(const IdentityPhraseScreen(phrase: phrase)));
 
