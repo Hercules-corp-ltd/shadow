@@ -343,7 +343,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
     final tab = browser.activeTab;
 
     return Scaffold(
-      backgroundColor: ShadowColors.background,
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         bottom: false,
         child: Column(

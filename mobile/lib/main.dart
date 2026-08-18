@@ -19,6 +19,7 @@ import 'services/settings_service.dart';
 import 'providers/tokens_provider.dart';
 import 'providers/wallet_provider.dart';
 import 'router/app_router.dart';
+import 'widgets/ambient_light.dart';
 import 'theme/shadow_theme.dart';
 
 void main() {
@@ -81,6 +82,20 @@ class ShadowApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: ShadowTheme.build(),
             routerConfig: router,
+            // One light for the whole app, behind every route.
+            //
+            // Doing this per screen meant the seven that build their own
+            // Scaffold — home, the lock screen, onboarding, the browser —
+            // stayed flat black while the rest were lit, which reads as two
+            // apps rather than one with depth. It also means the drift is
+            // continuous across a navigation instead of restarting, so
+            // moving between screens does not reset the room.
+            builder: (context, child) => Stack(
+              children: <Widget>[
+                const Positioned.fill(child: AmbientLight()),
+                if (child != null) child,
+              ],
+            ),
           );
         },
       ),

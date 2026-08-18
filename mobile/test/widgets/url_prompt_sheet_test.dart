@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shadow_mobile/widgets/ambient_light.dart';
 import 'package:shadow_mobile/screens/browser/browser_screen.dart';
 
 /// Opens the address bar the way the browser does and returns its field.
@@ -27,6 +28,10 @@ Future<TextField> openSheet(WidgetTester tester, String initialValue) async {
 }
 
 void main() {
+  // The drifting background never settles, so pumpAndSettle would wait on it
+  // rather than on anything this file is about.
+  setUpAll(() => AmbientLight.motion = false);
+
   group('the address bar replaces what is there, rather than appending', () {
     testWidgets('the current address arrives fully selected', (tester) async {
       // The bug this exists for made the browser unusable: from bbc.com,

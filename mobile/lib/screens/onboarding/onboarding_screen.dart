@@ -89,7 +89,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final isLast = _index == _slides.length - 1;
 
     return Scaffold(
-      backgroundColor: ShadowColors.background,
+      backgroundColor: Colors.transparent,
       body: GridBackground(
         child: SafeArea(
           child: Column(

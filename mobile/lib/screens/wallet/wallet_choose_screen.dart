@@ -36,7 +36,7 @@ class WalletChooseScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ShadowColors.background,
+      backgroundColor: Colors.transparent,
       body: GridBackground(
         child: SafeArea(
           child: Padding(

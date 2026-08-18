@@ -192,7 +192,7 @@ class _WalletLockedScreenState extends State<WalletLockedScreen>
     final showPassword = _phase == _UnlockPhase.password;
 
     return Scaffold(
-      backgroundColor: ShadowColors.background,
+      backgroundColor: Colors.transparent,
       body: GridBackground(
         child: SafeArea(
           child: Padding(
