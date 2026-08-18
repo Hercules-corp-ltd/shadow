@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../identity/registrable_domain.dart';
 
 /// Just enough MIME to find a verification code.
 ///
@@ -331,10 +332,68 @@ class MimeMessage {
   /// one, because verification mail almost always ships from an ESP.
   String get from => MimeLite.decodeEncodedWords(headers['from'] ?? '').trim();
 
-  /// The sender's registrable domain, best effort.
+  /// The display name on the `From:` header, if there is one.
+  ///
+  /// Separate from [fromDomain] so the two can never be confused. A sender
+  /// writes this, and it is free text: it may say anything at all, including
+  /// somebody else's address.
+  String get displayName {
+    final raw = headers['from'] ?? '';
+    final open = raw.lastIndexOf('<');
+    if (open < 0) return '';
+    return MimeLite.decodeEncodedWords(raw.substring(0, open))
+        .replaceAll('"', '')
+        .trim();
+  }
+
+  /// The registrable domain of the address in `From:`, or null.
+  ///
+  /// ## Why this is fussier than it looks
+  ///
+  /// This value is shown to the user beside a verification code, so a display
+  /// name that can pass itself off as an address is a phishing primitive
+  /// rather than a cosmetic bug. The previous version took the first `@` in
+  /// the *decoded* header, which meant
+  ///
+  ///     From: "billing@acme.com" <mallory@evil.test>
+  ///
+  /// read as `acme.com` — the attacker chooses what Shadow tells the user.
+  ///
+  /// So: parse the undecoded header, take the address inside the last angle
+  /// brackets rather than anything before them, split on the final `@`, and
+  /// refuse outright when the field carries more than one address, because
+  /// then there is no single answer to give.
+  ///
+  /// Even parsed correctly this is still the sender's own word. Nothing may
+  /// decide anything on it — see [MimeMessage.from].
   String? get fromDomain {
-    final match = RegExp(r'@([A-Za-z0-9._-]+)').firstMatch(from);
-    return match?.group(1)?.toLowerCase();
+    final raw = headers['from'] ?? '';
+    if (raw.isEmpty) return null;
+
+    final open = raw.lastIndexOf('<');
+    String spec;
+    if (open >= 0) {
+      final close = raw.indexOf('>', open);
+      if (close < 0) return null;
+      spec = raw.substring(open + 1, close);
+      // A group or a list: `a@b <c@d>, e@f <g@h>`. One header, several
+      // senders, no honest single answer.
+      if (raw.substring(0, open).contains('>')) return null;
+    } else {
+      spec = raw;
+      if (spec.contains(',')) return null;
+    }
+
+    spec = spec.trim();
+    final at = spec.lastIndexOf('@');
+    if (at < 0 || at == spec.length - 1) return null;
+
+    final host = spec.substring(at + 1).trim().toLowerCase();
+    if (host.isEmpty || host.contains('@') || host.contains(' ')) return null;
+
+    // Reduced through the public suffix list, so `email.notify.twitter.com`
+    // and `twitter.com` are one answer rather than two.
+    return RegistrableDomain.tryOf(host);
   }
 
   /// RFC-shaped one-time code, if the sender bothered.

@@ -309,10 +309,14 @@ class MailboxProvider with ChangeNotifier {
 
     var highest = cursor;
     for (final sealed in page.messages) {
-      highest = sealed.seq > highest ? sealed.seq : highest;
       final plaintext =
           await SealedMail.open(envelope: sealed.envelope, keys: keys);
+      // The cursor moves only past what was actually opened. Advancing it
+      // first meant a message that failed to unseal — a truncated envelope,
+      // a transient decrypt failure — was skipped permanently on the next
+      // poll, and the one that gets skipped is a verification code.
       if (plaintext == null) continue;
+      highest = sealed.seq > highest ? sealed.seq : highest;
 
       final message = MimeLite.parse(plaintext);
       _found.addAll(

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nothing leaves this device through Google's backup.
+
+  `android:allowBackup` defaults to true, and on Android 12 and later it is
+  `dataExtractionRules` rather than `allowBackup` that governs cloud backup
+  and device-to-device transfer — so both are set, and this file exists to say
+  the same thing to the newer API.
+
+  What was actually exposed: `shadow_site_adapters_v1` is an ordinary
+  SharedPreferences file holding every site the user has an account on, along
+  with the rotation counters that say which password and which address are
+  current. Uploaded to Google and restorable onto any handset that clears
+  Google account recovery, that index sits behind a materially weaker gate
+  than the recovery phrase everything else in Shadow is bound to — and the
+  list of sites someone has accounts on is worth protecting on its own,
+  whatever the credentials are.
+
+  Shadow already has a way to move between devices that does not involve a
+  third party: the recovery phrase, plus the encrypted export on the Backup
+  screen. That one is sealed to a key derived from the phrase, so it is
+  useless to whoever is holding it without the words.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+        <exclude domain="file" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+        <exclude domain="file" />
+    </device-transfer>
+</data-extraction-rules>

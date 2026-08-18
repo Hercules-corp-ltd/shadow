@@ -217,10 +217,41 @@ class AdapterBackup {
           mode: existing.account.mode == SiteMode.off
               ? incoming.account.mode
               : existing.account.mode,
+          // Omitting this dropped the incoming mailbox wholesale for any site
+          // the destination already knew about — the cursor with it — while a
+          // site it had never seen was adopted complete. A restore that
+          // silently keeps less for the sites you use most is the wrong way
+          // round.
+          mailbox: _mergeMailbox(existing.account, incoming.account),
         ),
       );
     }
 
     return byId.values.toList(growable: false);
+  }
+
+  /// Which side's mailbox survives a merge.
+  ///
+  /// Keyed on the alias epoch rather than on anything inside the mailbox,
+  /// because the epoch is what decides *which address* the record is about.
+  /// A mailbox from an older epoch describes an address that has since been
+  /// burned, and adopting its cursor would hide the current address's mail.
+  static MailboxRecord _mergeMailbox(
+    SiteAccountState existing,
+    SiteAccountState incoming,
+  ) {
+    if (incoming.aliasEpoch > existing.aliasEpoch) return incoming.mailbox;
+    if (incoming.aliasEpoch < existing.aliasEpoch) return existing.mailbox;
+
+    // Same address on both sides. Take the further-along cursor: a cursor is
+    // "already seen", so the higher one is the one that cannot lose mail.
+    final mine = int.tryParse(existing.mailbox.cursor ?? '') ?? 0;
+    final theirs = int.tryParse(incoming.mailbox.cursor ?? '') ?? 0;
+    return existing.mailbox.copyWith(
+      state: existing.mailbox.state == MailboxState.registered
+          ? MailboxState.registered
+          : incoming.mailbox.state,
+      cursor: '${mine > theirs ? mine : theirs}',
+    );
   }
 }

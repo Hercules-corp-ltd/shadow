@@ -147,7 +147,11 @@ class SiteAdapterService {
       account: record.account.copyWith(
         aliasEpoch: pending,
         clearPendingAliasEpoch: true,
-        mailbox: record.account.mailbox.copyWith(state: MailboxState.none),
+        // The cursor has to go with the address. A new epoch is a different
+        // local part, and the server starts its sequence at zero for it — so
+        // carrying the old cursor over made the new address's first messages
+        // invisible, which is exactly the mail that matters after a burn.
+        mailbox: const MailboxRecord(state: MailboxState.none),
       ),
     ));
   }
