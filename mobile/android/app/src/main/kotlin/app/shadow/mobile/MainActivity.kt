@@ -1,10 +1,13 @@
 package app.shadow.mobile
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-class MainActivity : FlutterActivity() {
+// FlutterFragmentActivity, not FlutterActivity: local_auth shows a
+// BiometricPrompt, which is a fragment, and on a plain FlutterActivity the
+// call fails with no_fragment_activity rather than showing anything.
+class MainActivity : FlutterFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 

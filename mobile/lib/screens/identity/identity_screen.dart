@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../identity/identity.dart';
 import '../../providers/identity_provider.dart';
+import '../../services/quick_unlock.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
@@ -216,13 +217,69 @@ class _UnlockView extends StatefulWidget {
 
 class _UnlockViewState extends State<_UnlockView> {
   final _passphraseCtrl = TextEditingController();
+  final QuickUnlock _quick = QuickUnlock();
+
   bool _busy = false;
   bool _obscured = true;
+  bool _quickArmed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _readQuickState();
+  }
 
   @override
   void dispose() {
     _passphraseCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _readQuickState() async {
+    final armed = await _quick.isEnabled();
+    if (!mounted) return;
+    setState(() => _quickArmed = armed);
+    // Offer straight away rather than making the user hunt for it, but only
+    // once — after the first successful unlock the card is gone.
+    if (armed) await _unlockWithBiometrics();
+  }
+
+  Future<void> _unlockWithBiometrics() async {
+    setState(() => _busy = true);
+    final result = await _quick.unlock();
+    if (!mounted) return;
+
+    if (!result.succeeded) {
+      setState(() => _busy = false);
+      final problem = result.problem;
+      if (problem != null && problem != QuickUnlockProblem.notSet) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(QuickUnlock.explain(problem))),
+        );
+      }
+      return;
+    }
+
+    final provider = context.read<IdentityProvider>();
+    final ok = await provider.unlock(passphrase: result.passphrase!);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (!ok) {
+      // The stored passphrase no longer matches — the identity was replaced,
+      // or the passphrase changed elsewhere. Drop it rather than prompting
+      // for a fingerprint that can never work again.
+      await _quick.disable();
+      if (!mounted) return;
+      setState(() => _quickArmed = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'The remembered passphrase no longer opens this identity, so '
+            'Shadow has forgotten it. Type it instead.',
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _unlock() async {
@@ -236,6 +293,10 @@ class _UnlockViewState extends State<_UnlockView> {
         SnackBar(content: Text(provider.error ?? 'Could not unlock.')),
       );
     }
+    // No offer to remember here. This view is torn down the instant the state
+    // flips to unlocked, so anything shown at this point cannot be read. The
+    // offer lives on the unlocked screen, which is also where somebody would
+    // go looking for it later.
   }
 
   @override
@@ -286,9 +347,18 @@ class _UnlockViewState extends State<_UnlockView> {
         ),
         const SizedBox(height: 16),
         ShadowButton(label: 'Unlock', isLoading: _busy, onPressed: _unlock),
+        if (_quickArmed) ...<Widget>[
+          const SizedBox(height: 10),
+          ShadowButton(
+            label: 'Use my fingerprint',
+            variant: ShadowButtonVariant.secondary,
+            onPressed: _busy ? null : _unlockWithBiometrics,
+          ),
+        ],
       ],
     );
   }
+
 }
 
 // ---------------------------------------------------------------------------
@@ -366,6 +436,7 @@ class _DeriveViewState extends State<_DeriveView> {
                   style: ShadowTypography.caption,
                 ),
               ],
+              const _QuickUnlockRow(),
             ],
           ),
         ),
@@ -538,5 +609,195 @@ class _FieldState extends State<_Field> {
         ),
       ],
     );
+  }
+}
+
+/// Offering to trade the passphrase for a fingerprint, and saying what it costs.
+///
+/// Lives on the unlocked screen rather than on the unlock screen. Two reasons:
+/// the unlock view is torn down the moment the state flips, so anything shown
+/// there is unreadable; and a security question put in front of somebody who is
+/// trying to get in gets answered with whichever button is larger.
+class _QuickUnlockRow extends StatefulWidget {
+  const _QuickUnlockRow();
+
+  @override
+  State<_QuickUnlockRow> createState() => _QuickUnlockRowState();
+}
+
+class _QuickUnlockRowState extends State<_QuickUnlockRow> {
+  final QuickUnlock _quick = QuickUnlock();
+  final TextEditingController _confirm = TextEditingController();
+
+  bool _available = false;
+  bool _armed = false;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _read();
+  }
+
+  @override
+  void dispose() {
+    _confirm.dispose();
+    super.dispose();
+  }
+
+  Future<void> _read() async {
+    final available = await _quick.isAvailable();
+    final armed = await _quick.isEnabled();
+    if (!mounted) return;
+    setState(() {
+      _available = available;
+      _armed = armed;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Nothing to offer on a phone with no lock screen, and no row explaining
+    // that either — an unavailable control is worse than an absent one.
+    if (!_available) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
+          const SizedBox(height: 14),
+          Row(
+            children: <Widget>[
+              const Icon(Icons.fingerprint_rounded,
+                  size: 18, color: ShadowColors.textSecondary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _armed
+                      ? 'Unlocking with your fingerprint'
+                      : 'Unlock with your fingerprint',
+                  style: ShadowTypography.body,
+                ),
+              ),
+              Switch(
+                value: _armed,
+                onChanged: _busy ? null : (want) => want ? _arm() : _disarm(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _armed
+                ? 'Your passphrase is on this phone. Anything that opens the '
+                    'phone opens your accounts. Turn this off to go back to '
+                    'typing it.'
+                : 'Right now your passphrase is only in your head, so somebody '
+                    'holding your unlocked phone still cannot derive a single '
+                    'account. Store it and anything that opens this phone '
+                    'opens your accounts too. Your written twelve words stay '
+                    'the only way back if you forget it.',
+            style: ShadowTypography.caption.copyWith(
+              color: _armed ? ShadowColors.warning : ShadowColors.textTertiary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Asks for the passphrase again rather than holding it in memory.
+  ///
+  /// The provider does not keep it — only the branch key derived from it — and
+  /// keeping a copy around on the chance somebody later enables this would be
+  /// a secret held for no current purpose. Typing it once also proves the
+  /// person arming the shortcut is the person who knows it.
+  Future<void> _arm() async {
+    _confirm.clear();
+    final passphrase = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: ShadowColors.surfaceElevated,
+        title: Text('Your passphrase', style: ShadowTypography.h3),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              'Type it once so Shadow can check it before storing it. Leave it '
+              'empty if that is how you set the identity up.',
+              style: ShadowTypography.bodySm,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _confirm,
+              obscureText: true,
+              autocorrect: false,
+              enableSuggestions: false,
+              decoration: const InputDecoration(hintText: 'passphrase'),
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(_confirm.text),
+            child: const Text('Check and store'),
+          ),
+        ],
+      ),
+    );
+    if (passphrase == null || !mounted) return;
+
+    setState(() => _busy = true);
+    final identity = context.read<IdentityProvider>();
+
+    // Verified against the identity that is already open, so a typo cannot
+    // arm a fingerprint that opens a different, empty universe of accounts.
+    if (!identity.matchesCurrentPassphrase(passphrase)) {
+      setState(() => _busy = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'That is not the passphrase this identity is open with. Nothing '
+            'was stored.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final stored = await _quick.enable(passphrase);
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _armed = stored;
+    });
+
+    // A switch that slides back with no explanation is the same defect as a
+    // switch that lies: the user tried something, it did not happen, and the
+    // screen said nothing. The device check is the only way this fails here.
+    if (!stored) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'The phone did not confirm it was you, so nothing was stored. '
+            'Your passphrase is unchanged.',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _disarm() async {
+    await _quick.disable();
+    if (!mounted) return;
+    setState(() => _armed = false);
   }
 }

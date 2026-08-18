@@ -30,6 +30,11 @@ class IdentityProvider with ChangeNotifier {
   final IdentityVault _vault = IdentityVault();
 
   ShadowIdentity? _engine;
+
+  /// The words this session was opened with, kept only so
+  /// [matchesCurrentPassphrase] can derive a candidate to compare against.
+  /// Never the passphrase itself, and dropped on lock.
+  String? _lastPhrase;
   String? _aliasDomain;
   IdentityLifecycle _state = IdentityLifecycle.uninitialized;
   String? _error;
@@ -117,6 +122,7 @@ class IdentityProvider with ChangeNotifier {
       }
 
       _engine = engine;
+      _lastPhrase = phrase;
       _state = IdentityLifecycle.unlocked;
       _error = null;
       notifyListeners();
@@ -124,6 +130,32 @@ class IdentityProvider with ChangeNotifier {
     } on FormatException catch (e) {
       _error = e.message;
       notifyListeners();
+      return false;
+    }
+  }
+
+  /// Whether [passphrase] is the one this identity is currently open with.
+  ///
+  /// Checked against the same verifier `unlock` uses, so it costs one
+  /// derivation and cannot be fooled by a typo. Exists because the provider
+  /// deliberately does not keep the passphrase — only the branch key derived
+  /// from it — so anything that wants to store it has to be handed it again
+  /// and needs a way to be sure it is right. Storing an unverified one would
+  /// arm a shortcut into a different, empty universe of accounts.
+  bool matchesCurrentPassphrase(String passphrase) {
+    final engine = _engine;
+    if (engine == null) return false;
+    try {
+      final candidate = ShadowIdentity.fromMnemonic(
+        _lastPhrase ?? '',
+        passphrase: passphrase,
+      );
+      final matches = candidate.passphraseVerifier == engine.passphraseVerifier;
+      candidate.wipe();
+      return matches;
+    } on FormatException {
+      return false;
+    } on StateError {
       return false;
     }
   }
@@ -137,6 +169,7 @@ class IdentityProvider with ChangeNotifier {
   void lock() {
     _engine?.wipe();
     _engine = null;
+    _lastPhrase = null;
     _state = IdentityLifecycle.locked;
     notifyListeners();
   }

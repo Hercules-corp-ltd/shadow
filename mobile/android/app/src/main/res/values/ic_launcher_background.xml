@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ShadowColors.surface. Not pure black: on an OLED home screen a #000
+         icon has no edge at all and reads as a hole where the app should be. -->
+    <color name="ic_launcher_background">#0A0A0B</color>
+</resources>
