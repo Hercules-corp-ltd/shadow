@@ -227,4 +227,40 @@ void main() {
       expect((await service.resolve('twitter.com')).account.mode, SiteMode.off);
     });
   });
+
+  group("sites that still hold an address", () {
+    test("a site put back to normal browsing keeps its address visible",
+        () async {
+      // The defect: configured() filtered on mode alone, so switching a site
+      // back to normal browsing hid an address that was still registered and
+      // still accepting mail. Nothing could show what arrived at it and
+      // nothing could retire it — an address the user cannot see is one they
+      // cannot close.
+      const service = SiteAdapterService();
+      final record = await service.resolve("fomo.family");
+      await service.upsert(
+        record.copyWith(
+          account: record.account.copyWith(
+            mode: SiteMode.off,
+            mailbox: const MailboxRecord(
+              state: MailboxState.registered,
+              localPart: "4fq6qacjd6dmjecfhdmk",
+            ),
+          ),
+        ),
+      );
+
+      final listed = await service.configured();
+      expect(listed.map((r) => r.domain), contains("fomo.family"));
+    });
+
+    test("a site with no mode and no mailbox stays out of the list", () async {
+      const service = SiteAdapterService();
+      final record = await service.resolve("visited.example");
+      await service.upsert(record);
+
+      final listed = await service.configured();
+      expect(listed.map((r) => r.domain), isNot(contains("visited.example")));
+    });
+  });
 }

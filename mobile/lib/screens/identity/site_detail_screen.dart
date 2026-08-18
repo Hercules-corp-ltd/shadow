@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../models/site_adapter_record.dart';
 import '../../providers/identity_provider.dart';
 import '../../providers/mailbox_provider.dart';
+import '../../mail/alias_activity.dart';
 import '../../providers/site_adapter_provider.dart';
 import '../../services/fetch_outcome.dart';
 import '../../theme/shadow_colors.dart';
@@ -90,6 +91,8 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
               children: <Widget>[
                 _addressCard(record),
                 const SizedBox(height: 16),
+                _activityCard(record),
+                const SizedBox(height: 16),
                 _modeCard(record),
                 const SizedBox(height: 16),
                 if (record.account.isBurning)
@@ -155,6 +158,162 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
         ],
       ),
     );
+  }
+
+  /// What has arrived here, and pointedly not who sent it.
+  ///
+  /// The tempting version of this card names a culprit: "mail arrived here
+  /// from someone other than githack.com". It cannot be built honestly. Every
+  /// statement about a sender comes from the message, the message comes from
+  /// the sender, and nothing on this device verifies any of it — so the alarm
+  /// could be silenced by a leaker writing the site's own name at the top, or
+  /// aimed at an innocent company by anyone who learned the address. And even
+  /// a perfectly authenticated sender would not settle it, because a site's
+  /// mail legitimately arrives from its ESP, its processor, its helpdesk and
+  /// its new owner after an acquisition.
+  ///
+  /// So this counts. The count comes from the mail service's own sequence for
+  /// this mailbox, which nothing but an accepted delivery can move. Shadow
+  /// says how much and when; the user knows whether they gave the address to
+  /// anybody, which Shadow does not; and the remedy below is the same one
+  /// whatever the answer turns out to be.
+  Widget _activityCard(SiteAdapterRecord record) {
+    final mailbox = record.account.mailbox;
+    final unopened = mailbox.unopened;
+    final flagged = !record.account.isBurning && mailbox.unacknowledged > 0;
+
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text('What has arrived here', style: ShadowTypography.h4),
+          const SizedBox(height: 8),
+          Text(
+            mailbox.checkedDay == null
+                ? 'Not checked yet. Shadow fetches mail for this address only '
+                    'while you are signing in or signing up, so nothing here '
+                    'has been looked at.'
+                : '${_count(mailbox.delivered, 'message')} '
+                    '${mailbox.delivered == 1 ? 'has' : 'have'} arrived at '
+                    'this address. Shadow has opened '
+                    '${mailbox.opened >= mailbox.delivered ? 'all of them' : mailbox.opened.toString()}.',
+            style: ShadowTypography.bodySm.copyWith(
+              color: flagged ? ShadowColors.warning : null,
+            ),
+          ),
+          if (mailbox.checkedDay != null) ...<Widget>[
+            const SizedBox(height: 6),
+            Text(
+              _lastChecked(mailbox.checkedDay!),
+              style: ShadowTypography.caption,
+            ),
+          ],
+          if (unopened > 0) ...<Widget>[
+            const SizedBox(height: 6),
+            Text(
+              // Said out loud rather than hidden, because the gap is where a
+              // quiet card would otherwise read as an all-clear.
+              '$unopened arrived while Shadow was not looking. The mail '
+              'service keeps a message for seven days, so the older ones are '
+              'already gone.',
+              style: ShadowTypography.caption,
+            ),
+          ],
+          const SizedBox(height: 10),
+          Text(
+            'Shadow gave this address to ${widget.domain} and to nobody else. '
+            'Anyone else writing here got it from somewhere — a company '
+            '${widget.domain} pays to send its mail, a partner, a new owner, '
+            'someone who bought a list, or you, if you have handed it out. '
+            'Shadow cannot tell which, and a sender can write any name it '
+            'likes at the top of a message.',
+            style: ShadowTypography.caption,
+          ),
+          if (flagged) ...<Widget>[
+            const SizedBox(height: 8),
+            Text(
+              'If this address is attracting mail you did not ask for, you '
+              'can replace it below. That works the same whatever the reason.',
+              style: ShadowTypography.caption
+                  .copyWith(color: ShadowColors.warning),
+            ),
+          ],
+          const SizedBox(height: 14),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: ShadowButton(
+                  label: 'Check now',
+                  variant: ShadowButtonVariant.secondary,
+                  onPressed: _busy ? null : _checkForMail,
+                ),
+              ),
+              if (flagged) ...<Widget>[
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ShadowButton(
+                    label: 'Seen it',
+                    variant: ShadowButtonVariant.ghost,
+                    onPressed: _busy ? null : _acknowledge,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _count(int n, String noun) =>
+      n == 1 ? '1 $noun' : '$n ${noun}s';
+
+  String _lastChecked(int day) {
+    final today = AliasActivity.dayOf(DateTime.now());
+    final ago = today - day;
+    if (ago <= 0) return 'Last checked today.';
+    if (ago == 1) return 'Last checked yesterday.';
+    return 'Last checked $ago days ago.';
+  }
+
+  Future<void> _checkForMail() async {
+    final identity = context.read<IdentityProvider>();
+    final mailbox = context.read<MailboxProvider>();
+    final record = _record;
+    if (record == null) return;
+
+    final keys = identity.mailboxKeysFor(
+      widget.domain,
+      accountIndex: widget.accountIndex,
+      aliasEpoch: record.account.aliasEpoch,
+    );
+    if (keys == null) {
+      _toast('Unlock your identity first.');
+      return;
+    }
+
+    await _run(() async {
+      await mailbox.checkNow(
+        keys: keys,
+        domain: widget.domain,
+        accountIndex: widget.accountIndex,
+      );
+    });
+  }
+
+  Future<void> _acknowledge() async {
+    final record = _record;
+    if (record == null) return;
+    await _run(() async {
+      await context.read<SiteAdapterProvider>().upsert(
+            record.copyWith(
+              account: record.account.copyWith(
+                mailbox: AliasActivity.acknowledge(record.account.mailbox),
+              ),
+            ),
+          );
+    });
   }
 
   Widget _modeCard(SiteAdapterRecord record) {

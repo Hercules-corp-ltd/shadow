@@ -50,10 +50,23 @@ class SiteAdapterService {
 
   Future<List<SiteAdapterRecord>> list() => _store.readAll();
 
-  /// Sites the user has actually chosen a behaviour for.
+  /// Sites the user has chosen a behaviour for, plus any that still hold a
+  /// mailbox.
+  ///
+  /// The second half is not tidiness. A record reaches `mode: off` with a
+  /// registered mailbox the moment somebody signs up somewhere and later puts
+  /// that site back to normal browsing — and under a mode-only filter the
+  /// address then disappeared from every screen while staying live on the
+  /// mail service. Nothing could show what had arrived at it, nothing could
+  /// retire it, and it went on accepting mail bound to this identity. An
+  /// address the user cannot see is one they cannot close.
   Future<List<SiteAdapterRecord>> configured() async {
     final all = await _store.readAll();
-    return all.where((r) => r.account.mode != SiteMode.off).toList();
+    return all
+        .where((r) =>
+            r.account.mode != SiteMode.off ||
+            r.account.mailbox.state != MailboxState.none)
+        .toList();
   }
 
   Future<SiteAdapterRecord> upsert(SiteAdapterRecord record) async {

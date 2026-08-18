@@ -79,7 +79,19 @@ class MailboxRecord {
     this.localPart,
     this.aliasDomain,
     this.cursor,
+    this.delivered = 0,
+    this.opened = 0,
+    this.checkedDay,
+    this.acknowledged = 0,
   });
+
+  /// Counts saturate here rather than growing without bound.
+  ///
+  /// The mail service caps a mailbox at 50 messages for its whole life, so
+  /// anything past this is a broken or hostile answer rather than a real
+  /// arrival, and clamping means a bad number cannot become a permanent
+  /// scary one on the user's screen.
+  static const int countCap = 99;
 
   final MailboxState state;
   final String? localPart;
@@ -89,6 +101,44 @@ class MailboxRecord {
   /// returns only what is new and never learns what was read.
   final String? cursor;
 
+  /// How many messages have ever reached this address.
+  ///
+  /// The server's own per-mailbox sequence, which it can only raise by
+  /// actually accepting a delivery to a 20-character address derived from a
+  /// key this device holds. That is what makes it the one arrival fact no
+  /// sender writes: a sender chooses every header in a message, but nothing
+  /// a sender does can move this number for a mailbox it cannot name.
+  final int delivered;
+
+  /// How many of those this device has opened and read.
+  ///
+  /// Kept apart from [delivered] because the gap is the honest part. Shadow
+  /// fetches mail only while a signup or sign-in is in flight, so most of
+  /// what arrives is never looked at, and a card that showed only what it
+  /// had read would present a quiet screen as an all-clear.
+  final int opened;
+
+  /// Whole days since the epoch, UTC, when the mail service last answered.
+  ///
+  /// Null means never asked — which must not render as "nothing has
+  /// arrived", the same distinction the public address screen keeps between
+  /// not having looked and having looked and found nothing.
+  final int? checkedDay;
+
+  /// What [delivered] read when the user last dismissed the notice.
+  ///
+  /// A number rather than a list of senders on purpose: anything per-sender
+  /// would be an allowlist, an allowlist is a record of who writes to this
+  /// person, and that is a correspondent graph sitting in plain storage.
+  final int acknowledged;
+
+  /// Arrivals this device has never looked at.
+  int get unopened => delivered > opened ? delivered - opened : 0;
+
+  /// Arrivals since the user last dismissed the notice.
+  int get unacknowledged =>
+      delivered > acknowledged ? delivered - acknowledged : 0;
+
   bool get isRegistered => state == MailboxState.registered;
 
   MailboxRecord copyWith({
@@ -96,12 +146,20 @@ class MailboxRecord {
     String? localPart,
     String? aliasDomain,
     String? cursor,
+    int? delivered,
+    int? opened,
+    int? checkedDay,
+    int? acknowledged,
   }) {
     return MailboxRecord(
       state: state ?? this.state,
       localPart: localPart ?? this.localPart,
       aliasDomain: aliasDomain ?? this.aliasDomain,
       cursor: cursor ?? this.cursor,
+      delivered: delivered ?? this.delivered,
+      opened: opened ?? this.opened,
+      checkedDay: checkedDay ?? this.checkedDay,
+      acknowledged: acknowledged ?? this.acknowledged,
     );
   }
 
@@ -110,6 +168,10 @@ class MailboxRecord {
         if (localPart != null) 'local_part': localPart,
         if (aliasDomain != null) 'alias_domain': aliasDomain,
         if (cursor != null) 'cursor': cursor,
+        if (delivered != 0) 'delivered': delivered,
+        if (opened != 0) 'opened': opened,
+        if (checkedDay != null) 'checked_day': checkedDay,
+        if (acknowledged != 0) 'ack': acknowledged,
       };
 
   factory MailboxRecord.fromJson(Map<String, dynamic> json) {
@@ -121,7 +183,27 @@ class MailboxRecord {
       localPart: json['local_part'] as String?,
       aliasDomain: json['alias_domain'] as String?,
       cursor: json['cursor'] as String?,
+      // Clamped on the way in as well as the way out: a record can arrive
+      // from a backup written by anyone, and a hostile count is otherwise a
+      // permanent alarm on somebody else's screen.
+      delivered: _count(json['delivered']),
+      opened: _count(json['opened']),
+      checkedDay: _day(json['checked_day']),
+      acknowledged: _count(json['ack']),
     );
+  }
+
+  static int _count(Object? value) {
+    final raw = value is int ? value : 0;
+    if (raw < 0) return 0;
+    return raw > countCap ? countCap : raw;
+  }
+
+  static int? _day(Object? value) {
+    if (value is! int || value < 0) return null;
+    // Roughly the year 2243. A day number past this is a broken clock or a
+    // tampered backup, and "last checked in 200 years" is worse than silence.
+    return value > 100000 ? null : value;
   }
 }
 

@@ -100,7 +100,17 @@ class _SiteRow extends StatelessWidget {
       },
     ];
 
+    // A site set back to normal browsing can still hold a live address from
+    // before. Say so, because it is the only place that address is visible
+    // and the only route to closing it.
+    if (account.mode == SiteMode.off &&
+        account.mailbox.state != MailboxState.none) {
+      parts.add('still has an address');
+    }
     if (account.isBurning) parts.add('replacing the address');
+    if (!account.isBurning && account.mailbox.unacknowledged > 0) {
+      parts.add('${account.mailbox.unacknowledged} arrived');
+    }
     if (account.passwordEpoch > 1) {
       parts.add('password v${account.passwordEpoch}');
     }
