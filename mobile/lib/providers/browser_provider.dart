@@ -8,6 +8,8 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import '../browser/storage_isolation.dart';
 import '../browser/tracker_blocking.dart';
 import '../browser/url_input.dart';
+import '../identity/registrable_domain.dart';
+import '../services/history_service.dart';
 
 /// One open tab, with its own web view.
 ///
@@ -55,6 +57,7 @@ class BrowserTabModel {
 /// one cookie store, so they are isolated in history but not in identity.
 class BrowserProvider with ChangeNotifier {
   final List<BrowserTabModel> _tabs = <BrowserTabModel>[];
+  final HistoryService _history = HistoryService();
   int _activeIndex = 0;
   int _nextId = 1;
 
@@ -163,6 +166,12 @@ class BrowserProvider with ChangeNotifier {
           tab.canGoBack = await controller.canGoBack();
           tab.canGoForward = await controller.canGoForward();
           notifyListeners();
+
+          // Nothing wrote history until now. The service existed, the screen
+          // that lists it existed, and the only caller was the Web3 resolve
+          // path — so browsing recorded nothing and the list was permanently
+          // empty for the ordinary case.
+          await _recordVisit(tab);
         },
         onWebResourceError: (error) {
           tab.isLoading = false;
@@ -174,6 +183,42 @@ class BrowserProvider with ChangeNotifier {
     _tabs.add(tab);
     _activeIndex = _tabs.length - 1;
     return tab;
+  }
+
+  /// Suppresses history while on.
+  ///
+  /// The control for this sat on the home screen with an empty onPressed,
+  /// which is worse than having no control: an eye with a line through it is
+  /// read as "stop recording", and it recorded anyway. Now it does what it
+  /// looks like. Deliberately session-only and not persisted — a private mode
+  /// that survives a restart is one a user can leave on by accident and then
+  /// wonder why nothing is ever listed.
+  bool _private = false;
+  bool get isPrivate => _private;
+
+  void setPrivate(bool value) {
+    if (_private == value) return;
+    _private = value;
+    notifyListeners();
+  }
+
+  Future<void> _recordVisit(BrowserTabModel tab) async {
+    if (_private) return;
+
+    final uri = tab.url;
+    if (uri == null) return;
+    // Only real web pages. about:blank, data: and the error page are not
+    // places anybody visited.
+    if (uri.scheme != 'http' && uri.scheme != 'https') return;
+    if (uri.host.isEmpty) return;
+
+    final domain = RegistrableDomain.tryOf(uri.host);
+    if (domain == null || domain.isEmpty) return;
+
+    await _history.record(
+      domain: domain,
+      title: tab.title.isEmpty ? null : tab.title,
+    );
   }
 
   void selectTab(int index) {
