@@ -11,6 +11,7 @@ import '../../services/fetch_outcome.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
+import '../../widgets/reveal.dart';
 import '../../widgets/shadow_button.dart';
 import '../../widgets/shadow_scaffold.dart';
 
@@ -88,7 +89,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.only(bottom: 32),
-              children: <Widget>[
+              children: Reveal.list(<Widget>[
                 _addressCard(record),
                 const SizedBox(height: 16),
                 _activityCard(record),
@@ -99,7 +100,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
                   _burnInProgressCard(record)
                 else
                   _maintenanceCard(record),
-              ],
+              ]),
             ),
     );
   }

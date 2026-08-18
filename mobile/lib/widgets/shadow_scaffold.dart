@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/shadow_colors.dart';
 import '../theme/shadow_spacing.dart';
 import '../theme/shadow_typography.dart';
 
@@ -34,10 +33,12 @@ class ShadowScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ShadowColors.background,
+      backgroundColor: Colors.transparent,
       bottomNavigationBar: bottomBar,
       body: Stack(
         children: [
+          // The ambient light is painted once for the whole app in main.dart,
+          // so nothing is needed here beyond whatever a screen asked for.
           if (background != null) Positioned.fill(child: background!),
           SafeArea(
             child: Column(

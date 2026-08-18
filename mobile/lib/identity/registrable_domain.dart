@@ -47,13 +47,30 @@ class RegistrableDomain {
     final schemeIndex = value.indexOf('://');
     if (schemeIndex != -1) value = value.substring(schemeIndex + 3);
 
-    // Strip credentials, path, query and fragment.
-    final atIndex = value.lastIndexOf('@');
-    if (atIndex != -1) value = value.substring(atIndex + 1);
+    // Path, query and fragment first — then credentials.
+    //
+    // The order is the whole correctness of this function. Taking the text
+    // after the last `@` first means any `@` further along the URL is read as
+    // the end of a userinfo section, so
+    //
+    //     https://evil.test/@bank.com
+    //
+    // derived an identity for bank.com. Every site controls its own paths, so
+    // that was a page anybody could serve to make Shadow hand them another
+    // site's password, username and alias — the per-site isolation this whole
+    // app is built on, defeated by a path. `?next=@bank.com` did the same
+    // through a query string, which even a legitimate site with an open
+    // redirect could carry.
+    //
+    // An authority can never contain `/`, `?` or `#`, so cutting at those
+    // first leaves exactly `[userinfo@]host[:port]`, and the `@` that remains
+    // is the only one that was ever userinfo.
     for (final separator in const <String>['/', '?', '#']) {
       final index = value.indexOf(separator);
       if (index != -1) value = value.substring(0, index);
     }
+    final atIndex = value.lastIndexOf('@');
+    if (atIndex != -1) value = value.substring(atIndex + 1);
 
     // Strip port, but leave bracketed IPv6 literals intact.
     if (!value.startsWith('[')) {
