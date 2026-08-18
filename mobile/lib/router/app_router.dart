@@ -9,6 +9,7 @@ import '../screens/identity/identity_screen.dart';
 import '../screens/identity/identity_backup_screen.dart';
 import '../screens/identity/identity_phrase_screen.dart';
 import '../screens/identity/site_detail_screen.dart';
+import '../screens/autofill/autofill_screen.dart';
 import '../screens/identity/public_address_screen.dart';
 import '../screens/identity/site_list_screen.dart';
 import '../screens/activity/activity_logs_screen.dart';
@@ -115,6 +116,12 @@ class AppRouter {
         GoRoute(
           path: '/identity/backup',
           builder: (_, __) => const IdentityBackupScreen(),
+        ),
+        // Opened only by AutofillUnlockActivity, which the platform launches
+        // when somebody taps Shadow in another app's autofill popup.
+        GoRoute(
+          path: '/autofill',
+          builder: (_, __) => const AutofillScreen(),
         ),
         GoRoute(
           path: '/identity/public-address',

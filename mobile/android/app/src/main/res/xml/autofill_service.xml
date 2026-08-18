@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Settings for Shadow's autofill service.
+
+  ## Why the compatibility packages are here
+
+  A browser does not lay its page out in real Android views. The form is drawn
+  by the renderer, so an autofill service walking the view structure sees one
+  opaque WebView and no fields at all — which is why, without this block,
+  focusing a password box in Chrome starts no autofill session whatsoever.
+  Compatibility mode is what makes the platform build a virtual structure from
+  the browser's accessibility tree instead, and a service only gets it for
+  packages it names here.
+
+  It is not free, and the cost is worth stating: compatibility mode turns on
+  accessibility querying for those apps, which is a heavier path and one the
+  user can see in system settings. It is the only route to filling in a
+  browser Shadow does not own, and filling in browsers is the entire point of
+  this service — the alias, password and username Shadow derives are worth
+  little if they can only be typed inside Shadow.
+
+  `maxLongVersionCode` is a ceiling, not a pin. It is deliberately far above
+  any shipping version: the alternative is that a browser update silently
+  stops Shadow filling, with nothing on screen to say why.
+
+  No `settingsActivity`. Everything that might be configured is already
+  decided by the design — which sites Shadow fills for is not a preference,
+  it is whichever browser is asking and whichever page it is on — and a
+  screen implying otherwise would be a control with nothing behind it.
+-->
+<autofill-service
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:supportsInlineSuggestions="false">
+
+    <compatibility-package
+        android:name="com.android.chrome"
+        android:maxLongVersionCode="9223372036854775807" />
+    <compatibility-package
+        android:name="com.chrome.beta"
+        android:maxLongVersionCode="9223372036854775807" />
+    <compatibility-package
+        android:name="org.mozilla.firefox"
+        android:maxLongVersionCode="9223372036854775807" />
+    <compatibility-package
+        android:name="org.mozilla.focus"
+        android:maxLongVersionCode="9223372036854775807" />
+    <compatibility-package
+        android:name="com.microsoft.emmx"
+        android:maxLongVersionCode="9223372036854775807" />
+    <compatibility-package
+        android:name="com.brave.browser"
+        android:maxLongVersionCode="9223372036854775807" />
+    <compatibility-package
+        android:name="com.opera.browser"
+        android:maxLongVersionCode="9223372036854775807" />
+    <compatibility-package
+        android:name="com.sec.android.app.sbrowser"
+        android:maxLongVersionCode="9223372036854775807" />
+    <compatibility-package
+        android:name="com.duckduckgo.mobile.android"
+        android:maxLongVersionCode="9223372036854775807" />
+    <compatibility-package
+        android:name="com.vivaldi.browser"
+        android:maxLongVersionCode="9223372036854775807" />
+</autofill-service>
