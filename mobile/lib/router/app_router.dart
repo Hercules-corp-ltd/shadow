@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../providers/identity_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../screens/browser/browser_screen.dart';
+import '../widgets/threshold_transition.dart';
 import '../screens/identity/identity_screen.dart';
 import '../screens/identity/identity_backup_screen.dart';
 import '../screens/identity/identity_phrase_screen.dart';
@@ -105,8 +106,20 @@ class AppRouter {
         GoRoute(path: '/welcome', builder: (_, __) => const WelcomeScreen()),
         GoRoute(
           path: '/browse',
-          builder: (_, state) =>
-              BrowserScreen(initialUrl: state.uri.queryParameters['url']),
+          // The one route with a transition of its own. Home is built as a
+          // threshold — an arch with a slot beneath it — so going to the web
+          // is the moment the whole screen is arranged around, and a platform
+          // slide would make the front door feel like a settings list.
+          pageBuilder: (context, state) => CustomTransitionPage<void>(
+            key: state.pageKey,
+            transitionDuration: const Duration(milliseconds: 620),
+            // Leaving is shorter and plain. A door that closes as
+            // theatrically as it opens is tiring by the third time.
+            reverseTransitionDuration: const Duration(milliseconds: 260),
+            child: BrowserScreen(initialUrl: state.uri.queryParameters['url']),
+            transitionsBuilder: (context, animation, secondary, child) =>
+                ThresholdTransition(animation: animation, child: child),
+          ),
         ),
         GoRoute(
           path: '/identity',
