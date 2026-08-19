@@ -22,6 +22,7 @@ import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_spacing.dart';
 import '../../theme/shadow_typography.dart';
 import '../../widgets/browser_bottom_bar.dart';
+import '../../widgets/immersion_handle.dart';
 import '../../widgets/shadow_button.dart';
 
 /// The actual browser. Renders live web content and drives it from the
@@ -36,6 +37,11 @@ class BrowserScreen extends StatefulWidget {
 }
 
 class _BrowserScreenState extends State<BrowserScreen> {
+  /// Chrome hidden for reading. Session-only on purpose: returning to a
+  /// browser with no visible controls, having forgotten why, is worse than
+  /// tapping the handle again.
+  bool _immersed = false;
+
   @override
   void initState() {
     super.initState();
@@ -344,41 +350,54 @@ class _BrowserScreenState extends State<BrowserScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            _TopBar(tab: tab, onFill: () => _fillIdentity(context)),
-            if (tab != null && tab.isLoading)
-              LinearProgressIndicator(
-                value: tab.progress / 100,
-                minHeight: 2,
-                backgroundColor: ShadowColors.surface,
-                color: ShadowColors.primary,
-              ),
-            if (tab?.blockedNavigation != null)
-              _BlockedBanner(
-                url: tab!.blockedNavigation!,
-                onDismiss: browser.dismissBlockedNotice,
-              ),
-            _CodeBanner(
-              onFillCode: (code) => _fillCode(context, code),
-              onOpenLink: (link) => _openMagicLink(context, link),
+      body: Stack(
+        children: <Widget>[
+          SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                if (!_immersed)
+                  _TopBar(tab: tab, onFill: () => _fillIdentity(context)),
+                if (tab != null && tab.isLoading)
+                  LinearProgressIndicator(
+                    value: tab.progress / 100,
+                    minHeight: 2,
+                    backgroundColor: ShadowColors.surface,
+                    color: ShadowColors.primary,
+                  ),
+                // Banners survive immersion. A blocked navigation or an
+                // arrived sign-in code is the app telling you something it
+                // was asked to watch for, and swallowing that to keep a
+                // reading view clean would be the chrome hiding a fact.
+                if (tab?.blockedNavigation != null)
+                  _BlockedBanner(
+                    url: tab!.blockedNavigation!,
+                    onDismiss: browser.dismissBlockedNotice,
+                  ),
+                _CodeBanner(
+                  onFillCode: (code) => _fillCode(context, code),
+                  onOpenLink: (link) => _openMagicLink(context, link),
+                ),
+                Expanded(
+                  child: tab == null
+                      ? const SizedBox.shrink()
+                      : tab.isBlank
+                          ? _StartPage(onGo: () => _promptForUrl(context))
+                          : WebViewWidget(
+                              key: ValueKey<int>(tab.id),
+                              controller: tab.controller,
+                            ),
+                ),
+              ],
             ),
-            Expanded(
-              child: tab == null
-                  ? const SizedBox.shrink()
-                  : tab.isBlank
-                      ? _StartPage(onGo: () => _promptForUrl(context))
-                      : WebViewWidget(
-                          key: ValueKey<int>(tab.id),
-                          controller: tab.controller,
-                        ),
-            ),
-          ],
-        ),
+          ),
+          ImmersionHandle(
+            hidden: _immersed,
+            onToggle: (value) => setState(() => _immersed = value),
+          ),
+        ],
       ),
-      bottomNavigationBar: BrowserBottomBar(
+      bottomNavigationBar: _immersed ? null : BrowserBottomBar(
         tabs: [
           for (final t in browser.tabs)
             BrowserTab(title: t.title, url: t.displayUrl),
