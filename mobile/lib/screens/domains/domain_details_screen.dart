@@ -103,7 +103,9 @@ class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
                       const SizedBox(height: 12),
                       _Row(
                           label: 'Registered',
-                          value: df.format(d.registeredAt)),
+                          value: d.registeredAt == null
+                              ? 'Not reported'
+                              : df.format(d.registeredAt!)),
                       if (d.expiresAt != null)
                         _Row(
                           label: 'Expires',

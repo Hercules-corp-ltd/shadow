@@ -4,7 +4,11 @@ class ShadowDomain {
   final String ownerPubkey;
   final bool isVerified;
   final int? trustScore;
-  final DateTime registeredAt;
+
+  /// Null when the server did not say. Same reasoning as [Site.lastDeployedAt]
+  /// — this fell back to `DateTime.now()`, so the details screen showed
+  /// today's date as the registration date of a domain that may be years old.
+  final DateTime? registeredAt;
   final DateTime? expiresAt;
   final Map<String, dynamic> metadata;
   final List<DnsRecord> dnsRecords;
@@ -15,7 +19,7 @@ class ShadowDomain {
     required this.ownerPubkey,
     this.isVerified = false,
     this.trustScore,
-    required this.registeredAt,
+    this.registeredAt,
     this.expiresAt,
     this.metadata = const {},
     this.dnsRecords = const [],
@@ -31,8 +35,7 @@ class ShadowDomain {
         isVerified: json['is_verified'] ?? false,
         trustScore: json['trust_score'] as int?,
         registeredAt:
-            DateTime.tryParse(json['registered_at']?.toString() ?? '') ??
-                DateTime.now(),
+            DateTime.tryParse(json['registered_at']?.toString() ?? ''),
         expiresAt: json['expires_at'] == null
             ? null
             : DateTime.tryParse(json['expires_at'].toString()),

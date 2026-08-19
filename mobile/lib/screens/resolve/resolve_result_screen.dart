@@ -145,7 +145,11 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
               children: [
                 _row('Deploy version', site.deployVersion),
                 _row('Last deployed',
-                    DateFormat.yMMMd().add_jm().format(site.lastDeployedAt)),
+                    site.lastDeployedAt == null
+                        ? 'Not reported'
+                        : DateFormat.yMMMd()
+                            .add_jm()
+                            .format(site.lastDeployedAt!)),
                 _row('Visits', site.visitCount.toString()),
                 _row('Content CID', site.contentCid, copy: true),
                 _row('Program', site.programAddress, copy: true),

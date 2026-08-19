@@ -7,7 +7,14 @@ class Site {
   final String? description;
   final String? thumbnailCid;
   final String deployVersion;
-  final DateTime lastDeployedAt;
+
+  /// Null when the server did not say.
+  ///
+  /// This used to fall back to `DateTime.now()`, so a response with the field
+  /// missing produced a site that claimed it had been deployed this second,
+  /// and the resolve screen printed that as fact next to the real content
+  /// address. An absent date is not today's date.
+  final DateTime? lastDeployedAt;
   final int visitCount;
 
   const Site({
@@ -19,7 +26,7 @@ class Site {
     this.description,
     this.thumbnailCid,
     this.deployVersion = 'v1',
-    required this.lastDeployedAt,
+    this.lastDeployedAt,
     this.visitCount = 0,
   });
 
@@ -33,8 +40,7 @@ class Site {
         thumbnailCid: json['thumbnail_cid'],
         deployVersion: json['deploy_version'] ?? 'v1',
         lastDeployedAt:
-            DateTime.tryParse(json['last_deployed_at']?.toString() ?? '') ??
-                DateTime.now(),
+            DateTime.tryParse(json['last_deployed_at']?.toString() ?? ''),
         visitCount: (json['visit_count'] ?? 0) as int,
       );
 }

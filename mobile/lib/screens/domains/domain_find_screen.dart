@@ -118,8 +118,12 @@ class _DomainFindScreenState extends State<DomainFindScreen> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: ListItemCard(
                   title: d.domain,
+                  // `?? 0` turned "the server did not send a score" into the
+                  // worst score there is, printed as fact.
                   subtitle: d.isVerified
-                      ? 'Verified · trust ${d.trustScore ?? 0}'
+                      ? (d.trustScore == null
+                          ? 'Verified'
+                          : 'Verified · trust ${d.trustScore}')
                       : 'Unverified',
                   leadingIcon: Icons.language_rounded,
                   leadingColor: d.isVerified
