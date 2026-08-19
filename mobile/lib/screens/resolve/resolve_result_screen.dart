@@ -154,15 +154,17 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
             ),
           ),
           const SizedBox(height: 20),
+          // The primary action of the whole resolve flow used to do nothing
+          // but assert "Rendering in browser..." while nothing rendered. The
+          // route it needed already exists and the home screen already calls
+          // it, so this was a stub standing in front of a working capability.
           ShadowButton(
             label: 'Open content',
             size: ShadowButtonSize.lg,
             leading: Icons.open_in_new_rounded,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Rendering in browser...')),
-              );
-            },
+            onPressed: () => context.push(
+              '/browse?url=${Uri.encodeComponent(site.domain)}',
+            ),
           ),
           const SizedBox(height: 8),
           ShadowButton(

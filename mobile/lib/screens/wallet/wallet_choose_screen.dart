@@ -66,7 +66,12 @@ class WalletChooseScreen extends StatelessWidget {
                 _WalletOption(
                   icon: Icons.download_rounded,
                   title: 'Import existing wallet',
-                  subtitle: 'Restore using your 12 or 24-word seed phrase',
+                  // The import screen has exactly twelve slots, validates
+                  // "all 12 words", and is titled for twelve. This was the
+                  // only mention of 24 anywhere in the app, and it sent a user
+                  // holding a 24-word phrase into a screen that cannot take
+                  // it.
+                  subtitle: 'Restore using your 12-word recovery phrase',
                   color: ShadowColors.tileBlue,
                   onTap: () => context.push('/wallet/import'),
                 ),

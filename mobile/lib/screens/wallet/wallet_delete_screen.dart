@@ -19,6 +19,31 @@ class WalletDeleteScreen extends StatefulWidget {
 class _WalletDeleteScreenState extends State<WalletDeleteScreen> {
   bool _acknowledged = false;
   bool _loading = false;
+  String? _error;
+
+  /// There was no try/catch anywhere on this screen. deleteWallet awaits
+  /// SharedPreferences and then a sign-out; if either threw, _loading was
+  /// never cleared, so the button stayed a spinner for good, both buttons
+  /// stayed disabled, and nothing was said — on the one screen in the app
+  /// where "did my wallet actually go?" is the only question that matters.
+  Future<void> _delete() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      await context.read<WalletProvider>().deleteWallet();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = 'Could not delete the wallet: $e. It is still on this device.';
+      });
+      return;
+    }
+    if (!mounted) return;
+    context.go('/welcome');
+  }
 
   @override
   void initState() {
@@ -93,15 +118,16 @@ class _WalletDeleteScreenState extends State<WalletDeleteScreen> {
             variant: ShadowButtonVariant.danger,
             size: ShadowButtonSize.lg,
             isLoading: _loading,
-            onPressed: !_acknowledged || _loading
-                ? null
-                : () async {
-                    setState(() => _loading = true);
-                    await context.read<WalletProvider>().deleteWallet();
-                    if (!context.mounted) return;
-                    context.go('/welcome');
-                  },
+            onPressed: !_acknowledged || _loading ? null : _delete,
           ),
+          if (_error != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              _error!,
+              style:
+                  ShadowTypography.bodySm.copyWith(color: ShadowColors.error),
+            ),
+          ],
           const SizedBox(height: 12),
           ShadowButton(
             label: 'Cancel',

@@ -31,6 +31,38 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
     _load();
   }
 
+  Future<void> _delete(DnsRecord r) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete this record?'),
+        content: Text('${r.type} ${r.name} will stop resolving.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await _service.deleteDnsRecord(widget.domain, r.id);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = 'Could not delete that record: $e');
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _error = null);
+    await _load();
+  }
+
   Future<void> _load() async {
     setState(() {
       _loading = true;
@@ -110,10 +142,15 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
                         IconButton(
                           icon: const Icon(Icons.delete_outline_rounded,
                               color: ShadowColors.error),
-                          onPressed: () async {
-                            await _service.deleteDnsRecord(widget.domain, r.id);
-                            _load();
-                          },
+                          tooltip: 'Delete this record',
+                          // There was no try/catch here. deleteDnsRecord
+                          // throws on any non-2xx, the exception went nowhere,
+                          // _load() never ran, and the row stayed on screen —
+                          // so the record looked deleted-but-stubborn rather
+                          // than not-deleted. This file's own comment says the
+                          // DNS routes do not exist on the backend, which means
+                          // that was the outcome every single time.
+                          onPressed: () => _delete(r),
                         ),
                       ],
                     ),

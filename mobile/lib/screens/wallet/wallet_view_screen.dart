@@ -229,8 +229,13 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
               children: [
                 Text(t.balance.toStringAsFixed(4),
                     style: ShadowTypography.h4),
-                Text('\$${t.usdValue.toStringAsFixed(2)}',
-                    style: ShadowTypography.bodySm),
+                // Only when a price is actually known. TokensService never
+                // sets usdValue — its own doc says there is no honest way to
+                // derive one from RPC balances — so this printed a confident
+                // "\$0.00" under every token the wallet held.
+                if (t.usdValue > 0)
+                  Text('\$${t.usdValue.toStringAsFixed(2)}',
+                      style: ShadowTypography.bodySm),
               ],
             ),
           ),
@@ -240,9 +245,18 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
 
   Widget _buildNftGrid(List<Nft> nfts) {
     if (nfts.isEmpty) {
+      // "No NFTs in this wallet yet" was a claim about the user's wallet.
+      // TokensService.nfts() is `async => const []` — it does not read
+      // anything — so the app was telling every holder they own none. Its own
+      // doc calls this out: "not implemented" and "you have none" are
+      // different statements.
       return GlassCard(
         padding: const EdgeInsets.all(20),
-        child: Text('No NFTs in this wallet yet.', style: ShadowTypography.bodySm),
+        child: Text(
+          'Shadow does not read NFTs yet, so this stays empty whatever you '
+          'hold. Metaplex metadata is not fetched.',
+          style: ShadowTypography.bodySm,
+        ),
       );
     }
     return GridView.builder(

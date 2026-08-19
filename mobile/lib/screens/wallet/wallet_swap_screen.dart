@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/tokens_provider.dart';
@@ -17,24 +16,74 @@ class WalletSwapScreen extends StatefulWidget {
 }
 
 class _WalletSwapScreenState extends State<WalletSwapScreen> {
-  String _from = 'SOL';
-  String _to = 'USDC';
+  /// Swapping is not implemented, and the screen says so up front — the same
+  /// position the send screen already takes, for the same reason. This used
+  /// to be a full-strength primary button labelled "Swap" that showed a
+  /// "coming soon" toast and popped: a user picked a pair, typed an amount,
+  /// pressed the biggest control on the page, and only then learned the
+  /// feature does not exist.
+  static const bool _swapImplemented = false;
+
+  /// Nullable, and filled from whatever the wallet actually holds.
+  ///
+  /// These were hardcoded to 'SOL' and 'USDC'. No balance ever carries a
+  /// ticker — TokensService sets `symbol` to an abbreviated mint like
+  /// '4k3D…zWx7' — so 'USDC' could never be a member of the option list, and
+  /// the guard that was meant to catch that (`if (!mints.contains(_to)) _to =
+  /// 'USDC';`) re-assigned the same impossible value every build. The screen
+  /// opened on an invented pair every time.
+  String? _from;
+  String? _to;
   final _amount = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.watch<TokensProvider>();
     final mints = {'SOL', ...tokens.tokens.map((t) => t.symbol)}.toList();
-    if (!mints.contains(_to)) _to = 'USDC';
+    final from = _from != null && mints.contains(_from) ? _from! : mints.first;
+    final to = _to != null && mints.contains(_to)
+        ? _to!
+        : mints.firstWhere((m) => m != from, orElse: () => from);
 
     return ShadowScaffold(
       title: 'Swap',
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
+          if (!_swapImplemented) ...[
+            GlassCard(
+              padding: const EdgeInsets.all(16),
+              border: Border.all(
+                  color: ShadowColors.warning.withValues(alpha: 0.4)),
+              child: Row(
+                children: [
+                  const Icon(Icons.construction_rounded,
+                      color: ShadowColors.warning, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Swapping is not built yet. Shadow can show what you '
+                      'hold, but cannot trade it — use a wallet app or an '
+                      'exchange until this ships.',
+                      style: ShadowTypography.bodySm,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          if (mints.length < 2) ...[
+            Text(
+              'This wallet holds one asset, so there is nothing to swap it '
+              'for from here.',
+              style: ShadowTypography.bodySm,
+            ),
+            const SizedBox(height: 12),
+          ],
           _swapCard(
             label: 'From',
-            symbol: _from,
+            symbol: from,
             onSymbolChange: (v) => setState(() => _from = v),
             controller: _amount,
             options: mints,
@@ -42,18 +91,28 @@ class _WalletSwapScreenState extends State<WalletSwapScreen> {
           Center(
             child: Container(
               margin: const EdgeInsets.symmetric(vertical: 8),
-              decoration: const BoxDecoration(
-                color: ShadowColors.primary,
+              decoration: BoxDecoration(
+                color: ShadowColors.recessDeep,
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: ShadowColors.primary.withValues(alpha: 0.34),
+                ),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: ShadowColors.primary.withValues(alpha: 0.13),
+                    blurRadius: 16,
+                    spreadRadius: -4,
+                  ),
+                ],
               ),
               child: IconButton(
-                color: Colors.white,
+                color: ShadowColors.primary,
+                tooltip: 'Swap the two assets around',
                 icon: const Icon(Icons.swap_vert_rounded),
                 onPressed: () {
                   setState(() {
-                    final tmp = _from;
-                    _from = _to;
-                    _to = tmp;
+                    _from = to;
+                    _to = from;
                   });
                 },
               ),
@@ -61,22 +120,17 @@ class _WalletSwapScreenState extends State<WalletSwapScreen> {
           ),
           _swapCard(
             label: 'To',
-            symbol: _to,
+            symbol: to,
             onSymbolChange: (v) => setState(() => _to = v),
             readOnly: true,
             hint: '0.00',
             options: mints,
           ),
           const SizedBox(height: 24),
-          ShadowButton(
-            label: 'Swap',
+          const ShadowButton(
+            label: 'Swapping unavailable',
             size: ShadowButtonSize.lg,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Swap route coming soon')),
-              );
-              context.pop();
-            },
+            onPressed: null,
           ),
         ],
       ),

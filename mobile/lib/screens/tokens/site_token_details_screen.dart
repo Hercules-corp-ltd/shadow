@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/token_balance.dart';
@@ -61,13 +62,19 @@ class SiteTokenDetailsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+          // Three enabled buttons wired to an empty closure. A control that
+          // looks pressable and silently does nothing is worse than a disabled
+          // one — there is no way to tell a tap that registered from a feature
+          // that failed. The screens behind them exist, so they are routed;
+          // and each of those screens already says for itself whether the
+          // operation is built.
           Row(
             children: [
               Expanded(
                 child: ShadowButton(
                   label: 'Send',
                   leading: Icons.send_rounded,
-                  onPressed: () {},
+                  onPressed: () => context.push('/wallet/send'),
                 ),
               ),
               const SizedBox(width: 8),
@@ -76,7 +83,7 @@ class SiteTokenDetailsScreen extends StatelessWidget {
                   label: 'Receive',
                   variant: ShadowButtonVariant.secondary,
                   leading: Icons.qr_code_rounded,
-                  onPressed: () {},
+                  onPressed: () => context.push('/wallet/receive'),
                 ),
               ),
               const SizedBox(width: 8),
@@ -85,7 +92,7 @@ class SiteTokenDetailsScreen extends StatelessWidget {
                   label: 'Swap',
                   variant: ShadowButtonVariant.secondary,
                   leading: Icons.swap_horiz_rounded,
-                  onPressed: () {},
+                  onPressed: () => context.push('/wallet/swap'),
                 ),
               ),
             ],

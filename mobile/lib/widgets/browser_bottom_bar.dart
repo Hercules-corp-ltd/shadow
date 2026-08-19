@@ -56,11 +56,21 @@ class BrowserBottomBar extends StatelessWidget {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+        // The most-seen surface in the app — it sits under every web page —
+        // and the last one still built from the opaque grey slab. Same
+        // near-opaque body and lit top edge as the theme's bottom sheets, so
+        // the browser stops reading as a different product from the screen
+        // that launched it.
+        //
+        // The non-uniform Border is safe here specifically because this
+        // BoxDecoration has no borderRadius: the rounding is done by the
+        // ClipRRect above. That pairing throws at paint time and silently
+        // drops the child, which has cost this codebase two bugs already.
         child: Container(
-          decoration: BoxDecoration(
-            color: ShadowColors.surfaceElevated.withValues(alpha: 0.85),
-            border: const Border(
-              top: BorderSide(color: ShadowColors.border),
+          decoration: const BoxDecoration(
+            color: Color(0xF216171C),
+            border: Border(
+              top: BorderSide(color: ShadowColors.edge),
             ),
           ),
           child: SafeArea(
@@ -70,12 +80,11 @@ class BrowserBottomBar extends StatelessWidget {
               children: [
                 _buildTabStrip(),
                 _buildUrlBar(),
-                Container(
-                  height: 4,
-                  decoration: const BoxDecoration(
-                    gradient: ShadowColors.primaryGradient,
-                  ),
-                ),
+                // Was a 4px band of saturated brand orange across the full
+                // width, carrying no information at all — the last live
+                // primaryGradient in the app. A hairline instead: the chrome
+                // needs an edge, not a stripe.
+                Container(height: 1, color: ShadowColors.edgeFaint),
               ],
             ),
           ),
