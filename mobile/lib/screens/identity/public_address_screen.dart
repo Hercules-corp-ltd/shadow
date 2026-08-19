@@ -127,8 +127,8 @@ class _PublicAddressScreenState extends State<PublicAddressScreen> {
             'the same person — and anyone holding two messages sent to it '
             'knows they came from one identity. Use an alias for anything you '
             'would rather nobody could line up.',
-            style: ShadowTypography.caption
-                .copyWith(color: ShadowColors.warning),
+            style:
+                ShadowTypography.caption.copyWith(color: ShadowColors.warning),
           ),
         ],
       ),
@@ -380,8 +380,8 @@ class _PublicAddressScreenState extends State<PublicAddressScreen> {
       case ClaimUnreachable():
         setState(() => _problem =
             'Could not reach the mail service. Shadow does not know whether '
-            '$name was claimed — try again with the same name and it will '
-            'find out.');
+                '$name was claimed — try again with the same name and it will '
+                'find out.');
       case ClaimNone():
         setState(() => _problem =
             'The mail service gave an answer Shadow did not expect.');

@@ -120,7 +120,8 @@ class QuickUnlock {
   /// The check comes first on purpose. Enrolling without one would let anybody
   /// holding the unlocked phone arm the shortcut, and then unlock with it.
   Future<bool> enable(String passphrase) async {
-    if (!await _authenticate('Confirm it is you before Shadow remembers this')) {
+    if (!await _authenticate(
+        'Confirm it is you before Shadow remembers this')) {
       return false;
     }
     await _storage.write(key: _key, value: passphrase);

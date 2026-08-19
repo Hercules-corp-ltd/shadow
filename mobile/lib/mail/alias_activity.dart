@@ -57,9 +57,8 @@ class AliasActivity {
     // assigning means an operator that answers with a lower number — or a
     // reordered response — cannot walk the count backwards and quietly erase
     // an arrival the user has already been shown.
-    final delivered = deliveredSeq > mailbox.delivered
-        ? deliveredSeq
-        : mailbox.delivered;
+    final delivered =
+        deliveredSeq > mailbox.delivered ? deliveredSeq : mailbox.delivered;
 
     return mailbox.copyWith(
       delivered: _clamp(delivered),

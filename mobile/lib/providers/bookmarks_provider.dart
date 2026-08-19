@@ -21,8 +21,7 @@ class BookmarksProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get folder => _folder;
-  Set<String> get folders =>
-      _bookmarks.map((b) => b.folder ?? 'All').toSet();
+  Set<String> get folders => _bookmarks.map((b) => b.folder ?? 'All').toSet();
 
   Future<void> load({String? folder}) async {
     _isLoading = true;

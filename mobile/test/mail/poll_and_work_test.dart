@@ -31,7 +31,8 @@ void main() {
 
     test('a negative elapsed time stops rather than spinning', () {
       expect(
-        PollSchedule.intervalAt(const Duration(seconds: -1), PollTrigger.signup),
+        PollSchedule.intervalAt(
+            const Duration(seconds: -1), PollTrigger.signup),
         isNull,
       );
     });

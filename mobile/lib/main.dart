@@ -61,8 +61,7 @@ class ShadowApp extends StatelessWidget {
         // account.
         ChangeNotifierProxyProvider<SettingsProvider, MailboxProvider>(
           create: (ctx) => MailboxProvider(
-            mailBaseUrl: () =>
-                ctx.read<SettingsProvider>().mailBaseUrl,
+            mailBaseUrl: () => ctx.read<SettingsProvider>().mailBaseUrl,
           ),
           update: (_, __, mailbox) => mailbox!,
         ),

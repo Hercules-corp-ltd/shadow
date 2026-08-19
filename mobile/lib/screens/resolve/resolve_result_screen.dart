@@ -84,7 +84,8 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
       return ShadowScaffold(
         title: 'Not found',
         body: Center(
-          child: Text('Site could not be resolved', style: ShadowTypography.body),
+          child:
+              Text('Site could not be resolved', style: ShadowTypography.body),
         ),
       );
     }
@@ -123,8 +124,7 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
                           Text(site.title ?? site.domain,
                               style: ShadowTypography.h3),
                           const SizedBox(height: 4),
-                          Text(site.domain,
-                              style: ShadowTypography.bodySm),
+                          Text(site.domain, style: ShadowTypography.bodySm),
                         ],
                       ),
                     ),

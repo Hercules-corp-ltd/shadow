@@ -105,11 +105,12 @@ class _DeployConfigScreenState extends State<DeployConfigScreen> {
                 ? null
                 : () {
                     final p = context.read<DeployProvider>();
+                    final typed = _domainCtrl.text.trim();
                     p.setProject(p.project!.copyWith(
                       name: _nameCtrl.text.trim(),
-                      domain: _domainCtrl.text.trim().isEmpty
-                          ? null
-                          : _domainCtrl.text.trim(),
+                      domain: typed.isEmpty ? null : typed,
+                      // An empty field means "no domain", not "no change".
+                      clearDomain: typed.isEmpty,
                       framework: _framework,
                     ));
                     context.push('/deploy/choose');

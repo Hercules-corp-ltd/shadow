@@ -108,7 +108,8 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
                                         Text(l.subtitle!,
                                             style: ShadowTypography.caption),
                                       Text(
-                                        DateFormat('HH:mm:ss').format(l.timestamp),
+                                        DateFormat('HH:mm:ss')
+                                            .format(l.timestamp),
                                         style: ShadowTypography.caption,
                                       ),
                                     ],

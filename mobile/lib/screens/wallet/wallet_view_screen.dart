@@ -123,9 +123,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
               )),
           const SizedBox(height: 8),
           Text(
-            portfolio == null
-                ? '—'
-                : portfolio.solBalance.toStringAsFixed(4),
+            portfolio == null ? '—' : portfolio.solBalance.toStringAsFixed(4),
             style: ShadowTypography.displayMd.copyWith(
               color: portfolio == null
                   ? ShadowColors.textSecondary
@@ -190,13 +188,14 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
           color: ShadowColors.tilePurple,
           onTap: () => context.push('/wallet/swap'),
         ),
-        IconTile(
+        // Sits beside three working actions at the same weight and does
+        // nothing but say "coming soon" after the tap. Disabled, so the
+        // difference is visible before the tap rather than after it —
+        // IconTile fades an onTap-less tile the way ShadowButton does.
+        const IconTile(
           label: 'Buy',
-          icon: const Icon(Icons.add_rounded),
+          icon: Icon(Icons.add_rounded),
           color: ShadowColors.tileAmber,
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('On-ramp coming soon')),
-          ),
         ),
       ],
     );
@@ -227,8 +226,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(t.balance.toStringAsFixed(4),
-                    style: ShadowTypography.h4),
+                Text(t.balance.toStringAsFixed(4), style: ShadowTypography.h4),
                 // Only when a price is actually known. TokensService never
                 // sets usdValue — its own doc says there is no honest way to
                 // derive one from RPC balances — so this printed a confident
@@ -286,7 +284,8 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                   width: double.infinity,
                   color: ShadowColors.surface,
                   child: nft.imageUrl == null
-                      ? const Icon(Icons.image_rounded, size: 48, color: ShadowColors.textTertiary)
+                      ? const Icon(Icons.image_rounded,
+                          size: 48, color: ShadowColors.textTertiary)
                       : Image.network(nft.imageUrl!, fit: BoxFit.cover),
                 ),
               ),

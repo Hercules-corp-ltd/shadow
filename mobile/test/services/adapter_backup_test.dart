@@ -31,8 +31,8 @@ void main() {
       // The password epoch is the point. No probe can find it, because the
       // mail server has never seen anything derived from it.
       final records = <SiteAdapterRecord>[
-        recordFor('twitter.com', passwordEpoch: 3, aliasEpoch: 2,
-            handle: 'quietharbor4821'),
+        recordFor('twitter.com',
+            passwordEpoch: 3, aliasEpoch: 2, handle: 'quietharbor4821'),
         recordFor('reddit.com', mode: SiteMode.public),
       ];
 

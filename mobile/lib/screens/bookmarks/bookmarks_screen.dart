@@ -49,7 +49,10 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
           ),
           const SizedBox(height: 12),
           Builder(builder: (_) {
-            final folders = <String>['All', ...p.folders.where((f) => f != 'All')];
+            final folders = <String>[
+              'All',
+              ...p.folders.where((f) => f != 'All')
+            ];
             if (folders.length <= 1) return const SizedBox.shrink();
             return SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -60,8 +63,8 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
                         label: Text(f),
-                        selected: p.folder == f ||
-                            (p.folder == null && f == 'All'),
+                        selected:
+                            p.folder == f || (p.folder == null && f == 'All'),
                         onSelected: (_) =>
                             p.load(folder: f == 'All' ? null : f),
                       ),
@@ -83,26 +86,25 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
               emptyTitle: 'No bookmarks yet',
               emptyMessage: 'Tap the star on any site to save it for later.',
               child: ListView.separated(
-                        itemBuilder: (_, i) {
-                          final b = p.bookmarks[i];
-                          return ListItemCard(
-                            title: b.title ?? b.domain,
-                            subtitle: b.domain,
-                            leadingIcon: Icons.bookmark_rounded,
-                            leadingColor: ShadowColors.primary,
-                            onTap: () => context.push(
-                                '/resolve/resolving?id=${Uri.encodeComponent(b.domain)}'),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.more_vert_rounded,
-                                  color: ShadowColors.textTertiary),
-                              onPressed: () => _showBookmarkMenu(context, b.domain),
-                            ),
-                          );
-                        },
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 8),
-                        itemCount: p.bookmarks.length,
-                      ),
+                itemBuilder: (_, i) {
+                  final b = p.bookmarks[i];
+                  return ListItemCard(
+                    title: b.title ?? b.domain,
+                    subtitle: b.domain,
+                    leadingIcon: Icons.bookmark_rounded,
+                    leadingColor: ShadowColors.primary,
+                    onTap: () => context.push(
+                        '/resolve/resolving?id=${Uri.encodeComponent(b.domain)}'),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.more_vert_rounded,
+                          color: ShadowColors.textTertiary),
+                      onPressed: () => _showBookmarkMenu(context, b.domain),
+                    ),
+                  );
+                },
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemCount: p.bookmarks.length,
+              ),
             ),
           ),
         ],
@@ -122,7 +124,8 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
               title: const Text('Open'),
               onTap: () {
                 Navigator.pop(context);
-                context.push('/resolve/resolving?id=${Uri.encodeComponent(domain)}');
+                context.push(
+                    '/resolve/resolving?id=${Uri.encodeComponent(domain)}');
               },
             ),
             ListTile(

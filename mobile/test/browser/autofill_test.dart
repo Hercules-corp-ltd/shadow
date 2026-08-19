@@ -41,7 +41,12 @@ void main() {
     });
 
     test('never touches a captcha or a one-time-code field', () {
-      for (final forbidden in <String>['captcha', 'recaptcha', 'otp', 'g-recaptcha']) {
+      for (final forbidden in <String>[
+        'captcha',
+        'recaptcha',
+        'otp',
+        'g-recaptcha'
+      ]) {
         expect(script.toLowerCase(), isNot(contains(forbidden)));
       }
     });
@@ -60,7 +65,8 @@ void main() {
     });
 
     test('a closing script tag in a value is escaped, not literal', () {
-      final script = AutofillScript.build(identityWith(email: 'x</script>@y.z'));
+      final script =
+          AutofillScript.build(identityWith(email: 'x</script>@y.z'));
       expect(script, isNot(contains('</script>@y.z')));
     });
 
@@ -94,7 +100,8 @@ void main() {
       expect(script, contains('Passw0rd!xyz'));
     });
 
-    test('uses the native value setter so React fields register the change', () {
+    test('uses the native value setter so React fields register the change',
+        () {
       final script = AutofillScript.build(identityWith());
       expect(script, contains('getOwnPropertyDescriptor'));
       expect(script, contains("dispatchEvent(new Event('input'"));
@@ -194,4 +201,3 @@ void main() {
     });
   });
 }
-

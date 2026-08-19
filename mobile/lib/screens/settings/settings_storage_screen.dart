@@ -44,8 +44,8 @@ class SettingsStorageScreen extends StatelessWidget {
                   max: 10000,
                   divisions: 99,
                   value: s.maxHistoryItems.toDouble().clamp(100, 10000),
-                  onChanged: (v) => provider
-                      .update(s.copyWith(maxHistoryItems: v.toInt())),
+                  onChanged: (v) =>
+                      provider.update(s.copyWith(maxHistoryItems: v.toInt())),
                 ),
               ],
             ),
@@ -55,8 +55,8 @@ class SettingsStorageScreen extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             child: SwitchListTile(
               value: s.autoClearCache,
-              title: Text('Auto-clear cache weekly',
-                  style: ShadowTypography.body),
+              title:
+                  Text('Auto-clear cache weekly', style: ShadowTypography.body),
               subtitle: Text('Remove non-pinned content every Sunday',
                   style: ShadowTypography.bodySm),
               onChanged: (v) => provider.update(s.copyWith(autoClearCache: v)),

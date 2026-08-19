@@ -143,8 +143,9 @@ class _ImmersionHandleState extends State<ImmersionHandle> {
               color: widget.hidden
                   ? ShadowColors.primary
                   : Colors.white.withValues(alpha: 0.85),
-              semanticLabel:
-                  widget.hidden ? 'Show browser controls' : 'Hide browser controls',
+              semanticLabel: widget.hidden
+                  ? 'Show browser controls'
+                  : 'Hide browser controls',
             ),
           ),
         ),

@@ -101,13 +101,14 @@ class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      _Row(label: 'Registered', value: df.format(d.registeredAt)),
+                      _Row(
+                          label: 'Registered',
+                          value: df.format(d.registeredAt)),
                       if (d.expiresAt != null)
                         _Row(
                           label: 'Expires',
                           value: df.format(d.expiresAt!),
-                          valueColor:
-                              d.isExpired ? ShadowColors.error : null,
+                          valueColor: d.isExpired ? ShadowColors.error : null,
                         ),
                       _Row(
                         label: 'Owner',
@@ -121,8 +122,7 @@ class _DomainDetailsScreenState extends State<DomainDetailsScreen> {
                       ),
                       if (d.trustScore != null)
                         _Row(
-                            label: 'Trust score',
-                            value: '${d.trustScore}/100'),
+                            label: 'Trust score', value: '${d.trustScore}/100'),
                     ],
                   ),
                 ),

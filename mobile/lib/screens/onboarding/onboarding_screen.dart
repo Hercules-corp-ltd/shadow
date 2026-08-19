@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
+import '../../providers/wallet_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_spacing.dart';
 import '../../theme/shadow_typography.dart';
@@ -101,8 +102,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _index = 0;
 
   Future<void> _complete() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('shadow_onboarding_complete_v1', true);
+    // Through the provider, not straight at SharedPreferences: the router
+    // reads this synchronously on every redirect, so the in-memory copy has
+    // to move at the same time as the stored one.
+    await context.read<WalletProvider>().markOnboardingComplete();
     if (!mounted) return;
     context.go('/wallet/choose');
   }
@@ -197,9 +200,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             width: _index == i ? 24 : 8,
             height: 8,
             decoration: BoxDecoration(
-              color: _index == i
-                  ? ShadowColors.primary
-                  : ShadowColors.edge,
+              color: _index == i ? ShadowColors.primary : ShadowColors.edge,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -216,7 +217,8 @@ class _SlideContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: ShadowSpacing.pagePadding),
+      padding:
+          const EdgeInsets.symmetric(horizontal: ShadowSpacing.pagePadding),
       child: Column(
         children: [
           const SizedBox(height: 16),

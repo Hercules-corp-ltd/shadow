@@ -84,7 +84,8 @@ class EmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            Text(title, style: ShadowTypography.h3, textAlign: TextAlign.center),
+            Text(title,
+                style: ShadowTypography.h3, textAlign: TextAlign.center),
             const SizedBox(height: 8),
             Text(
               message,

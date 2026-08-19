@@ -61,30 +61,36 @@ class DeployDeployedScreen extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 24),
         children: [
           Center(
-            child: Container(
-              width: 120,
-              height: 120,
-              // Success, and it is allowed to be bright - but as a light in
-              // a socket, like every other disc in the app, not a filled
-              // orange coin.
-              decoration: BoxDecoration(
-                color: ShadowColors.recessDeep,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: ShadowColors.primary.withValues(alpha: 0.40),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: ShadowColors.primary.withValues(alpha: 0.28),
-                    blurRadius: 48,
-                    spreadRadius: -6,
+            // The elastic overshoot here is exactly the motion class the
+            // reduce-motion switch exists to stop, and it could not be turned
+            // off. It is skipped, not shortened: a success mark does not need
+            // to bounce to be understood.
+            child: _mark(
+                context,
+                Container(
+                  width: 120,
+                  height: 120,
+                  // Success, and it is allowed to be bright - but as a light in
+                  // a socket, like every other disc in the app, not a filled
+                  // orange coin.
+                  decoration: BoxDecoration(
+                    color: ShadowColors.recessDeep,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: ShadowColors.primary.withValues(alpha: 0.40),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: ShadowColors.primary.withValues(alpha: 0.28),
+                        blurRadius: 48,
+                        spreadRadius: -6,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: const Icon(Icons.check_rounded,
-                  color: ShadowColors.primary, size: 64),
-            ).animate().scale(duration: 400.ms, curve: Curves.elasticOut),
+                  child: const Icon(Icons.check_rounded,
+                      color: ShadowColors.primary, size: 64),
+                )),
           ),
           const SizedBox(height: 32),
           GlassCard(
@@ -177,6 +183,18 @@ class DeployDeployedScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Skipped outright under reduce-motion rather than shortened: a success
+  /// mark does not need to bounce to be understood, and an elastic overshoot
+  /// is exactly the motion class that switch exists to stop.
+  static Widget _mark(BuildContext context, Widget child) {
+    final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (still) return child;
+    return child.animate().scale(
+          duration: 400.ms,
+          curve: Curves.elasticOut,
+        );
   }
 
   static Future<void> _copy(BuildContext context, String text) async {

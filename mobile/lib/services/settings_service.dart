@@ -163,7 +163,8 @@ class SettingsService {
     final raw = prefs.getString(_key);
     if (raw == null) return const ShadowSettings();
     try {
-      return ShadowSettings.fromJson(Map<String, dynamic>.from(json.decode(raw)));
+      return ShadowSettings.fromJson(
+          Map<String, dynamic>.from(json.decode(raw)));
     } catch (_) {
       return const ShadowSettings();
     }

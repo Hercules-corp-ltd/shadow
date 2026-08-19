@@ -76,9 +76,7 @@ class _ShadowSearchFieldState extends State<ShadowSearchField> {
         children: [
           Icon(
             Icons.search_rounded,
-            color: focused
-                ? ShadowColors.primary
-                : ShadowColors.textTertiary,
+            color: focused ? ShadowColors.primary : ShadowColors.textTertiary,
             size: 20,
           ),
           const SizedBox(width: 12),

@@ -29,8 +29,7 @@ class DeployFilesAddedScreen extends StatelessWidget {
                 ? const EmptyState(
                     icon: Icons.folder_open_rounded,
                     title: 'No files yet',
-                    message:
-                        'Go back and pick the files you want to publish — '
+                    message: 'Go back and pick the files you want to publish — '
                         'the built output of your site, not its source.',
                   )
                 : ListView.separated(
@@ -51,9 +50,7 @@ class DeployFilesAddedScreen extends StatelessWidget {
                           tooltip: 'Remove from this deployment',
                           onPressed: () {
                             final updated = [...files]..removeAt(i);
-                            context
-                                .read<DeployProvider>()
-                                .updateFiles(updated);
+                            context.read<DeployProvider>().updateFiles(updated);
                           },
                         ),
                       );
@@ -67,9 +64,8 @@ class DeployFilesAddedScreen extends StatelessWidget {
             label: 'Deploy to Shadow',
             size: ShadowButtonSize.lg,
             trailing: Icons.rocket_launch_rounded,
-            onPressed: files.isEmpty
-                ? null
-                : () => context.push('/deploy/progress'),
+            onPressed:
+                files.isEmpty ? null : () => context.push('/deploy/progress'),
           ),
           const SizedBox(height: 8),
           ShadowButton(

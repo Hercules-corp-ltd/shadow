@@ -145,142 +145,151 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                const Spacer(),
-                // A socket with the lock lit inside it, not a grey coin. This
-                // is the first thing seen on a cold launch, so it is the one
-                // shape that decides whether the app looks like Shadow before
-                // anything else has loaded.
-                Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(
-                    color: ShadowColors.recessDeep,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: ShadowColors.primary.withValues(alpha: 0.26),
-                    ),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color: ShadowColors.primary.withValues(alpha: 0.16),
-                        blurRadius: 34,
-                        spreadRadius: -6,
-                      ),
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.lock_rounded,
-                      color: ShadowColors.primary, size: 40),
-                ),
-                const SizedBox(height: 24),
-                Text('Wallet locked', style: ShadowTypography.displayMd),
-                const SizedBox(height: 8),
-                Text(
-                  addr.isEmpty
-                      ? 'Enter your password to unlock'
-                      : '${addr.substring(0, 6)}…${addr.substring(addr.length - 6)}',
-                  style: ShadowTypography.bodySm,
-                ),
-                const SizedBox(height: 32),
-                TextField(
-                  controller: _password,
-                  obscureText: true,
-                  autofocus: true,
-                  onSubmitted: (_) => _unlock(),
-                  decoration:
-                      const InputDecoration(hintText: 'Password'),
-                ),
-                if (_error != null) ...[
-                  const SizedBox(height: 8),
-                  Text(_error!,
-                      style: ShadowTypography.bodySm
-                          .copyWith(color: ShadowColors.error)),
-                ],
-                // A checkbox rather than a card offered afterwards: this screen
-                // is replaced the instant the wallet opens, so anything shown
-                // after a successful unlock cannot be read. Asked before, it
-                // is also just the familiar "remember me".
-                if (_canRemember && !_armed) ...<Widget>[
-                  const SizedBox(height: 8),
-                  InkWell(
-                    onTap: () => setState(() => _remember = !_remember),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        children: <Widget>[
-                          Checkbox(
-                            value: _remember,
-                            onChanged: (v) =>
-                                setState(() => _remember = v ?? false),
+                        const Spacer(),
+                        // A socket with the lock lit inside it, not a grey coin. This
+                        // is the first thing seen on a cold launch, so it is the one
+                        // shape that decides whether the app looks like Shadow before
+                        // anything else has loaded.
+                        Container(
+                          width: 96,
+                          height: 96,
+                          decoration: BoxDecoration(
+                            color: ShadowColors.recessDeep,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color:
+                                  ShadowColors.primary.withValues(alpha: 0.26),
+                            ),
+                            boxShadow: <BoxShadow>[
+                              BoxShadow(
+                                color: ShadowColors.primary
+                                    .withValues(alpha: 0.16),
+                                blurRadius: 34,
+                                spreadRadius: -6,
+                              ),
+                            ],
                           ),
-                          Expanded(
-                            child: Text(
-                              'Remember this password and unlock with my '
-                              'fingerprint',
-                              style: ShadowTypography.bodySm,
+                          alignment: Alignment.center,
+                          child: const Icon(Icons.lock_rounded,
+                              color: ShadowColors.primary, size: 40),
+                        ),
+                        const SizedBox(height: 24),
+                        Text('Wallet locked',
+                            style: ShadowTypography.displayMd),
+                        const SizedBox(height: 8),
+                        Text(
+                          addr.isEmpty
+                              ? 'Enter your password to unlock'
+                              : '${addr.substring(0, 6)}…${addr.substring(addr.length - 6)}',
+                          style: ShadowTypography.bodySm,
+                        ),
+                        const SizedBox(height: 32),
+                        TextField(
+                          controller: _password,
+                          obscureText: true,
+                          autofocus: true,
+                          onSubmitted: (_) => _unlock(),
+                          decoration:
+                              const InputDecoration(hintText: 'Password'),
+                        ),
+                        if (_error != null) ...[
+                          const SizedBox(height: 8),
+                          Text(_error!,
+                              style: ShadowTypography.bodySm
+                                  .copyWith(color: ShadowColors.error)),
+                        ],
+                        // A checkbox rather than a card offered afterwards: this screen
+                        // is replaced the instant the wallet opens, so anything shown
+                        // after a successful unlock cannot be read. Asked before, it
+                        // is also just the familiar "remember me".
+                        if (_canRemember && !_armed) ...<Widget>[
+                          const SizedBox(height: 8),
+                          InkWell(
+                            onTap: () => setState(() => _remember = !_remember),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Row(
+                                children: <Widget>[
+                                  Checkbox(
+                                    value: _remember,
+                                    onChanged: (v) =>
+                                        setState(() => _remember = v ?? false),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      'Remember this password and unlock with my '
+                                      'fingerprint',
+                                      style: ShadowTypography.bodySm,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
+                          if (_remember)
+                            Text(
+                              'Stored on this phone. Anything that opens the phone '
+                              'then opens the wallet.',
+                              style: ShadowTypography.caption
+                                  .copyWith(color: ShadowColors.warning),
+                            ),
                         ],
-                      ),
-                    ),
-                  ),
-                  if (_remember)
-                    Text(
-                      'Stored on this phone. Anything that opens the phone '
-                      'then opens the wallet.',
-                      style: ShadowTypography.caption
-                          .copyWith(color: ShadowColors.warning),
-                    ),
-                ],
-                const SizedBox(height: 16),
-                ShadowButton(
-                  label: 'Unlock',
-                  isLoading: _loading,
-                  onPressed: _loading ? null : _unlock,
-                  size: ShadowButtonSize.lg,
-                ),
-                if (_armed) ...<Widget>[
-                  const SizedBox(height: 10),
-                  ShadowButton(
-                    label: 'Use my fingerprint',
-                    variant: ShadowButtonVariant.secondary,
-                    onPressed: _loading ? null : _unlockWithDevice,
-                  ),
-                ],
-                const Spacer(),
-                TextButton(
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: const Text('Delete wallet?'),
-                        content: Text(
-                          context.read<WalletProvider>().hasRecoveryPhrase ==
-                                  true
-                              ? 'This erases the encrypted wallet from this '
-                                  'device. You can restore it from your '
-                                  'twelve words.'
-                              : 'This wallet has no recovery phrase, so the '
-                                  'key on this device is the only copy. '
-                                  'Deleting it destroys the wallet and any '
-                                  'funds in it, permanently.',
+                        const SizedBox(height: 16),
+                        ShadowButton(
+                          label: 'Unlock',
+                          isLoading: _loading,
+                          onPressed: _loading ? null : _unlock,
+                          size: ShadowButtonSize.lg,
                         ),
-                        actions: [
-                          TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: const Text('Cancel')),
-                          TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: const Text('Delete')),
+                        if (_armed) ...<Widget>[
+                          const SizedBox(height: 10),
+                          ShadowButton(
+                            label: 'Use my fingerprint',
+                            variant: ShadowButtonVariant.secondary,
+                            onPressed: _loading ? null : _unlockWithDevice,
+                          ),
                         ],
-                      ),
-                    );
-                    if (confirm == true && context.mounted) {
-                      await context.read<WalletProvider>().deleteWallet();
-                      if (context.mounted) context.go('/welcome');
-                    }
-                  },
-                  child: const Text('Forgot password? Delete wallet'),
-                ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: const Text('Delete wallet?'),
+                                content: Text(
+                                  context
+                                              .read<WalletProvider>()
+                                              .hasRecoveryPhrase ==
+                                          true
+                                      ? 'This erases the encrypted wallet from this '
+                                          'device. You can restore it from your '
+                                          'twelve words.'
+                                      : 'This wallet has no recovery phrase, so the '
+                                          'key on this device is the only copy. '
+                                          'Deleting it destroys the wallet and any '
+                                          'funds in it, permanently.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: const Text('Cancel')),
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: const Text('Delete')),
+                                ],
+                              ),
+                            );
+                            if (confirm == true && context.mounted) {
+                              await context
+                                  .read<WalletProvider>()
+                                  .deleteWallet();
+                              if (context.mounted) context.go('/welcome');
+                            }
+                          },
+                          child: const Text('Forgot password? Delete wallet'),
+                        ),
                       ],
                     ),
                   ),

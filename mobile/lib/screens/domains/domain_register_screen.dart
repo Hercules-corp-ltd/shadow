@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -5,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../providers/domains_provider.dart';
 import '../../providers/wallet_provider.dart';
 import '../../theme/shadow_colors.dart';
+import '../../services/fetch_outcome.dart';
 import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/shadow_button.dart';
@@ -104,8 +106,8 @@ class _DomainRegisterScreenState extends State<DomainRegisterScreen> {
             const SizedBox(height: 16),
             Text(
               _error!,
-              style: ShadowTypography.bodySm
-                  .copyWith(color: ShadowColors.error),
+              style:
+                  ShadowTypography.bodySm.copyWith(color: ShadowColors.error),
             ),
           ],
           const SizedBox(height: 20),
@@ -114,7 +116,8 @@ class _DomainRegisterScreenState extends State<DomainRegisterScreen> {
             size: ShadowButtonSize.lg,
             trailing: Icons.rocket_launch_rounded,
             isLoading: _submitting,
-            onPressed: _submitting || wallet.isEmpty ? null : () => _submit(wallet),
+            onPressed:
+                _submitting || wallet.isEmpty ? null : () => _submit(wallet),
           ),
         ],
       ),
@@ -136,7 +139,12 @@ class _DomainRegisterScreenState extends State<DomainRegisterScreen> {
       if (!mounted) return;
       context.go('/domains/${d.domain}');
     } catch (e) {
-      setState(() => _error = e.toString());
+      // DioException.toString() is a multi-line debug dump that carries
+      // the backend URI in it, rendered straight into the page.
+      // describeDioFailure is the house translation and already exists.
+      setState(() => _error = e is DioException
+          ? describeDioFailure(e)
+          : 'Something went wrong. Please try again.');
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

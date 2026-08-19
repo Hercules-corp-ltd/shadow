@@ -358,7 +358,6 @@ class _UnlockViewState extends State<_UnlockView> {
       ],
     );
   }
-
 }
 
 // ---------------------------------------------------------------------------
@@ -509,7 +508,8 @@ class _DeriveViewState extends State<_DeriveView> {
         if (_failure != null) ...<Widget>[
           const SizedBox(height: 16),
           Text(_failure!,
-              style: ShadowTypography.bodySm.copyWith(color: ShadowColors.error)),
+              style:
+                  ShadowTypography.bodySm.copyWith(color: ShadowColors.error)),
         ],
         if (_identity != null) ...<Widget>[
           const SizedBox(height: 16),
@@ -571,8 +571,8 @@ class _FieldState extends State<_Field> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(widget.label.toUpperCase(),
-            style: ShadowTypography.caption
-                .copyWith(letterSpacing: 1.2, color: ShadowColors.textTertiary)),
+            style: ShadowTypography.caption.copyWith(
+                letterSpacing: 1.2, color: ShadowColors.textTertiary)),
         const SizedBox(height: 6),
         Row(
           children: [
@@ -744,8 +744,7 @@ class _QuickUnlockRowState extends State<_QuickUnlockRow> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(_confirm.text),
+            onPressed: () => Navigator.of(dialogContext).pop(_confirm.text),
             child: const Text('Check and store'),
           ),
         ],

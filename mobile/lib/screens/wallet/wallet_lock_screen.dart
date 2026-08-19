@@ -27,8 +27,7 @@ class WalletLockScreen extends StatelessWidget {
                     size: 48, color: ShadowColors.primary),
                 const SizedBox(height: 16),
                 Text('Lock your wallet now?',
-                    style: ShadowTypography.h3,
-                    textAlign: TextAlign.center),
+                    style: ShadowTypography.h3, textAlign: TextAlign.center),
                 const SizedBox(height: 8),
                 Text(
                   'You will need to enter your password to unlock it again. This is a good idea if you are leaving your phone unattended.',

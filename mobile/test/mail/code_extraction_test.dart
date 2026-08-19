@@ -5,7 +5,8 @@ import 'package:shadow_mobile/mail/code_extraction.dart';
 import 'package:shadow_mobile/mail/mime_lite.dart';
 
 /// Builds a plain message with the given subject and body.
-MimeMessage plain(String subject, String body, {String from = 'x@sendgrid.net'}) {
+MimeMessage plain(String subject, String body,
+    {String from = 'x@sendgrid.net'}) {
   return MimeLite.parse(
     'From: $from\r\nSubject: $subject\r\n'
     'Content-Type: text/plain; charset=utf-8\r\n\r\n$body',
@@ -144,7 +145,8 @@ void main() {
     });
 
     test('from a body next to a trigger word', () {
-      expect(codeIn(plain('Hi', 'Your verification code is 483920.')), '483920');
+      expect(
+          codeIn(plain('Hi', 'Your verification code is 483920.')), '483920');
       expect(codeIn(plain('Hi', 'Enter 4821 to confirm your email.')), '4821');
       expect(codeIn(plain('Hi', 'OTP: 918273')), '918273');
     });

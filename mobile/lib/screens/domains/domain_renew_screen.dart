@@ -1,9 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/domains_provider.dart';
 import '../../theme/shadow_colors.dart';
+import '../../services/fetch_outcome.dart';
 import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/shadow_button.dart';
@@ -55,8 +57,8 @@ class _DomainRenewScreenState extends State<DomainRenewScreen> {
             const SizedBox(height: 12),
             Text(
               _error!,
-              style: ShadowTypography.bodySm
-                  .copyWith(color: ShadowColors.error),
+              style:
+                  ShadowTypography.bodySm.copyWith(color: ShadowColors.error),
             ),
           ],
           const SizedBox(height: 16),
@@ -77,16 +79,19 @@ class _DomainRenewScreenState extends State<DomainRenewScreen> {
       _error = null;
     });
     try {
-      await context
-          .read<DomainsProvider>()
-          .renew(widget.domain, years: _years);
+      await context.read<DomainsProvider>().renew(widget.domain, years: _years);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Renewed ${widget.domain} for $_years year(s)')),
       );
       context.pop();
     } catch (e) {
-      setState(() => _error = e.toString());
+      // DioException.toString() is a multi-line debug dump that carries
+      // the backend URI in it, rendered straight into the page.
+      // describeDioFailure is the house translation and already exists.
+      setState(() => _error = e is DioException
+          ? describeDioFailure(e)
+          : 'Something went wrong. Please try again.');
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

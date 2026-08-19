@@ -40,7 +40,8 @@ class RegistrableDomain {
   static String of(String input) {
     var value = input.trim().toLowerCase();
     if (value.isEmpty) {
-      throw const FormatException('Cannot derive an identity for an empty host');
+      throw const FormatException(
+          'Cannot derive an identity for an empty host');
     }
 
     // Strip scheme.

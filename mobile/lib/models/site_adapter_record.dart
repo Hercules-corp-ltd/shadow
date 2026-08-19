@@ -269,8 +269,9 @@ class SiteAccountState {
       mode: mode ?? this.mode,
       passwordEpoch: passwordEpoch ?? this.passwordEpoch,
       aliasEpoch: aliasEpoch ?? this.aliasEpoch,
-      pendingAliasEpoch:
-          clearPendingAliasEpoch ? null : (pendingAliasEpoch ?? this.pendingAliasEpoch),
+      pendingAliasEpoch: clearPendingAliasEpoch
+          ? null
+          : (pendingAliasEpoch ?? this.pendingAliasEpoch),
       registeredHandle: registeredHandle ?? this.registeredHandle,
       mailbox: mailbox ?? this.mailbox,
     );

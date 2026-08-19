@@ -207,9 +207,7 @@ class _TabChip extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 6),
       child: Material(
-        color: active
-            ? ShadowColors.primarySoft
-            : ShadowColors.surface,
+        color: active ? ShadowColors.primarySoft : ShadowColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(color: borderColor),

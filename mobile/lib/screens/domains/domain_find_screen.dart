@@ -66,10 +66,18 @@ class _DomainFindScreenState extends State<DomainFindScreen> {
                   onSubmitted: (q) => _search(q),
                 ),
                 const SizedBox(height: 12),
-                ShadowButton(
-                  label: 'Search availability',
-                  leading: Icons.search_rounded,
-                  onPressed: () => _search(_queryCtrl.text),
+                // Disabled while the field is empty. _search returns silently
+                // on a blank query, so the brightest control on the screen
+                // used to absorb a press and do nothing at all.
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _queryCtrl,
+                  builder: (context, value, _) => ShadowButton(
+                    label: 'Search availability',
+                    leading: Icons.search_rounded,
+                    onPressed: value.text.trim().isEmpty
+                        ? null
+                        : () => _search(_queryCtrl.text),
+                  ),
                 ),
               ],
             ),
@@ -110,7 +118,9 @@ class _DomainFindScreenState extends State<DomainFindScreen> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: ListItemCard(
                   title: d.domain,
-                  subtitle: d.isVerified ? 'Verified · trust ${d.trustScore ?? 0}' : 'Unverified',
+                  subtitle: d.isVerified
+                      ? 'Verified · trust ${d.trustScore ?? 0}'
+                      : 'Unverified',
                   leadingIcon: Icons.language_rounded,
                   leadingColor: d.isVerified
                       ? ShadowColors.success

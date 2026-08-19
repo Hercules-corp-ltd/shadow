@@ -5,6 +5,7 @@ import '../../theme/shadow_colors.dart';
 import '../../widgets/list_item_card.dart';
 import '../../widgets/shadow_button.dart';
 import '../../widgets/shadow_scaffold.dart';
+import '../../widgets/unbuilt_tile.dart';
 
 class DeployChooseConfigScreen extends StatelessWidget {
   const DeployChooseConfigScreen({super.key});
@@ -25,17 +26,25 @@ class DeployChooseConfigScreen extends StatelessWidget {
             onTap: () => context.push('/deploy/upload'),
           ),
           const SizedBox(height: 8),
-          const ListItemCard(
+          // Not built, and it has to look it. With onTap: null this row was
+          // inert but rendered identically to the two live ones either side —
+          // same fill, same coloured glyph, and still a chevron promising it
+          // went somewhere. UnbuiltTile is the house answer for this.
+          const UnbuiltTile(
             title: 'Import from a public repository',
-            subtitle: 'Clone a GitHub / GitLab repository (coming soon)',
-            leadingIcon: Icons.source_rounded,
-            leadingColor: ShadowColors.tilePurple,
-            onTap: null,
+            reason: 'Cloning a repository needs a build step Shadow does not '
+                'run yet. Build your site locally and upload the output.',
+            icon: Icons.source_rounded,
           ),
           const SizedBox(height: 8),
+          // Was "Download a starter config" / "shadow.config.json template +
+          // docs". Neither is true at the destination: the screen offers a
+          // copy button and no download, and there are no docs. Nothing in
+          // the repo reads shadow.config.json either, so it is a shape to
+          // copy, not a file the deployer consumes — and the row now says so.
           ListItemCard(
-            title: 'Download a starter config',
-            subtitle: 'shadow.config.json template + docs',
+            title: 'Copy a starter config',
+            subtitle: 'A shadow.config.json shape to keep in your project',
             leadingIcon: Icons.description_rounded,
             leadingColor: ShadowColors.tileAmber,
             onTap: () => context.push('/deploy/download'),

@@ -136,8 +136,8 @@ class ResolveFailedScreen extends StatelessWidget {
                 for (final suggestion in _suggestions)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
-                    child: Text('- $suggestion',
-                        style: ShadowTypography.bodySm),
+                    child:
+                        Text('- $suggestion', style: ShadowTypography.bodySm),
                   ),
               ],
             ),

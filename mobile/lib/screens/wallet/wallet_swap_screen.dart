@@ -37,6 +37,14 @@ class _WalletSwapScreenState extends State<WalletSwapScreen> {
   final _amount = TextEditingController();
 
   @override
+  void dispose() {
+    // There was no dispose() at all, so this controller and its listeners
+    // outlived every visit to the screen.
+    _amount.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final tokens = context.watch<TokensProvider>();
     final mints = {'SOL', ...tokens.tokens.map((t) => t.symbol)}.toList();
@@ -159,8 +167,8 @@ class _WalletSwapScreenState extends State<WalletSwapScreen> {
                 child: TextField(
                   controller: controller,
                   readOnly: readOnly,
-                  keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   style: ShadowTypography.h2,
                   decoration: InputDecoration(
                     hintText: hint.isEmpty ? '0.00' : hint,

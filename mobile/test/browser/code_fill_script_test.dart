@@ -106,7 +106,8 @@ void main() {
       // Caught on a device: the toast said "Filled the code" on a page that
       // had no code field, sending the user to look for a value that was
       // never written.
-      expect(CodeFillScript.filledCount('{"filled":0,"refused":"no-field"}'), 0);
+      expect(
+          CodeFillScript.filledCount('{"filled":0,"refused":"no-field"}'), 0);
       expect(CodeFillScript.filledCount('{"filled":0,"refused":"domain"}'), 0);
       expect(CodeFillScript.filledCount(null), 0);
       expect(CodeFillScript.filledCount('not json'), 0);

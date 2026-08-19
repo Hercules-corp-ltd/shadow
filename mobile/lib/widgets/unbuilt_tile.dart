@@ -38,14 +38,13 @@ class UnbuiltTile extends StatelessWidget {
       ),
       title: Text(
         title,
-        style: ShadowTypography.body
-            .copyWith(color: ShadowColors.textDisabled),
+        style: ShadowTypography.body.copyWith(color: ShadowColors.textDisabled),
       ),
       subtitle: Text(reason, style: ShadowTypography.bodySm),
       trailing: Text(
         'Not built',
-        style: ShadowTypography.caption
-            .copyWith(color: ShadowColors.textTertiary),
+        style:
+            ShadowTypography.caption.copyWith(color: ShadowColors.textTertiary),
       ),
       enabled: false,
     );

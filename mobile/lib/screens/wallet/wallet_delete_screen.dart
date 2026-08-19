@@ -71,8 +71,8 @@ class _WalletDeleteScreenState extends State<WalletDeleteScreen> {
           GlassCard(
             padding: const EdgeInsets.all(20),
             color: Colors.red.withValues(alpha: 0.08),
-            border:
-                Border.all(color: ShadowColors.error.withValues(alpha: 0.4), width: 1),
+            border: Border.all(
+                color: ShadowColors.error.withValues(alpha: 0.4), width: 1),
             child: Column(
               children: [
                 const Icon(Icons.warning_amber_rounded,

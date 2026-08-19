@@ -29,7 +29,12 @@ class DeployDownloadConfigScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ShadowScaffold(
       title: 'shadow.config.json',
-      subtitle: 'Starter template for your project',
+      // Was "Starter template for your project", which reads as a file the
+      // deployer consumes. Nothing in this repo reads shadow.config.json —
+      // the framework and domain come from the Configure Project screen — so
+      // it is a shape worth keeping next to your source, and nothing more.
+      subtitle: 'A shape to keep in your project. Shadow does not read it '
+          'yet — the deploy flow asks for these settings directly.',
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [

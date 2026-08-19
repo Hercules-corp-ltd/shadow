@@ -142,8 +142,7 @@ class CodeExtraction {
     MimeMessage message, {
     String? aliasLocalPart,
   }) {
-    for (final result
-        in extract(message, aliasLocalPart: aliasLocalPart)) {
+    for (final result in extract(message, aliasLocalPart: aliasLocalPart)) {
       if (result is OneTimeCode) return result;
     }
     return null;
@@ -223,8 +222,7 @@ class CodeExtraction {
         .replaceAllMapped(
             RegExp(r'\b\d+(px|pt|em|rem|%)\b', caseSensitive: false), blank)
         // Money.
-        .replaceAllMapped(
-            RegExp(r'[\$£€¥]\s?\d[\d,]*(\.\d{2})?'), blank)
+        .replaceAllMapped(RegExp(r'[\$£€¥]\s?\d[\d,]*(\.\d{2})?'), blank)
         .replaceAllMapped(RegExp(r'\b\d[\d,]*\.\d{2}\b'), blank)
         // Phone numbers.
         .replaceAllMapped(RegExp(r'\+\d[\d\s().-]{7,}'), blank)

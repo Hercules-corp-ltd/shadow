@@ -14,6 +14,7 @@ class WalletProvider with ChangeNotifier {
   Ed25519HDKeyPair? _wallet;
   String? _walletAddress;
   bool _isLoading = true;
+  bool _onboardingComplete = false;
   WalletLifecycle _state = WalletLifecycle.uninitialized;
 
   Ed25519HDKeyPair? get wallet => _wallet;
@@ -22,6 +23,20 @@ class WalletProvider with ChangeNotifier {
   bool get isConnected => _state == WalletLifecycle.unlocked;
   WalletLifecycle get state => _state;
 
+  /// Whether the tour has been seen or explicitly skipped.
+  ///
+  /// Synchronous, and settled before [isLoading] clears, because the router's
+  /// redirect runs on every navigation and cannot await. The flag itself had
+  /// been written by both onboarding screens and read by nobody.
+  bool get onboardingComplete => _onboardingComplete;
+
+  /// Called when the flag is written, so the router sees it without a reload.
+  void setOnboardingComplete() {
+    if (_onboardingComplete) return;
+    _onboardingComplete = true;
+    notifyListeners();
+  }
+
   WalletProvider() {
     _bootstrap();
   }
@@ -29,6 +44,7 @@ class WalletProvider with ChangeNotifier {
   Future<void> _bootstrap() async {
     _isLoading = true;
     notifyListeners();
+    _onboardingComplete = await isOnboardingComplete();
     final address = await _walletService.getStoredWalletAddress();
     if (address == null) {
       _state = WalletLifecycle.noWallet;
@@ -144,5 +160,6 @@ extension WalletOnboardingFlag on WalletProvider {
   Future<void> markOnboardingComplete() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_onboardingKey, true);
+    setOnboardingComplete();
   }
 }

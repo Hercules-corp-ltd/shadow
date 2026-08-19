@@ -26,13 +26,13 @@ class SettingsGeneralScreen extends StatelessWidget {
               children: [
                 SwitchListTile(
                   value: s.analyticsEnabled,
-                  title: Text('Anonymous analytics',
-                      style: ShadowTypography.body),
+                  title:
+                      Text('Anonymous analytics', style: ShadowTypography.body),
                   subtitle: Text(
                       'Help improve Shadow by sharing anonymous usage data',
                       style: ShadowTypography.bodySm),
-                  onChanged: (v) => provider.update(
-                      s.copyWith(analyticsEnabled: v)),
+                  onChanged: (v) =>
+                      provider.update(s.copyWith(analyticsEnabled: v)),
                 ),
                 const Divider(height: 1, color: ShadowColors.border),
                 SwitchListTile(
@@ -40,17 +40,18 @@ class SettingsGeneralScreen extends StatelessWidget {
                   title: Text('Crash telemetry', style: ShadowTypography.body),
                   subtitle: Text('Send crash reports automatically',
                       style: ShadowTypography.bodySm),
-                  onChanged: (v) => provider.update(
-                      s.copyWith(telemetryEnabled: v)),
+                  onChanged: (v) =>
+                      provider.update(s.copyWith(telemetryEnabled: v)),
                 ),
                 const Divider(height: 1, color: ShadowColors.border),
                 SwitchListTile(
                   value: s.autoUpdateEnabled,
-                  title: Text('Automatic updates', style: ShadowTypography.body),
+                  title:
+                      Text('Automatic updates', style: ShadowTypography.body),
                   subtitle: Text('Keep Shadow up-to-date in the background',
                       style: ShadowTypography.bodySm),
-                  onChanged: (v) => provider.update(
-                      s.copyWith(autoUpdateEnabled: v)),
+                  onChanged: (v) =>
+                      provider.update(s.copyWith(autoUpdateEnabled: v)),
                 ),
               ],
             ),

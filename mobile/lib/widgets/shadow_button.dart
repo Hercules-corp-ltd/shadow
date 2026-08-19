@@ -55,8 +55,7 @@ class ShadowButton extends StatelessWidget {
       // at the bottom of Settings the old one drew the eye before anything
       // a user actually came here to do. Dark body, red edge, red label: it
       // still cannot be confused with the button above it.
-      ShadowButtonVariant.danger =>
-        ShadowColors.error.withValues(alpha: 0.10),
+      ShadowButtonVariant.danger => ShadowColors.error.withValues(alpha: 0.10),
     };
 
     final fg = switch (variant) {
@@ -69,8 +68,7 @@ class ShadowButton extends StatelessWidget {
     final border = switch (variant) {
       ShadowButtonVariant.secondary =>
         const BorderSide(color: ShadowColors.edge),
-      ShadowButtonVariant.ghost =>
-        const BorderSide(color: ShadowColors.edge),
+      ShadowButtonVariant.ghost => const BorderSide(color: ShadowColors.edge),
       ShadowButtonVariant.danger =>
         BorderSide(color: ShadowColors.error.withValues(alpha: 0.55)),
       _ => BorderSide.none,

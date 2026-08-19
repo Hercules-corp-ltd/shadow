@@ -68,8 +68,10 @@ class ShadowTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: ShadowColors.recess,
-        hintStyle: ShadowTypography.body.copyWith(color: ShadowColors.textTertiary),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        hintStyle:
+            ShadowTypography.body.copyWith(color: ShadowColors.textTertiary),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ShadowRadius.md),
           borderSide: const BorderSide(color: ShadowColors.edge),
@@ -179,7 +181,9 @@ class ShadowTheme {
           return ShadowColors.textTertiary;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) return ShadowColors.primary;
+          if (states.contains(WidgetState.selected)) {
+            return ShadowColors.primary;
+          }
           return ShadowColors.recess;
         }),
         trackOutlineColor: WidgetStateProperty.resolveWith((states) {
@@ -209,7 +213,8 @@ class ShadowTheme {
       tabBarTheme: TabBarThemeData(
         labelColor: ShadowColors.primary,
         unselectedLabelColor: ShadowColors.textSecondary,
-        labelStyle: ShadowTypography.label.copyWith(fontWeight: FontWeight.w600),
+        labelStyle:
+            ShadowTypography.label.copyWith(fontWeight: FontWeight.w600),
         unselectedLabelStyle: ShadowTypography.label,
         indicator: const UnderlineTabIndicator(
           borderSide: BorderSide(color: ShadowColors.primary, width: 2),

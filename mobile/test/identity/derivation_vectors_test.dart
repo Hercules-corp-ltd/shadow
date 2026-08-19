@@ -37,7 +37,8 @@ class Vector {
   final String password;
   final String handle;
 
-  String get label => 'passphrase "$passphrase", $domain, account $accountIndex';
+  String get label =>
+      'passphrase "$passphrase", $domain, account $accountIndex';
 }
 
 const List<Vector> vectors = <Vector>[

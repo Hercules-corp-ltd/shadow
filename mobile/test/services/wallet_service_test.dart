@@ -5,8 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// A fixed phrase so expectations are reproducible. Test vector, never a
 /// wallet — do not fund it.
-const String testPhrase =
-    'abandon abandon abandon abandon abandon abandon '
+const String testPhrase = 'abandon abandon abandon abandon abandon abandon '
     'abandon abandon abandon abandon abandon about';
 
 const String password = 'correct horse battery';
@@ -36,8 +35,7 @@ void main() {
       expect(a.address, b.address);
     });
 
-    test('a created wallet can actually be restored from its words',
-        () async {
+    test('a created wallet can actually be restored from its words', () async {
       // The property the delete screen has always claimed and could not
       // deliver: derive, store, wipe the device, restore from words alone,
       // and arrive at the same address.

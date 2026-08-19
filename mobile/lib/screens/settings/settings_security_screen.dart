@@ -38,8 +38,7 @@ class SettingsSecurityScreen extends StatelessWidget {
                 const UnbuiltTile(
                   icon: Icons.fingerprint_rounded,
                   title: 'Unlock with biometrics',
-                  reason:
-                      'Shadow has no biometric integration yet — unlocking '
+                  reason: 'Shadow has no biometric integration yet — unlocking '
                       'always uses your password.',
                 ),
               ],

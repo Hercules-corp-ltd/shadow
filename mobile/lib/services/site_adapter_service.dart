@@ -38,7 +38,8 @@ class SiteAdapterService {
   ///
   /// A site with no record is a site in its default state, not an error, so
   /// callers get a fully-populated record and never branch on absence.
-  Future<SiteAdapterRecord> resolve(String domain, {int accountIndex = 0}) async {
+  Future<SiteAdapterRecord> resolve(String domain,
+      {int accountIndex = 0}) async {
     final all = await _store.readAll();
     for (final record in all) {
       if (record.domain == domain && record.accountIndex == accountIndex) {

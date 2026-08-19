@@ -3,8 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// A fixed phrase so every expectation below is reproducible. This is a test
 /// vector, never a wallet — do not fund it.
-const String testPhrase =
-    'abandon abandon abandon abandon abandon abandon '
+const String testPhrase = 'abandon abandon abandon abandon abandon abandon '
     'abandon abandon abandon abandon abandon about';
 
 const String aliasDomain = 'mail.shadow.test';
@@ -32,8 +31,8 @@ void main() {
       // shops shared one derived identity — and, once addresses are real,
       // one mailbox. Whoever ran shop A could reset the user's password at
       // shop B and read the code.
-      expect(RegistrableDomain.of('alice.myshopify.com'),
-          'alice.myshopify.com');
+      expect(
+          RegistrableDomain.of('alice.myshopify.com'), 'alice.myshopify.com');
       expect(RegistrableDomain.of('bob.myshopify.com'), 'bob.myshopify.com');
       expect(
         RegistrableDomain.of('alice.myshopify.com'),
@@ -56,8 +55,8 @@ void main() {
       // submitted. Without the supplement in tool/build_psl.mjs they would
       // still collapse, so this test is what stops the supplement being
       // dropped as redundant.
-      expect(RegistrableDomain.of('alice.wordpress.com'),
-          'alice.wordpress.com');
+      expect(
+          RegistrableDomain.of('alice.wordpress.com'), 'alice.wordpress.com');
       expect(RegistrableDomain.of('someones.substack.com'),
           'someones.substack.com');
       expect(RegistrableDomain.of('acme.atlassian.net'), 'acme.atlassian.net');
@@ -99,10 +98,12 @@ void main() {
   });
 
   group('ShadowIdentity derivation', () {
-    final engine = ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'unit-test');
+    final engine =
+        ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'unit-test');
 
     test('is deterministic — the same phrase rebuilds the same account', () {
-      final rebuilt = ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'unit-test');
+      final rebuilt =
+          ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'unit-test');
       final a = engine.forSite('twitter.com', aliasDomain: aliasDomain);
       final b = rebuilt.forSite('twitter.com', aliasDomain: aliasDomain);
 
@@ -120,8 +121,10 @@ void main() {
       expect(twitter.handle, isNot(reddit.handle));
     });
 
-    test('separates identities by passphrase, so a leaked branch is contained', () {
-      final other = ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'different');
+    test('separates identities by passphrase, so a leaked branch is contained',
+        () {
+      final other =
+          ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'different');
       final a = engine.forSite('twitter.com', aliasDomain: aliasDomain);
       final b = other.forSite('twitter.com', aliasDomain: aliasDomain);
 
@@ -131,8 +134,8 @@ void main() {
 
     test('supports multiple accounts on one site', () {
       final first = engine.forSite('twitter.com', aliasDomain: aliasDomain);
-      final second =
-          engine.forSite('twitter.com', aliasDomain: aliasDomain, accountIndex: 1);
+      final second = engine.forSite('twitter.com',
+          aliasDomain: aliasDomain, accountIndex: 1);
 
       expect(first.email, isNot(second.email));
       expect(first.password, isNot(second.password));
@@ -198,7 +201,8 @@ void main() {
         throwsFormatException,
       );
       expect(ShadowIdentity.isValidMnemonic(testPhrase), isTrue);
-      expect(ShadowIdentity.isValidMnemonic('not a real phrase at all'), isFalse);
+      expect(
+          ShadowIdentity.isValidMnemonic('not a real phrase at all'), isFalse);
     });
 
     test('generated phrases are valid and distinct', () {
@@ -223,11 +227,13 @@ void main() {
 
     test('rejects an out-of-range account index or version', () {
       expect(
-        () => engine.forSite('a.com', aliasDomain: aliasDomain, accountIndex: -1),
+        () =>
+            engine.forSite('a.com', aliasDomain: aliasDomain, accountIndex: -1),
         throwsArgumentError,
       );
       expect(
-        () => engine.forSite('a.com', aliasDomain: aliasDomain, passwordEpoch: 0),
+        () =>
+            engine.forSite('a.com', aliasDomain: aliasDomain, passwordEpoch: 0),
         throwsArgumentError,
       );
     });
@@ -301,10 +307,10 @@ void main() {
         'winner thank yellow',
       )..wipe();
 
-      expect(() => a.forSite('x.com', aliasDomain: aliasDomain),
-          throwsStateError);
-      expect(() => b.forSite('x.com', aliasDomain: aliasDomain),
-          throwsStateError);
+      expect(
+          () => a.forSite('x.com', aliasDomain: aliasDomain), throwsStateError);
+      expect(
+          () => b.forSite('x.com', aliasDomain: aliasDomain), throwsStateError);
     });
   });
 
@@ -317,7 +323,11 @@ void main() {
       expect(password, matches(RegExp(r'[a-z]')));
       expect(password, matches(RegExp(r'[A-Z]')));
       expect(password, matches(RegExp(r'[2-9]')));
-      expect(password.split('').any((c) => PasswordPolicy.defaultSymbols.contains(c)), isTrue);
+      expect(
+          password
+              .split('')
+              .any((c) => PasswordPolicy.defaultSymbols.contains(c)),
+          isTrue);
       expect(password, hasLength(PasswordPolicy.standard.targetLength));
     });
 
@@ -330,8 +340,8 @@ void main() {
     });
 
     test('honours a short legacy maximum', () {
-      final password =
-          PasswordShaper.shape(entropy: entropy, policy: PasswordPolicy.legacyShort);
+      final password = PasswordShaper.shape(
+          entropy: entropy, policy: PasswordPolicy.legacyShort);
       expect(password.length, lessThanOrEqualTo(12));
       expect(password.length, greaterThanOrEqualTo(8));
     });
@@ -353,7 +363,8 @@ void main() {
     test('refuses to satisfy a rule the site makes impossible', () {
       // Requiring a symbol while banning every symbol is an adapter bug, and
       // failing loudly beats silently shipping a password the site rejects.
-      const contradictory = PasswordPolicy(bannedCharacters: PasswordPolicy.defaultSymbols);
+      const contradictory =
+          PasswordPolicy(bannedCharacters: PasswordPolicy.defaultSymbols);
       expect(
         () => PasswordShaper.shape(entropy: entropy, policy: contradictory),
         throwsStateError,
@@ -365,7 +376,16 @@ void main() {
         final password = PasswordShaper.shape(
           entropy: List<int>.generate(32, (j) => (i * 37 + j * 11) % 256),
         );
-        for (final hazard in <String>['\\', '"', "'", '`', '<', '>', ';', ' ']) {
+        for (final hazard in <String>[
+          '\\',
+          '"',
+          "'",
+          '`',
+          '<',
+          '>',
+          ';',
+          ' '
+        ]) {
           expect(password, isNot(contains(hazard)),
               reason: 'password must not contain $hazard');
         }
@@ -442,8 +462,10 @@ void main() {
     });
 
     test('different domain separators diverge from the same seed', () {
-      final a = DeterministicBytes(const <int>[1, 2, 3], domainSeparator: 'password');
-      final b = DeterministicBytes(const <int>[1, 2, 3], domainSeparator: 'handle');
+      final a =
+          DeterministicBytes(const <int>[1, 2, 3], domainSeparator: 'password');
+      final b =
+          DeterministicBytes(const <int>[1, 2, 3], domainSeparator: 'handle');
       final fromA = List<int>.generate(16, (_) => a.nextByte());
       final fromB = List<int>.generate(16, (_) => b.nextByte());
       expect(fromA, isNot(fromB));
@@ -518,7 +540,8 @@ void main() {
     });
 
     test('base32 output is lowercase and unpadded', () {
-      expect(base32Encode(const <int>[0, 1, 2, 3, 4]), matches(RegExp(r'^[a-z2-7]+$')));
+      expect(base32Encode(const <int>[0, 1, 2, 3, 4]),
+          matches(RegExp(r'^[a-z2-7]+$')));
       expect(base32Encode(const <int>[255, 255]), isNot(contains('=')));
     });
   });

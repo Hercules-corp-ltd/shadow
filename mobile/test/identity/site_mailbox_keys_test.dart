@@ -5,14 +5,14 @@ import 'package:ed25519_edwards/ed25519_edwards.dart' as ed;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shadow_mobile/identity/identity.dart';
 
-const String testPhrase =
-    'abandon abandon abandon abandon abandon abandon '
+const String testPhrase = 'abandon abandon abandon abandon abandon abandon '
     'abandon abandon abandon abandon abandon about';
 
 const String aliasDomain = 'mail.shadow.test';
 
 void main() {
-  final engine = ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'unit-test');
+  final engine =
+      ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'unit-test');
 
   group('mailbox derivation', () {
     test('is deterministic', () {
@@ -40,7 +40,8 @@ void main() {
     });
 
     test('a different passphrase is a different mailbox', () {
-      final other = ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'other');
+      final other =
+          ShadowIdentity.fromMnemonic(testPhrase, passphrase: 'other');
       expect(
         engine.mailboxKeysFor('twitter.com').localPart,
         isNot(other.mailboxKeysFor('twitter.com').localPart),
@@ -52,8 +53,8 @@ void main() {
           throwsArgumentError);
       expect(() => engine.mailboxKeysFor('a.com', aliasEpoch: 0),
           throwsArgumentError);
-      expect(() => engine.handleMailboxKeys(handleEpoch: 0),
-          throwsArgumentError);
+      expect(
+          () => engine.handleMailboxKeys(handleEpoch: 0), throwsArgumentError);
     });
 
     test('is refused after wipe', () {
@@ -78,12 +79,10 @@ void main() {
       // about who is registering, so it is worth checking independently.
       final keys = engine.mailboxKeysFor('twitter.com');
       final expected = base32Encode(
-        sha256
-            .convert(<int>[
-              ...utf8.encode('shadow.mail.localpart.v1'),
-              ...keys.ed25519PublicKey,
-            ])
-            .bytes,
+        sha256.convert(<int>[
+          ...utf8.encode('shadow.mail.localpart.v1'),
+          ...keys.ed25519PublicKey,
+        ]).bytes,
       ).substring(0, 20);
 
       expect(keys.localPart, expected);

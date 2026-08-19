@@ -95,8 +95,7 @@ class MailboxApi {
       },
       (json) => MailboxReceipt(
         localPart: json['local_part'] as String? ?? localPart,
-        x25519PublicKey:
-            base64Decode(json['x25519_pub'] as String? ?? ''),
+        x25519PublicKey: base64Decode(json['x25519_pub'] as String? ?? ''),
       ),
     );
   }

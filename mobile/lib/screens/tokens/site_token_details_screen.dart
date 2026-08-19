@@ -54,8 +54,8 @@ class SiteTokenDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     '≈ \$${t.usdValue.toStringAsFixed(2)}',
-                    style: ShadowTypography.bodySm
-                        .copyWith(color: Colors.white70),
+                    style:
+                        ShadowTypography.bodySm.copyWith(color: Colors.white70),
                   ),
                 ],
               ],

@@ -48,7 +48,8 @@ class StatusPill extends StatelessWidget {
                   color: color,
                   shape: BoxShape.circle,
                   boxShadow: [
-                    BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 8),
+                    BoxShadow(
+                        color: color.withValues(alpha: 0.6), blurRadius: 8),
                   ],
                 ),
               ),

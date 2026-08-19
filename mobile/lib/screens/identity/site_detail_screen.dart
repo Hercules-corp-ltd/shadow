@@ -389,7 +389,6 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
         children: <Widget>[
           Text('When something goes wrong', style: ShadowTypography.h4),
           const SizedBox(height: 12),
-
           Text('This site made me reset my password',
               style: ShadowTypography.body),
           const SizedBox(height: 2),
@@ -405,9 +404,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
             variant: ShadowButtonVariant.secondary,
             onPressed: _busy ? null : _confirmRotatePassword,
           ),
-
           const SizedBox(height: 22),
-
           Text('This address is getting spam', style: ShadowTypography.body),
           const SizedBox(height: 2),
           Text(
@@ -484,7 +481,9 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
             onPressed: _busy
                 ? null
                 : () => _run(() async {
-                      await context.read<SiteAdapterProvider>().abandonAliasBurn(
+                      await context
+                          .read<SiteAdapterProvider>()
+                          .abandonAliasBurn(
                             widget.domain,
                             accountIndex: widget.accountIndex,
                           );

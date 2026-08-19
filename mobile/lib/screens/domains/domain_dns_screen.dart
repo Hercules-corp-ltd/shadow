@@ -115,8 +115,8 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
                             color: ShadowColors.recessDeep,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: ShadowColors.primary
-                                  .withValues(alpha: 0.28),
+                              color:
+                                  ShadowColors.primary.withValues(alpha: 0.28),
                             ),
                           ),
                           child: Text(r.type,

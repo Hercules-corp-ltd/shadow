@@ -148,10 +148,12 @@ void main() {
       // burn, when the record still names the old local part.
       final onRecord = keysFor(6);
       final different = keysFor(7);
-      await seed(domain: 'moved.example', keys: onRecord, mode: SiteMode.masked);
+      await seed(
+          domain: 'moved.example', keys: onRecord, mode: SiteMode.masked);
 
       final api = FakePollApi(cursor: 11);
-      await providerWith(api).checkNow(keys: different, domain: 'moved.example');
+      await providerWith(api)
+          .checkNow(keys: different, domain: 'moved.example');
 
       final after = await const SiteAdapterService().resolve('moved.example');
       expect(after.account.mailbox.delivered, 0);

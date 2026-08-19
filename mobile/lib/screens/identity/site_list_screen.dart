@@ -40,8 +40,7 @@ class SiteListScreen extends StatelessWidget {
             return const EmptyState(
               icon: Icons.fingerprint_rounded,
               title: 'No sites yet',
-              message:
-                  'Sites appear here once you fill an identity into one. '
+              message: 'Sites appear here once you fill an identity into one. '
                   'Somewhere you have only visited is not recorded at all.',
             );
           }

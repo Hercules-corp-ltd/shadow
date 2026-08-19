@@ -4,8 +4,7 @@ import 'package:shadow_mobile/widgets/ambient_light.dart';
 
 import 'package:shadow_mobile/screens/identity/identity_phrase_screen.dart';
 
-const String phrase =
-    'abandon abandon abandon abandon abandon abandon '
+const String phrase = 'abandon abandon abandon abandon abandon abandon '
     'abandon abandon abandon abandon abandon about';
 
 Widget _wrap(Widget child) => MaterialApp(home: child);

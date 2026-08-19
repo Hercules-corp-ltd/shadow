@@ -58,7 +58,8 @@ class WalletChooseScreen extends StatelessWidget {
                 _WalletOption(
                   icon: Icons.add_circle_outline_rounded,
                   title: 'Create a new wallet',
-                  subtitle: 'Twelve words, shown once, that restore it anywhere',
+                  subtitle:
+                      'Twelve words, shown once, that restore it anywhere',
                   color: ShadowColors.primary,
                   onTap: () => _createNewWallet(context),
                 ),
@@ -207,8 +208,9 @@ Future<String?> _askPassword(
                       obscureText: true,
                       decoration:
                           const InputDecoration(labelText: 'Confirm password'),
-                      validator: (v) =>
-                          v != controller.text ? 'Passwords do not match' : null,
+                      validator: (v) => v != controller.text
+                          ? 'Passwords do not match'
+                          : null,
                     ),
                   ],
                   const SizedBox(height: 20),

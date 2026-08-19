@@ -204,10 +204,10 @@ class AdapterBackup {
 
       byId[incoming.id] = existing.copyWith(
         account: existing.account.copyWith(
-          passwordEpoch: incoming.account.passwordEpoch >
-                  existing.account.passwordEpoch
-              ? incoming.account.passwordEpoch
-              : existing.account.passwordEpoch,
+          passwordEpoch:
+              incoming.account.passwordEpoch > existing.account.passwordEpoch
+                  ? incoming.account.passwordEpoch
+                  : existing.account.passwordEpoch,
           aliasEpoch: incoming.account.aliasEpoch > existing.account.aliasEpoch
               ? incoming.account.aliasEpoch
               : existing.account.aliasEpoch,

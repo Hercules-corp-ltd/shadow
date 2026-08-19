@@ -356,8 +356,9 @@ class _ThresholdState extends State<_Threshold> {
                 // the text never repaints 156 vector paths.
                 child: RepaintBoundary(
                   child: AnimatedOpacity(
-                    duration:
-                        still ? Duration.zero : const Duration(milliseconds: 400),
+                    duration: still
+                        ? Duration.zero
+                        : const Duration(milliseconds: 400),
                     curve: Curves.easeInOut,
                     // The only state that dims him: the statue in the dark.
                     opacity: locked ? 0.55 : 1.0,
@@ -923,7 +924,6 @@ class _ColonnadeState extends State<_Colonnade> {
   }
 
   Widget _niche(_Niche niche, double ink) {
-
     return _PressableRecess(
       onTap: () => context.push(niche.route),
       radius: const BorderRadius.vertical(
@@ -1097,8 +1097,7 @@ class _PressableRecessState extends State<_PressableRecess> {
               bottom: 0,
               height: 1,
               child: ColoredBox(
-                color: Colors.white
-                    .withValues(alpha: _pressed ? 0.04 : 0.08),
+                color: Colors.white.withValues(alpha: _pressed ? 0.04 : 0.08),
               ),
             ),
           ],

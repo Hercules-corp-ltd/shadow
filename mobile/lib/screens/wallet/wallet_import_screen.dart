@@ -83,17 +83,35 @@ class _WalletImportScreenState extends State<WalletImportScreen> {
                 crossAxisSpacing: 8,
                 childAspectRatio: 2.2,
               ),
+              // Twelve fields that between them are a wallet.
+              //
+              // These were left on the framework defaults, which means
+              // autocorrect and predictive suggestions were ON: every word of
+              // a BIP-39 seed typed here went into the system keyboard's
+              // personal dictionary, and on both platforms that store syncs
+              // to the vendor's cloud by default. The phrase reconstructs the
+              // wallet, so the whole point of it never leaving the device was
+              // being lost to the software keyboard.
+              //
+              // enableSuggestions and autocorrect off, and the field is not
+              // obscured — a user restoring a wallet needs to see what they
+              // typed — but it is marked as not eligible for autofill save.
               itemBuilder: (_, i) => TextField(
                 controller: _controllers[i],
                 textInputAction:
                     i == 11 ? TextInputAction.done : TextInputAction.next,
+                autocorrect: false,
+                enableSuggestions: false,
+                enableIMEPersonalizedLearning: false,
+                autofillHints: const <String>[],
+                keyboardType: TextInputType.visiblePassword,
                 style: ShadowTypography.body,
                 decoration: InputDecoration(
                   hintText: '${i + 1}.',
                   hintStyle: ShadowTypography.body
                       .copyWith(color: ShadowColors.textTertiary),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 8),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   isDense: true,
                 ),
               ),

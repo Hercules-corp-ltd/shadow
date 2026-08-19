@@ -57,9 +57,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
         IconButton(
           icon: const Icon(Icons.delete_outline_rounded,
               color: ShadowColors.error),
-          onPressed: p.items.isEmpty
-              ? null
-              : () => context.push('/downloads/clear'),
+          onPressed:
+              p.items.isEmpty ? null : () => context.push('/downloads/clear'),
         ),
       ],
       body: p.isLoading && p.items.isEmpty
@@ -75,17 +74,20 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                   padding: const EdgeInsets.only(bottom: 24),
                   itemBuilder: (_, i) {
                     final d = p.items[i];
+                    // No onTap. An empty closure still makes GlassCard
+                    // announce itself as a button to screen readers and run
+                    // its press animation, so the row promised an interaction
+                    // that does not exist. Opening a downloaded file is not
+                    // built; saying nothing is better than miming it.
                     return GlassCard(
                       padding: const EdgeInsets.all(14),
-                      onTap: () {},
                       child: Row(
                         children: [
                           Container(
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color:
-                                  ShadowColors.primary.withValues(alpha: 0.18),
+                              color: ShadowColors.recessDeep,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(_iconFor(d.type),

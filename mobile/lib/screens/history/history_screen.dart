@@ -41,9 +41,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
         IconButton(
           icon: const Icon(Icons.delete_outline_rounded,
               color: ShadowColors.error),
-          onPressed: p.entries.isEmpty
-              ? null
-              : () => context.push('/history/clear'),
+          onPressed:
+              p.entries.isEmpty ? null : () => context.push('/history/clear'),
         ),
       ],
       body: Column(
@@ -58,7 +57,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                for (final r in const ['all', 'today', 'yesterday', '7d', '30d'])
+                for (final r in const [
+                  'all',
+                  'today',
+                  'yesterday',
+                  '7d',
+                  '30d'
+                ])
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(
@@ -114,7 +119,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           leadingIcon: Icons.public_rounded,
           leadingColor: ShadowColors.tileCyan,
           timeLabel: DateFormat('HH:mm').format(e.visitedAt),
-          onTap: () => context.push('/resolve/resolving?id=${Uri.encodeComponent(e.domain)}'),
+          onTap: () => context
+              .push('/resolve/resolving?id=${Uri.encodeComponent(e.domain)}'),
         );
       },
       separatorBuilder: (_, __) => const SizedBox(height: 8),

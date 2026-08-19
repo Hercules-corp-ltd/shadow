@@ -44,9 +44,8 @@ class ExtensionsProvider with ChangeNotifier {
   /// refuses to move.
   Future<void> toggle(String id, bool value) async {
     final previous = _items;
-    _items = _items
-        .map((e) => e.id == id ? e.copyWith(enabled: value) : e)
-        .toList();
+    _items =
+        _items.map((e) => e.id == id ? e.copyWith(enabled: value) : e).toList();
     _error = null;
     notifyListeners();
 

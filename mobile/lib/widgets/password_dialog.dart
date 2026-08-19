@@ -30,7 +30,7 @@ class _PasswordDialogState extends State<PasswordDialog> {
 
   void _submit() {
     final password = _passwordController.text;
-    
+
     if (password.isEmpty) {
       setState(() {
         _error = 'Password cannot be empty';
@@ -79,7 +79,9 @@ class _PasswordDialogState extends State<PasswordDialog> {
               decoration: InputDecoration(
                 labelText: 'Password',
                 suffixIcon: IconButton(
-                  icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                  icon: Icon(_obscurePassword
+                      ? Icons.visibility
+                      : Icons.visibility_off),
                   onPressed: () {
                     setState(() {
                       _obscurePassword = !_obscurePassword;
@@ -96,7 +98,9 @@ class _PasswordDialogState extends State<PasswordDialog> {
                 decoration: InputDecoration(
                   labelText: 'Confirm Password',
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirm ? Icons.visibility : Icons.visibility_off),
+                    icon: Icon(_obscureConfirm
+                        ? Icons.visibility
+                        : Icons.visibility_off),
                     onPressed: () {
                       setState(() {
                         _obscureConfirm = !_obscureConfirm;
@@ -122,4 +126,3 @@ class _PasswordDialogState extends State<PasswordDialog> {
     );
   }
 }
-

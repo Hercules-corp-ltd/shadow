@@ -62,7 +62,8 @@ class _IdentityPhraseScreenState extends State<IdentityPhraseScreen> {
         children: [
           GlassCard(
             padding: const EdgeInsets.all(20),
-            border: Border.all(color: ShadowColors.warning.withValues(alpha: 0.4)),
+            border:
+                Border.all(color: ShadowColors.warning.withValues(alpha: 0.4)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

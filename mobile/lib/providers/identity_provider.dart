@@ -69,9 +69,11 @@ class IdentityProvider with ChangeNotifier {
   }
 
   /// Adopts a phrase the user already has.
-  Future<bool> importPhrase(String phrase, {required String aliasDomain}) async {
+  Future<bool> importPhrase(String phrase,
+      {required String aliasDomain}) async {
     if (!ShadowIdentity.isValidMnemonic(phrase)) {
-      _error = 'That recovery phrase is not valid. Check for a mistyped or missing word.';
+      _error =
+          'That recovery phrase is not valid. Check for a mistyped or missing word.';
       notifyListeners();
       return false;
     }
@@ -99,7 +101,8 @@ class IdentityProvider with ChangeNotifier {
       return false;
     }
     try {
-      final engine = ShadowIdentity.fromMnemonic(phrase, passphrase: passphrase);
+      final engine =
+          ShadowIdentity.fromMnemonic(phrase, passphrase: passphrase);
 
       // BIP-39 checksums the words, not the passphrase, so a typo here does
       // not fail — it succeeds into a different, empty universe of accounts.

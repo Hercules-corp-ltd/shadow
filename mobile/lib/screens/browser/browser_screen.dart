@@ -308,8 +308,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
       final proceed = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: Text('This link leaves $expected',
-              style: ShadowTypography.h3),
+          title: Text('This link leaves $expected', style: ShadowTypography.h3),
           content: Text(
             'The mail was for $expected, but this link goes to ${link.host}.\n\n'
             'That is what a phishing link looks like. Shadow can tell because '
@@ -394,22 +393,24 @@ class _BrowserScreenState extends State<BrowserScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _immersed ? null : BrowserBottomBar(
-        tabs: [
-          for (final t in browser.tabs)
-            BrowserTab(title: t.title, url: t.displayUrl),
-        ],
-        activeIndex: browser.activeIndex,
-        currentUrl: tab?.displayUrl ?? 'New tab',
-        isSecure: tab?.isSecure ?? false,
-        onTapUrl: () => _promptForUrl(context),
-        onSelectTab: browser.selectTab,
-        onCloseTab: browser.closeTab,
-        onAddTab: browser.addBlankTab,
-        onBack: (tab?.canGoBack ?? false) ? browser.back : null,
-        onForward: (tab?.canGoForward ?? false) ? browser.forward : null,
-        onRefresh: (tab?.isBlank ?? true) ? null : browser.reload,
-      ),
+      bottomNavigationBar: _immersed
+          ? null
+          : BrowserBottomBar(
+              tabs: [
+                for (final t in browser.tabs)
+                  BrowserTab(title: t.title, url: t.displayUrl),
+              ],
+              activeIndex: browser.activeIndex,
+              currentUrl: tab?.displayUrl ?? 'New tab',
+              isSecure: tab?.isSecure ?? false,
+              onTapUrl: () => _promptForUrl(context),
+              onSelectTab: browser.selectTab,
+              onCloseTab: browser.closeTab,
+              onAddTab: browser.addBlankTab,
+              onBack: (tab?.canGoBack ?? false) ? browser.back : null,
+              onForward: (tab?.canGoForward ?? false) ? browser.forward : null,
+              onRefresh: (tab?.isBlank ?? true) ? null : browser.reload,
+            ),
     );
   }
 }
@@ -601,7 +602,8 @@ class _BlockedBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
-          const Icon(Icons.block_rounded, size: 16, color: ShadowColors.warning),
+          const Icon(Icons.block_rounded,
+              size: 16, color: ShadowColors.warning),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

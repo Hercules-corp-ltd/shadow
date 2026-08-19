@@ -27,7 +27,6 @@ class Nft {
         description: json['description'],
         collectionAddress: json['collection_address'],
         collectionName: json['collection_name'],
-        attributes:
-            Map<String, dynamic>.from(json['attributes'] ?? const {}),
+        attributes: Map<String, dynamic>.from(json['attributes'] ?? const {}),
       );
 }

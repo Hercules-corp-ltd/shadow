@@ -82,8 +82,7 @@ class _SettingsNetworkScreenState extends State<SettingsNetworkScreen> {
                 const UnbuiltTile(
                   icon: Icons.shield_outlined,
                   title: 'Route traffic through Tor',
-                  reason:
-                      'No Tor client ships with Shadow yet, so this switch '
+                  reason: 'No Tor client ships with Shadow yet, so this switch '
                       'would change nothing. Your IP is visible to sites you '
                       'visit.',
                 ),
@@ -93,14 +92,12 @@ class _SettingsNetworkScreenState extends State<SettingsNetworkScreen> {
                   title: Text('IPFS gateway', style: ShadowTypography.body),
                   subtitle: Text('Fetch content from IPFS pins',
                       style: ShadowTypography.bodySm),
-                  onChanged: (v) =>
-                      provider.update(s.copyWith(ipfsEnabled: v)),
+                  onChanged: (v) => provider.update(s.copyWith(ipfsEnabled: v)),
                 ),
                 const Divider(height: 1, color: ShadowColors.border),
                 SwitchListTile(
                   value: s.arweaveEnabled,
-                  title: Text('Arweave permaweb',
-                      style: ShadowTypography.body),
+                  title: Text('Arweave permaweb', style: ShadowTypography.body),
                   subtitle: Text('Fetch content from Arweave',
                       style: ShadowTypography.bodySm),
                   onChanged: (v) =>

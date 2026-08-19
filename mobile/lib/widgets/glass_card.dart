@@ -95,23 +95,23 @@ class _GlassCardState extends State<GlassCard> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: <Color>[
-                  accent.withValues(alpha: widget.onTap != null && _pressed
-                      ? 0.24
-                      : 0.18),
+                  accent.withValues(
+                      alpha: widget.onTap != null && _pressed ? 0.24 : 0.18),
                   accent.withValues(alpha: 0.045),
                 ],
               )
             : widget.gradient ??
-            (widget.color == null
-                ? LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: <Color>[
-                      Colors.white.withValues(alpha: _pressed ? 0.10 : 0.075),
-                      Colors.white.withValues(alpha: 0.025),
-                    ],
-                  )
-                : null),
+                (widget.color == null
+                    ? LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: <Color>[
+                          Colors.white
+                              .withValues(alpha: _pressed ? 0.10 : 0.075),
+                          Colors.white.withValues(alpha: 0.025),
+                        ],
+                      )
+                    : null),
         color: widget.color,
         borderRadius: borderRadius,
         border: widget.border ??

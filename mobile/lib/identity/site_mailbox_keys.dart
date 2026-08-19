@@ -89,7 +89,8 @@ class SiteMailboxKeys {
 
   /// The full address at [aliasDomain].
   String addressAt(String aliasDomain) {
-    final domain = aliasDomain.trim().toLowerCase().replaceAll(RegExp(r'^@'), '');
+    final domain =
+        aliasDomain.trim().toLowerCase().replaceAll(RegExp(r'^@'), '');
     return '$localPart@$domain';
   }
 

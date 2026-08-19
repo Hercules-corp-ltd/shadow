@@ -33,7 +33,8 @@ class ActivityService {
   }
 
   Future<void> record(ActivityEntry entry) async {
-    final all = await _store.readAll()..add(entry);
+    final all = await _store.readAll()
+      ..add(entry);
     all.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     await _store.writeAll(all.take(_maxEntries).toList());
   }

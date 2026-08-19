@@ -24,7 +24,13 @@ void main() {
       await service.markMailbox('e.com',
           state: MailboxState.registered, localPart: 'x');
 
-      for (final domain in <String>['a.com', 'b.com', 'c.com', 'd.com', 'e.com']) {
+      for (final domain in <String>[
+        'a.com',
+        'b.com',
+        'c.com',
+        'd.com',
+        'e.com'
+      ]) {
         expect(
           (await service.resolve(domain)).account.isUnrecorded,
           isFalse,

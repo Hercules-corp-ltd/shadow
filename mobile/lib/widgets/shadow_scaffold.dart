@@ -80,8 +80,7 @@ class ShadowScaffold extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (title != null)
-                  Text(title!, style: ShadowTypography.h2),
+                if (title != null) Text(title!, style: ShadowTypography.h2),
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
                   Text(subtitle!, style: ShadowTypography.bodySm),

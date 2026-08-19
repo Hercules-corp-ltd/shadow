@@ -76,8 +76,8 @@ class _IconTileState extends State<IconTile> {
                   color: ShadowColors.recessDeep,
                   borderRadius: BorderRadius.circular(ShadowRadius.md),
                   border: Border.all(
-                    color: widget.color
-                        .withValues(alpha: _pressed ? 0.62 : 0.34),
+                    color:
+                        widget.color.withValues(alpha: _pressed ? 0.62 : 0.34),
                   ),
                   boxShadow: <BoxShadow>[
                     // Held in, not lifted: pressing brightens the light inside

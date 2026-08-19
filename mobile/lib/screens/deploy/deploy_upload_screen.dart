@@ -117,7 +117,9 @@ class _DeployUploadScreenState extends State<DeployUploadScreen> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 16),
-            Text(_error!, style: ShadowTypography.bodySm.copyWith(color: ShadowColors.error)),
+            Text(_error!,
+                style: ShadowTypography.bodySm
+                    .copyWith(color: ShadowColors.error)),
           ],
           const SizedBox(height: 20),
           ShadowButton(

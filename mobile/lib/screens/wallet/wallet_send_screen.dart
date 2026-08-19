@@ -42,7 +42,13 @@ class _WalletSendScreenState extends State<WalletSendScreen> {
   @override
   Widget build(BuildContext context) {
     final tokens = context.watch<TokensProvider>();
-    final allMints = ['SOL', ...tokens.tokens.map((t) => t.symbol)];
+    // A Set, because DropdownButtonFormField asserts that exactly one item
+    // matches the current value. Two balances abbreviating to the same symbol
+    // — or any token whose symbol is literally 'SOL' — used to produce a
+    // duplicate here and take the screen down with 'There should be exactly
+    // one item with [DropdownButton]'s value'.
+    final allMints =
+        <String>{'SOL', ...tokens.tokens.map((t) => t.symbol)}.toList();
 
     return ShadowScaffold(
       title: 'Send',
@@ -124,7 +130,8 @@ class _WalletSendScreenState extends State<WalletSendScreen> {
           ],
           const SizedBox(height: 24),
           const ShadowButton(
-            label: _sendingImplemented ? 'Review & Send' : 'Sending unavailable',
+            label:
+                _sendingImplemented ? 'Review & Send' : 'Sending unavailable',
             onPressed: null,
             size: ShadowButtonSize.lg,
           ),

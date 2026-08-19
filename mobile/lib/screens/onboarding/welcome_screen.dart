@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
+import '../../providers/wallet_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_spacing.dart';
 import '../../theme/shadow_typography.dart';
@@ -12,8 +13,9 @@ class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   Future<void> _skipToWallet(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('shadow_onboarding_complete_v1', true);
+    // Same as onboarding: the flag is only worth writing if the router can
+    // see it, and the router cannot await.
+    await context.read<WalletProvider>().markOnboardingComplete();
     if (!context.mounted) return;
     context.go('/wallet/choose');
   }
@@ -76,10 +78,14 @@ class WelcomeScreen extends StatelessWidget {
                           style: ShadowTypography.bodyLg,
                         ),
                         const SizedBox(height: 12),
+                        // "Olympus" appeared nowhere else in the product —
+                        // not the mark, not the masthead, not a route, not the
+                        // package name — so the first screen introduced the
+                        // app under a name it does not have. "Divine speed"
+                        // was a performance claim nothing here measures.
                         Text(
-                          'Experience divine speed, wisdom, and power in your\n'
-                          'browsing journey. Let us guide you through the\n'
-                          'features that make Olympus extraordinary.',
+                          'One phrase. A different you on every site.\n'
+                          'Nothing derived is kept on this device.',
                           textAlign: TextAlign.center,
                           style: ShadowTypography.bodySm,
                         ),

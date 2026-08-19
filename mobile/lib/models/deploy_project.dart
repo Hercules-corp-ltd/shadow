@@ -29,10 +29,19 @@ class DeployProject {
     required this.createdAt,
   });
 
+  /// Note the [clearDomain] flag.
+  ///
+  /// `domain` is nullable *and* meaningful when null — "this deployment has
+  /// no name" is a real state the config screen offers on purpose. With the
+  /// usual `domain ?? this.domain` idiom there is no way to express it:
+  /// passing null means "leave it alone", so a user who typed a domain, went
+  /// forward, came back and cleared the field kept the old one and deployed
+  /// under a name they had deliberately removed.
   DeployProject copyWith({
     String? name,
     ProjectFramework? framework,
     String? domain,
+    bool clearDomain = false,
     List<DeployFile>? files,
     DeployStatus? status,
     double? uploadProgress,
@@ -44,7 +53,7 @@ class DeployProject {
         id: id,
         name: name ?? this.name,
         framework: framework ?? this.framework,
-        domain: domain ?? this.domain,
+        domain: clearDomain ? null : (domain ?? this.domain),
         files: files ?? this.files,
         status: status ?? this.status,
         uploadProgress: uploadProgress ?? this.uploadProgress,

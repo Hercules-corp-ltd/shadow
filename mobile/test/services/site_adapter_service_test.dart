@@ -151,8 +151,8 @@ void main() {
           state: MailboxState.registered, localPart: 'abc');
 
       final json = (await service.resolve('twitter.com')).toJson();
-      final restored =
-          SiteAdapterRecord.fromJson(jsonDecode(jsonEncode(json)) as Map<String, dynamic>);
+      final restored = SiteAdapterRecord.fromJson(
+          jsonDecode(jsonEncode(json)) as Map<String, dynamic>);
 
       expect(restored.account.mode, SiteMode.masked);
       expect(restored.account.passwordEpoch, 2);
@@ -204,8 +204,15 @@ void main() {
       // no error anywhere.
       SharedPreferences.setMockInitialValues(<String, Object>{
         storeKey: jsonEncode(<dynamic>[
-          <String, dynamic>{'domain': 'good.com', 'account': <String, dynamic>{'password_epoch': 5}},
-          <String, dynamic>{'domain': 'weird.com', 'account': 42, 'policy': true},
+          <String, dynamic>{
+            'domain': 'good.com',
+            'account': <String, dynamic>{'password_epoch': 5}
+          },
+          <String, dynamic>{
+            'domain': 'weird.com',
+            'account': 42,
+            'policy': true
+          },
         ]),
       });
 

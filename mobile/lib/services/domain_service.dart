@@ -73,8 +73,7 @@ class DomainService {
   }
 
   Future<List<DnsRecord>> dnsRecords(String domain) async {
-    final res =
-        await _api.get<List<dynamic>>('/domains/$domain/dns');
+    final res = await _api.get<List<dynamic>>('/domains/$domain/dns');
     return (res.data ?? [])
         .map((e) => DnsRecord.fromJson(Map<String, dynamic>.from(e)))
         .toList();

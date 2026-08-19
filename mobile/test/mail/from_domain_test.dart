@@ -49,8 +49,10 @@ void main() {
     test('more than one sender is refused rather than guessed', () {
       // A header carrying two addresses has no single honest answer, and
       // picking either one would be Shadow choosing which to show.
-      expect(parse('a@one.test <b@two.test>, c@three.test <d@four.test>')
-          .fromDomain, isNull);
+      expect(
+          parse('a@one.test <b@two.test>, c@three.test <d@four.test>')
+              .fromDomain,
+          isNull);
       expect(parse('a@one.test, b@two.test').fromDomain, isNull);
     });
 

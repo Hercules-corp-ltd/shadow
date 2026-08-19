@@ -27,9 +27,8 @@ class Bookmark {
         description: json['description'],
         folder: json['folder'],
         tags: List<String>.from(json['tags'] ?? const []),
-        createdAt:
-            DateTime.tryParse(json['created_at']?.toString() ?? '') ??
-                DateTime.now(),
+        createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ??
+            DateTime.now(),
       );
 
   /// Mirrors [Bookmark.fromJson] key for key, so a round-trip through

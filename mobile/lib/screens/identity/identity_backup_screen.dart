@@ -89,7 +89,6 @@ class _IdentityBackupScreenState extends State<IdentityBackupScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
           GlassCard(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -120,9 +119,8 @@ class _IdentityBackupScreenState extends State<IdentityBackupScreen> {
                 const SizedBox(height: 14),
                 ShadowButton(
                   label: 'Copy backup to clipboard',
-                  onPressed: (_busy || !unlocked || _siteCount == 0)
-                      ? null
-                      : _export,
+                  onPressed:
+                      (_busy || !unlocked || _siteCount == 0) ? null : _export,
                 ),
                 if (!unlocked) ...<Widget>[
                   const SizedBox(height: 8),
@@ -133,7 +131,6 @@ class _IdentityBackupScreenState extends State<IdentityBackupScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
           GlassCard(
             padding: const EdgeInsets.all(20),
             child: Column(

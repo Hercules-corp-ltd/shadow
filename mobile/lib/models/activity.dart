@@ -1,4 +1,11 @@
-enum ActivityKind { deploy, purchase, domainRegister, transfer, siteVisit, info }
+enum ActivityKind {
+  deploy,
+  purchase,
+  domainRegister,
+  transfer,
+  siteVisit,
+  info
+}
 
 class ActivityEntry {
   final String id;

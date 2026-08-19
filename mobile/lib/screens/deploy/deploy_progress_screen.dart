@@ -10,6 +10,7 @@ import '../../models/deploy_project.dart';
 import '../../providers/deploy_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
+import '../../widgets/empty_state.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/shadow_button.dart';
 import '../../widgets/shadow_scaffold.dart';
@@ -74,9 +75,36 @@ class _DeployProgressScreenState extends State<DeployProgressScreen> {
       // completed that was never attempted.
     ];
 
+    // The title was the constant 'Deploying...', so after a failure the
+    // header asserted work was ongoing above a body that said it had stopped.
+    // And with no project at all — a deep link here, or a restart after the
+    // provider reset — upload() returns immediately without touching status,
+    // so the screen sat on 'Deploying...' for ever with nothing running.
+    final title = switch (status) {
+      DeployStatus.failed => 'Deployment failed',
+      DeployStatus.deployed => 'Deployed',
+      _ when project == null => 'Nothing to deploy',
+      _ => 'Deploying…',
+    };
+
+    if (project == null) {
+      return ShadowScaffold(
+        title: title,
+        body: EmptyState(
+          icon: Icons.cloud_off_rounded,
+          tone: EmptyStateTone.error,
+          title: 'No deployment in progress',
+          message: 'This screen runs a deployment that was set up on the '
+              'screens before it, and there is none in this session.',
+          actionLabel: 'Start one',
+          onAction: () => context.go('/deploy'),
+        ),
+      );
+    }
+
     return ShadowScaffold(
-      title: 'Deploying...',
-      subtitle: project?.name,
+      title: title,
+      subtitle: project.name,
       showBack: status == DeployStatus.failed,
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
@@ -120,8 +148,8 @@ class _DeployProgressScreenState extends State<DeployProgressScreen> {
               padding: const EdgeInsets.all(16),
               child: Text(
                 provider.error!,
-                style: ShadowTypography.body
-                    .copyWith(color: ShadowColors.error),
+                style:
+                    ShadowTypography.body.copyWith(color: ShadowColors.error),
               ),
             ),
             const SizedBox(height: 16),

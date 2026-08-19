@@ -102,13 +102,15 @@ class PasswordPolicy {
     var requiredClasses = 0;
     if (requireLowercase) {
       if (lowercase.isEmpty) {
-        throw StateError('Policy requires lowercase but bans every lowercase character');
+        throw StateError(
+            'Policy requires lowercase but bans every lowercase character');
       }
       requiredClasses++;
     }
     if (requireUppercase) {
       if (uppercase.isEmpty) {
-        throw StateError('Policy requires uppercase but bans every uppercase character');
+        throw StateError(
+            'Policy requires uppercase but bans every uppercase character');
       }
       requiredClasses++;
     }

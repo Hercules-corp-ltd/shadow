@@ -74,7 +74,8 @@ class MimeLite {
 
     final decoded = _decodeBody(
       body,
-      encoding: (headers['content-transfer-encoding'] ?? '').toLowerCase().trim(),
+      encoding:
+          (headers['content-transfer-encoding'] ?? '').toLowerCase().trim(),
       charset: _parameter(headers['content-type'] ?? '', 'charset'),
     );
 
@@ -105,8 +106,7 @@ class MimeLite {
       degraded = degraded || part.degraded;
       if (part.text.trim().isEmpty) continue;
 
-      final type =
-          (part.headers['content-type'] ?? 'text/plain').toLowerCase();
+      final type = (part.headers['content-type'] ?? 'text/plain').toLowerCase();
       if (type.startsWith('text/html')) {
         html ??= part.text;
       } else if (type.startsWith('text/') || part.headers.isEmpty) {

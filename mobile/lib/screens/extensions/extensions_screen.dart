@@ -35,9 +35,8 @@ class _ExtensionsScreenState extends State<ExtensionsScreen> {
         IconButton(
           icon: const Icon(Icons.delete_outline_rounded,
               color: ShadowColors.error),
-          onPressed: p.items.isEmpty
-              ? null
-              : () => context.push('/extensions/clear'),
+          onPressed:
+              p.items.isEmpty ? null : () => context.push('/extensions/clear'),
         ),
       ],
       body: LoadStateView(
@@ -50,59 +49,58 @@ class _ExtensionsScreenState extends State<ExtensionsScreen> {
         emptyMessage:
             'Install extensions from the Shadow directory to supercharge your browsing.',
         child: ListView.separated(
-                  padding: const EdgeInsets.only(bottom: 24),
-                  itemBuilder: (_, i) {
-                    final e = p.items[i];
-                    return GlassCard(
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: ShadowColors.tilePurple.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(Icons.extension_rounded,
-                                color: ShadowColors.tilePurple),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(e.name, style: ShadowTypography.h4),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'v${e.version} · by ${e.author}',
-                                  style: ShadowTypography.bodySm,
-                                ),
-                                if (e.description.isNotEmpty) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    e.description,
-                                    style: ShadowTypography.caption,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                          Switch(
-                            value: e.enabled,
-                            onChanged: (v) => context
-                                .read<ExtensionsProvider>()
-                                .toggle(e.id, v),
+          padding: const EdgeInsets.only(bottom: 24),
+          itemBuilder: (_, i) {
+            final e = p.items[i];
+            return GlassCard(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: ShadowColors.tilePurple.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.extension_rounded,
+                        color: ShadowColors.tilePurple),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(e.name, style: ShadowTypography.h4),
+                        const SizedBox(height: 4),
+                        Text(
+                          'v${e.version} · by ${e.author}',
+                          style: ShadowTypography.bodySm,
+                        ),
+                        if (e.description.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            e.description,
+                            style: ShadowTypography.caption,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
-                      ),
-                    );
-                  },
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemCount: p.items.length,
-                ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: e.enabled,
+                    onChanged: (v) =>
+                        context.read<ExtensionsProvider>().toggle(e.id, v),
+                  ),
+                ],
+              ),
+            );
+          },
+          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          itemCount: p.items.length,
+        ),
       ),
     );
   }

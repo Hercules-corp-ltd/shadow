@@ -127,8 +127,10 @@ class ShadowIdentity {
   /// Throws [FormatException] if the phrase fails its checksum, which catches
   /// the overwhelmingly common failure of a mistyped or misremembered word
   /// before it silently produces a wrong, unrecoverable identity.
-  factory ShadowIdentity.fromMnemonic(String mnemonic, {String passphrase = ''}) {
-    final normalized = mnemonic.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+  factory ShadowIdentity.fromMnemonic(String mnemonic,
+      {String passphrase = ''}) {
+    final normalized =
+        mnemonic.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
     if (!bip39.validateMnemonic(normalized)) {
       throw const FormatException(
         'Recovery phrase is not valid. Check for a mistyped or missing word.',
@@ -173,13 +175,15 @@ class ShadowIdentity {
   }) {
     _assertUsable();
     if (accountIndex < 0) {
-      throw ArgumentError.value(accountIndex, 'accountIndex', 'must not be negative');
+      throw ArgumentError.value(
+          accountIndex, 'accountIndex', 'must not be negative');
     }
     if (passwordEpoch < 1) {
       throw ArgumentError.value(
           passwordEpoch, 'passwordEpoch', 'must be at least 1');
     }
-    final cleanAliasDomain = aliasDomain.trim().toLowerCase().replaceAll(RegExp(r'^@'), '');
+    final cleanAliasDomain =
+        aliasDomain.trim().toLowerCase().replaceAll(RegExp(r'^@'), '');
     if (cleanAliasDomain.isEmpty || !cleanAliasDomain.contains('.')) {
       throw ArgumentError.value(
         aliasDomain,
@@ -218,7 +222,8 @@ class ShadowIdentity {
       registrableDomain: domain,
       email: mailbox.addressAt(cleanAliasDomain),
       password: PasswordShaper.shape(entropy: passwordEntropy, policy: policy),
-      handle: HandleShaper.shape(entropy: handleEntropy, separator: handleSeparator),
+      handle: HandleShaper.shape(
+          entropy: handleEntropy, separator: handleSeparator),
       accountIndex: accountIndex,
       passwordEpoch: passwordEpoch,
       aliasEpoch: aliasEpoch,

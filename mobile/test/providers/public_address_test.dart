@@ -66,8 +66,7 @@ void main() {
       expect(provider.claimed, isNull);
     });
 
-    test('an unreachable service leaves the state unknown, not none',
-        () async {
+    test('an unreachable service leaves the state unknown, not none', () async {
       final api = FakeClaimApi(lookupAnswer: const ClaimUnreachable('offline'));
       final provider = await ready(api);
 
@@ -100,7 +99,8 @@ void main() {
   });
 
   group('asking on screen open', () {
-    test('ensureKnown asks even when storage has not finished loading', () async {
+    test('ensureKnown asks even when storage has not finished loading',
+        () async {
       // The defect this covers: the screen asks in a post-frame callback, which
       // fires while the provider is still reading storage. A state check at
       // that moment sees 'loading', decides there is nothing to do, and the

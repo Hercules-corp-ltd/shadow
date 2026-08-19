@@ -77,8 +77,8 @@ class AppRouter {
         final path = state.matchedLocation;
         final isBooting = wallet.isLoading;
         final onSplash = path == '/';
-        final onOnboarding = path.startsWith('/onboarding') ||
-            path == '/welcome';
+        final onOnboarding =
+            path.startsWith('/onboarding') || path == '/welcome';
         final onWalletSetup = path == '/wallet/choose' ||
             path == '/wallet/import' ||
             path == '/wallet/locked';
@@ -89,7 +89,12 @@ class AppRouter {
 
         if (wallet.state == WalletLifecycle.noWallet) {
           if (onOnboarding || onWalletSetup) return null;
-          return '/welcome';
+          // `shadow_onboarding_complete_v1` was written by both onboarding
+          // screens and read by nobody — grep found the setter, the getter,
+          // and zero call sites. So "Skip for now" only navigated: quit
+          // before finishing wallet setup and the tour was back, having been
+          // explicitly dismissed. Reading it here is what the flag was for.
+          return wallet.onboardingComplete ? '/wallet/choose' : '/welcome';
         }
 
         if (wallet.state == WalletLifecycle.locked) {

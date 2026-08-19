@@ -47,7 +47,7 @@ class WalletService {
     final passwordBytes = utf8.encode(password);
     final pbkdf2 = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
       ..init(Pbkdf2Parameters(salt, _pbkdf2Iterations, 32));
-    
+
     return pbkdf2.process(passwordBytes);
   }
 
@@ -72,10 +72,10 @@ class WalletService {
   ) async {
     final encryptionSalt = salt ?? _generateSalt();
     final encryptionIv = iv ?? _generateIv();
-    
+
     // Derive key
     final key = _deriveKey(password, encryptionSalt);
-    
+
     // Create AES-GCM cipher
     final cipher = GCMBlockCipher(AESEngine())
       ..init(
@@ -87,10 +87,10 @@ class WalletService {
           Uint8List(0), // additional authenticated data
         ),
       );
-    
+
     // Encrypt
     final encrypted = cipher.process(data);
-    
+
     return {
       'encrypted': base64Encode(encrypted),
       'salt': base64Encode(encryptionSalt),
@@ -109,10 +109,10 @@ class WalletService {
       final encrypted = base64Decode(encryptedBase64);
       final salt = base64Decode(saltBase64);
       final iv = base64Decode(ivBase64);
-      
+
       // Derive key
       final key = _deriveKey(password, salt);
-      
+
       // Create AES-GCM cipher
       final cipher = GCMBlockCipher(AESEngine())
         ..init(
@@ -124,7 +124,7 @@ class WalletService {
             Uint8List(0), // additional authenticated data
           ),
         );
-      
+
       // Decrypt
       return cipher.process(encrypted);
     } catch (e) {
@@ -205,14 +205,14 @@ class WalletService {
       final encrypted = prefs.getString(_walletStorageKey);
       final salt = prefs.getString(_walletSaltKey);
       final iv = prefs.getString(_walletIvKey);
-      
+
       if (encrypted == null || salt == null || iv == null) {
         return null;
       }
-      
+
       // Decrypt wallet
       final secretKey = await _decrypt(encrypted, password, salt, iv);
-      
+
       return await Ed25519HDKeyPair.fromPrivateKeyBytes(
         privateKey: secretKey,
       );
@@ -255,4 +255,3 @@ class WalletService {
     }
   }
 }
-

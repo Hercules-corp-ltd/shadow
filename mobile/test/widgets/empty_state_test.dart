@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shadow_mobile/widgets/empty_state.dart';
 
 void main() {
-
   testWidgets('EmptyState shows icon, title, message, and fires action',
       (tester) async {
     var pressed = 0;

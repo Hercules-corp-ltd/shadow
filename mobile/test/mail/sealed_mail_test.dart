@@ -78,7 +78,8 @@ void main() {
     test('a different mailbox cannot open it', () async {
       // The transcript binds both public keys into the derivation, so a
       // ciphertext cannot be replayed at another mailbox.
-      final other = SiteMailboxKeys.fromMaterial(Uint8List(64)..fillRange(0, 64, 3));
+      final other =
+          SiteMailboxKeys.fromMaterial(Uint8List(64)..fillRange(0, 64, 3));
 
       expect(
         await SealedMail.open(
@@ -92,7 +93,8 @@ void main() {
     test('truncated and empty input return null', () async {
       final keys = fixtureKeys();
       expect(await SealedMail.open(envelope: Uint8List(0), keys: keys), isNull);
-      expect(await SealedMail.open(envelope: Uint8List(60), keys: keys), isNull);
+      expect(
+          await SealedMail.open(envelope: Uint8List(60), keys: keys), isNull);
       expect(
         await SealedMail.open(
           envelope: base64Decode(fixtureEnvelopeB64).sublist(0, 200),

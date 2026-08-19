@@ -14,12 +14,16 @@ library;
 
 /// 32 bytes of 0x07 then 32 bytes of 0x09 — the mail/v1 material the
 /// fixture was built from.
-const String fixtureSignSeedB64 = 'BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=';
-const String fixtureSealSeedB64 = 'CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk=';
+const String fixtureSignSeedB64 =
+    'BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=';
+const String fixtureSealSeedB64 =
+    'CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk=';
 
 const String fixtureLocalPart = 'exkhu6wfl3lx2pexvcgx';
-const String fixtureEd25519PubB64 = '6kpsY+KcUgq+9VB7Ey7F+ZVHdq6+vnuSQh7qaRRG0iw=';
-const String fixtureX25519PubB64 = 'V9tLNZ8jrl4Ubk4lEgVnBHIlBjSMFQwUdT0Mkz0E1CE=';
+const String fixtureEd25519PubB64 =
+    '6kpsY+KcUgq+9VB7Ey7F+ZVHdq6+vnuSQh7qaRRG0iw=';
+const String fixtureX25519PubB64 =
+    'V9tLNZ8jrl4Ubk4lEgVnBHIlBjSMFQwUdT0Mkz0E1CE=';
 
 const String fixturePlaintext = 'From: Twitter <verify@twitter.com>\r\n'
     'Subject: 483920 is your code\r\n'

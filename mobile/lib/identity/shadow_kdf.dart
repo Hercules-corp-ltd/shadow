@@ -47,8 +47,7 @@ class ShadowKdf {
 
     for (var counter = 1; counter <= blocks; counter++) {
       previous = Hmac(sha512, pseudoRandomKey)
-          .convert(<int>[...previous, ...infoBytes, counter])
-          .bytes;
+          .convert(<int>[...previous, ...infoBytes, counter]).bytes;
       output.addAll(previous);
     }
 

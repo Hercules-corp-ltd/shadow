@@ -127,8 +127,8 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
                           child: Text(
                             t.symbol.isEmpty ? '?' : t.symbol[0].toUpperCase(),
                             style: ShadowTypography.h4.copyWith(
-                              color: ShadowColors.primary
-                                  .withValues(alpha: 0.85),
+                              color:
+                                  ShadowColors.primary.withValues(alpha: 0.85),
                             ),
                           ),
                         ),

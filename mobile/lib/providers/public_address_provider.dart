@@ -70,8 +70,7 @@ class PublicAddressProvider with ChangeNotifier {
     _loaded;
   }
 
-  static final LocalStore<ClaimedAddress> _store =
-      LocalStore<ClaimedAddress>(
+  static final LocalStore<ClaimedAddress> _store = LocalStore<ClaimedAddress>(
     key: 'shadow_public_address_v1',
     encode: (value) => value.toJson(),
     decode: ClaimedAddress.fromJson,

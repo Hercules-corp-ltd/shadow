@@ -147,8 +147,10 @@ class _ListItemCardState extends State<ListItemCard> {
                         style: ShadowTypography.bodySm,
                         child: Row(
                           children: [
-                            if (widget.timeLabel != null) Text(widget.timeLabel!),
-                            if (widget.timeLabel != null && widget.subtitle != null) ...[
+                            if (widget.timeLabel != null)
+                              Text(widget.timeLabel!),
+                            if (widget.timeLabel != null &&
+                                widget.subtitle != null) ...[
                               const SizedBox(width: 6),
                               const Text('•'),
                               const SizedBox(width: 6),
@@ -162,7 +164,8 @@ class _ListItemCardState extends State<ListItemCard> {
                                 ),
                               ),
                             if (widget.statusLabel != null) ...[
-                              if (widget.subtitle != null || widget.timeLabel != null) ...[
+                              if (widget.subtitle != null ||
+                                  widget.timeLabel != null) ...[
                                 const SizedBox(width: 6),
                                 const Text('•'),
                                 const SizedBox(width: 6),
@@ -170,8 +173,8 @@ class _ListItemCardState extends State<ListItemCard> {
                               Text(
                                 widget.statusLabel!,
                                 style: ShadowTypography.bodySm.copyWith(
-                                  color:
-                                      widget.statusColor ?? ShadowColors.success,
+                                  color: widget.statusColor ??
+                                      ShadowColors.success,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

@@ -21,8 +21,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => context.read<ActivityProvider>().loadRecent());
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => context.read<ActivityProvider>().loadRecent());
   }
 
   IconData _iconFor(ActivityKind k) => switch (k) {
