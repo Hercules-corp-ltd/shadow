@@ -36,11 +36,9 @@ class _DomainTransferScreenState extends State<DomainTransferScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
-          GlassCard(
+          GlassCard.lit(
+            accent: ShadowColors.error,
             padding: const EdgeInsets.all(20),
-            color: Colors.red.withValues(alpha: 0.06),
-            border: Border.all(
-                color: ShadowColors.error.withValues(alpha: 0.4), width: 1),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

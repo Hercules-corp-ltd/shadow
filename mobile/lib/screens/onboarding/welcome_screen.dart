@@ -32,21 +32,16 @@ class WelcomeScreen extends StatelessWidget {
             child: Column(
               children: [
                 const Spacer(flex: 2),
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'S',
-                    style: ShadowTypography.displayXL.copyWith(
-                      color: Colors.black,
-                      fontSize: 72,
-                    ),
-                  ),
+                // The real mark, which has shipped in the bundle the whole
+                // time. This was a solid white disc with the letter "S" set
+                // in it — a placeholder for a logo that already existed, on
+                // the first screen anyone ever sees, and the only pure-white
+                // object in an app that is otherwise black.
+                Image.asset(
+                  'assets/brand/shadow-mark.png',
+                  width: 148,
+                  height: 148,
+                  filterQuality: FilterQuality.medium,
                 ),
                 const SizedBox(height: 32),
                 Text(

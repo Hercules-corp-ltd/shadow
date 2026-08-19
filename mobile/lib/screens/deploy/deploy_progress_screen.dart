@@ -66,11 +66,12 @@ class _DeployProgressScreenState extends State<DeployProgressScreen> {
         done: status == DeployStatus.deployed,
         active: status == DeployStatus.deploying,
       ),
-      _StepData(
-        label: 'Publishing to Shadow network',
-        done: status == DeployStatus.deployed,
-        active: false,
-      ),
+      // There used to be a third step here, "Publishing to Shadow network".
+      // Nothing ran it: it could never be `active`, and it ticked itself off
+      // the moment the on-chain registration finished. It was a progress bar
+      // for work that does not exist, which is the one thing a progress list
+      // must never contain — a user watching it would believe a step
+      // completed that was never attempted.
     ];
 
     return ShadowScaffold(
@@ -99,7 +100,7 @@ class _DeployProgressScreenState extends State<DeployProgressScreen> {
                     const SizedBox(height: 8),
                     LinearPercentIndicator(
                       percent: s.progress!.clamp(0, 1),
-                      backgroundColor: ShadowColors.border,
+                      backgroundColor: ShadowColors.recess,
                       progressColor: ShadowColors.primary,
                       animation: true,
                       lineHeight: 4,
@@ -114,11 +115,9 @@ class _DeployProgressScreenState extends State<DeployProgressScreen> {
           ),
           if (status == DeployStatus.failed && provider.error != null) ...[
             const SizedBox(height: 20),
-            GlassCard(
+            GlassCard.lit(
+              accent: ShadowColors.error,
               padding: const EdgeInsets.all(16),
-              color: Colors.red.withValues(alpha: 0.08),
-              border: Border.all(
-                  color: ShadowColors.error.withValues(alpha: 0.4), width: 1),
               child: Text(
                 provider.error!,
                 style: ShadowTypography.body
@@ -158,10 +157,19 @@ class _StepIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (step.done) {
-      return const CircleAvatar(
-        radius: 12,
-        backgroundColor: ShadowColors.success,
-        child: Icon(Icons.check_rounded, size: 14, color: Colors.white),
+      return Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: ShadowColors.recessDeep,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: ShadowColors.success.withValues(alpha: 0.55),
+          ),
+        ),
+        alignment: Alignment.center,
+        child: const Icon(Icons.check_rounded,
+            size: 14, color: ShadowColors.success),
       );
     }
     if (step.active) {
@@ -174,12 +182,15 @@ class _StepIcon extends StatelessWidget {
         ),
       );
     }
+    // Not yet started: an empty socket, so the three states read as one
+    // control filling with light rather than three unrelated shapes.
     return Container(
       width: 24,
       height: 24,
-      decoration: const BoxDecoration(
-        color: ShadowColors.border,
+      decoration: BoxDecoration(
+        color: ShadowColors.recessDeep,
         shape: BoxShape.circle,
+        border: Border.all(color: ShadowColors.edgeFaint),
       ),
     );
   }

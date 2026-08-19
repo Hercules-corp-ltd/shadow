@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../providers/extensions_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/load_state_view.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/shadow_scaffold.dart';
 
@@ -40,16 +40,16 @@ class _ExtensionsScreenState extends State<ExtensionsScreen> {
               : () => context.push('/extensions/clear'),
         ),
       ],
-      body: p.isLoading && p.items.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : p.items.isEmpty
-              ? const EmptyState(
-                  icon: Icons.extension_rounded,
-                  title: 'No extensions yet',
-                  message:
-                      'Install extensions from the Shadow directory to supercharge your browsing.',
-                )
-              : ListView.separated(
+      body: LoadStateView(
+        isLoading: p.isLoading,
+        isEmpty: p.items.isEmpty,
+        error: p.error,
+        onRetry: p.load,
+        emptyIcon: Icons.extension_rounded,
+        emptyTitle: 'No extensions yet',
+        emptyMessage:
+            'Install extensions from the Shadow directory to supercharge your browsing.',
+        child: ListView.separated(
                   padding: const EdgeInsets.only(bottom: 24),
                   itemBuilder: (_, i) {
                     final e = p.items[i];
@@ -103,6 +103,7 @@ class _ExtensionsScreenState extends State<ExtensionsScreen> {
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemCount: p.items.length,
                 ),
+      ),
     );
   }
 }

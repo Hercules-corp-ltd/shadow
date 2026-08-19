@@ -25,38 +25,67 @@ class _OnboardingSlide {
   });
 }
 
+/// The four things Shadow actually does, in the order they happen to you.
+///
+/// ## Why this copy was rewritten
+///
+/// The first four screens of the app described a different product. Ares
+/// promised "Sign-In-With-Solana — no passwords, no servers, no breach";
+/// Shadow does not implement SIWS at all, and its identity system is the
+/// opposite shape (a derived password per site). Athena promised an index of
+/// every Shadow site; there is no index. Hermes promised that every URL
+/// becomes "a deterministic on-chain token" reachable "forever"; it does not.
+///
+/// Those are security claims, on the first screens a new user sees, in a
+/// privacy product. Getting them wrong is worse than saying nothing — a user
+/// who believes the Ares slide would reasonably conclude that a site breach
+/// cannot expose anything of theirs, and act accordingly.
+///
+/// Everything below is something the app does today and something this repo
+/// has a test or a measurement for. Nothing here describes the mail server
+/// running on a real domain, per-site storage partitioning, or outbound mail,
+/// because none of those are shipped.
 const _slides = <_OnboardingSlide>[
   _OnboardingSlide(
     god: 'ZEUS',
-    title: 'Divine Power',
-    subtitle: 'Harness the king of gods',
+    title: 'One phrase',
+    subtitle: 'Everything comes from twelve words',
     description:
-        'Zeus powers your wallet with ironclad encryption and lightning-fast keypair generation on the Solana network.',
+        'Your wallet and every account Shadow makes for you are computed from '
+        'a single recovery phrase. Nothing derived is kept on this phone — it '
+        'is worked out again each time you unlock, and your words rebuild all '
+        'of it on any device.',
     asset: 'assets/gods/Zeus - Onboarding.svg',
   ),
   _OnboardingSlide(
-    god: 'HERMES',
-    title: 'Messenger of the Web',
-    subtitle: 'Links resolved at light speed',
+    god: 'ATHENA',
+    title: 'A different you on every site',
+    subtitle: 'Nothing worth stealing in a breach',
     description:
-        'Hermes turns every URL into a deterministic on-chain token. Your content is reachable by anyone, anywhere, forever.',
+        'Each site gets its own password and its own username, worked out '
+        'from your phrase rather than stored anywhere. A site that loses its '
+        'database loses a password that opens nothing else you own.',
+    asset: 'assets/gods/Athena - Onboarding.svg',
+  ),
+  _OnboardingSlide(
+    god: 'HERMES',
+    title: 'An address per site',
+    subtitle: 'And you can burn one without losing the rest',
+    description:
+        'Sign-ups get an address that belongs to that site alone, arriving in '
+        'a mailbox only your phrase can open. When one starts drawing spam, '
+        'replace it — the site you sold it to is the only one affected.',
     asset: 'assets/gods/Hermes - Onboarding.svg',
   ),
   _OnboardingSlide(
     god: 'ARES',
-    title: 'Guardian of Access',
-    subtitle: 'Passwordless authentication',
+    title: 'Nothing follows you out',
+    subtitle: 'Trackers stopped before they load',
     description:
-        'Ares defends every login with Sign-In-With-Solana. Sign a challenge with your key — no passwords, no servers, no breach.',
+        'Known trackers are blocked at the request, not hidden after the '
+        'fact, and third-party cookies never reach the page. Both are '
+        'measured on a real device rather than assumed.',
     asset: 'assets/gods/Ares - Onboarding.svg',
-  ),
-  _OnboardingSlide(
-    god: 'ATHENA',
-    title: 'Wisdom of the Web',
-    subtitle: 'Search across the pantheon',
-    description:
-        'Athena indexes every Shadow site so you can discover decentralized content instantly — powered by on-chain metadata.',
-    asset: 'assets/gods/Athena - Onboarding.svg',
   ),
 ];
 
@@ -170,7 +199,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             decoration: BoxDecoration(
               color: _index == i
                   ? ShadowColors.primary
-                  : ShadowColors.border,
+                  : ShadowColors.edge,
               borderRadius: BorderRadius.circular(4),
             ),
           ),

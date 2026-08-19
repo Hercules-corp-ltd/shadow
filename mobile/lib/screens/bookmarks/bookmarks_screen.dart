@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/bookmarks_provider.dart';
 import '../../theme/shadow_colors.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/load_state_view.dart';
 import '../../widgets/list_item_card.dart';
 import '../../widgets/search_field.dart';
 import '../../widgets/shadow_scaffold.dart';
@@ -72,16 +72,17 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
           }),
           const SizedBox(height: 12),
           Expanded(
-            child: p.isLoading && p.bookmarks.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : p.bookmarks.isEmpty
-                    ? const EmptyState(
-                        icon: Icons.bookmark_border_rounded,
-                        title: 'No bookmarks yet',
-                        message:
-                            'Tap the star on any site to save it for later.',
-                      )
-                    : ListView.separated(
+            // Same reason as history: a failed load used to empty the list and
+            // tell the user they had never saved anything.
+            child: LoadStateView(
+              isLoading: p.isLoading,
+              isEmpty: p.bookmarks.isEmpty,
+              error: p.error,
+              onRetry: () => p.load(),
+              emptyIcon: Icons.bookmark_border_rounded,
+              emptyTitle: 'No bookmarks yet',
+              emptyMessage: 'Tap the star on any site to save it for later.',
+              child: ListView.separated(
                         itemBuilder: (_, i) {
                           final b = p.bookmarks[i];
                           return ListItemCard(
@@ -102,6 +103,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                             const SizedBox(height: 8),
                         itemCount: p.bookmarks.length,
                       ),
+            ),
           ),
         ],
       ),

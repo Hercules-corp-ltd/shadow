@@ -3,11 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/history_entry.dart';
 import '../../providers/history_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
-import '../../widgets/empty_state.dart';
 import '../../widgets/list_item_card.dart';
+import '../../widgets/load_state_view.dart';
 import '../../widgets/search_field.dart';
 import '../../widgets/shadow_scaffold.dart';
 
@@ -87,21 +88,22 @@ class _HistoryScreenState extends State<HistoryScreen> {
       };
 
   Widget _buildList(HistoryProvider p) {
-    if (p.isLoading && p.entries.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    // Through LoadStateView, so a load that failed cannot be reported as an
+    // account with no history. HistoryProvider has carried `error` the whole
+    // time and this screen never read it.
+    return LoadStateView(
+      isLoading: p.isLoading,
+      isEmpty: p.entries.isEmpty,
+      error: p.error,
+      onRetry: () => p.load(range: p.range),
+      emptyIcon: Icons.history_rounded,
+      emptyTitle: 'No history yet',
+      emptyMessage: 'Sites you visit on Shadow will appear here.',
+      child: _list(p.entries),
+    );
+  }
 
-    final entries = p.entries;
-    if (entries.isEmpty) {
-      return EmptyState(
-        icon: Icons.history_rounded,
-        title: 'No history yet',
-        message: 'Sites you visit on Shadow will appear here.',
-        actionLabel: 'Open home',
-        onAction: () => context.go('/home'),
-      );
-    }
-
+  Widget _list(List<HistoryEntry> entries) {
     return ListView.separated(
       padding: const EdgeInsets.only(top: 4, bottom: 24),
       itemBuilder: (_, i) {

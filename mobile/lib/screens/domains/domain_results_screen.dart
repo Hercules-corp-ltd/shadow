@@ -47,11 +47,14 @@ class DomainResultsScreen extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: (available
-                              ? ShadowColors.success
-                              : ShadowColors.textTertiary)
-                          .withValues(alpha: 0.2),
+                      color: ShadowColors.recessDeep,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: (available
+                                ? ShadowColors.success
+                                : ShadowColors.textTertiary)
+                            .withValues(alpha: 0.32),
+                      ),
                     ),
                     child: Icon(
                       available ? Icons.check_rounded : Icons.block_rounded,

@@ -80,8 +80,12 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: ShadowColors.primarySoft,
+                            color: ShadowColors.recessDeep,
                             borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: ShadowColors.primary
+                                  .withValues(alpha: 0.28),
+                            ),
                           ),
                           child: Text(r.type,
                               style: ShadowTypography.caption.copyWith(

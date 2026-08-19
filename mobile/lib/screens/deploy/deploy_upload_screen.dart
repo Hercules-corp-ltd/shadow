@@ -37,14 +37,28 @@ class _DeployUploadScreenState extends State<DeployUploadScreen> {
         setState(() => _picking = false);
         return;
       }
-      final files = result.files
+      final picked = result.files
           .map((f) => DeployFile(
                 path: f.name,
                 sizeBytes: f.size,
                 localPath: f.path,
               ))
           .toList();
-      context.read<DeployProvider>().updateFiles(files);
+      // Append, because the review screen's "Add more files" button pops back
+      // here and DeployProvider.updateFiles is a full replace. Every file
+      // already staged was being discarded the moment a second pick returned —
+      // silent, with no warning and nothing to undo it with.
+      //
+      // Re-picking the same file replaces its entry rather than duplicating
+      // it, so arriving here twice with the same selection is a no-op instead
+      // of doubling the upload.
+      final provider = context.read<DeployProvider>();
+      final existing = provider.project?.files ?? const <DeployFile>[];
+      final merged = <String, DeployFile>{
+        for (final f in existing) f.path: f,
+        for (final f in picked) f.path: f,
+      };
+      provider.updateFiles(merged.values.toList());
       if (!mounted) return;
       context.push('/deploy/files');
     } catch (e) {
@@ -70,9 +84,19 @@ class _DeployUploadScreenState extends State<DeployUploadScreen> {
                 Container(
                   width: 72,
                   height: 72,
-                  decoration: const BoxDecoration(
-                    color: ShadowColors.primarySoft,
+                  decoration: BoxDecoration(
+                    color: ShadowColors.recessDeep,
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: ShadowColors.primary.withValues(alpha: 0.28),
+                    ),
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: ShadowColors.primary.withValues(alpha: 0.14),
+                        blurRadius: 28,
+                        spreadRadius: -6,
+                      ),
+                    ],
                   ),
                   child: const Icon(
                     Icons.file_upload_rounded,

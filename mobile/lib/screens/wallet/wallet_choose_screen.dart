@@ -111,8 +111,9 @@ class _WalletOption extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.18),
+              color: ShadowColors.recessDeep,
               borderRadius: BorderRadius.circular(ShadowRadius.sm),
+              border: Border.all(color: color.withValues(alpha: 0.32)),
             ),
             child: Icon(icon, color: color),
           ),
