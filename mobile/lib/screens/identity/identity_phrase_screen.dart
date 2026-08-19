@@ -182,10 +182,12 @@ class _IdentityPhraseScreenState extends State<IdentityPhraseScreen> {
       children: List<Widget>.generate(words.length, (index) {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          // Twelve of these at once, so an opaque grey block each turned the
+          // one screen that matters most into a spreadsheet.
           decoration: BoxDecoration(
-            color: ShadowColors.surfaceElevated,
+            color: ShadowColors.recess,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: ShadowColors.border),
+            border: Border.all(color: ShadowColors.edge),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

@@ -594,7 +594,6 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     return showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: ShadowColors.surfaceElevated,
         title: Text(title, style: ShadowTypography.h3),
         content: Text(body, style: ShadowTypography.bodySm),
         actions: <Widget>[

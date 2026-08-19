@@ -19,6 +19,14 @@ enum EmptyStateTone {
 }
 
 /// A reusable "nothing here yet" state with icon, message, and optional action.
+///
+/// The disc used to be a flat wash of the accent at 12% — a coloured coin
+/// floating in the middle of an otherwise empty screen, and on a screen with
+/// nothing else on it that coin *is* the design. It is now a socket cut into
+/// the page with the light of the icon inside it: a ring at the edge, a faint
+/// bloom under the glyph, and the accent carried by the glyph rather than by
+/// a filled shape. Same two tones, so failure still does not look like
+/// emptiness.
 class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
@@ -51,13 +59,29 @@ class EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 72,
-              height: 72,
+              width: 76,
+              height: 76,
               decoration: BoxDecoration(
-                color: _accent.withValues(alpha: 0.12),
+                color: ShadowColors.recessDeep,
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: _accent.withValues(alpha: 0.22),
+                ),
+                boxShadow: <BoxShadow>[
+                  // Inside the socket, not under it: a low bloom the glyph
+                  // appears to be casting onto the wall of the recess.
+                  BoxShadow(
+                    color: _accent.withValues(alpha: 0.14),
+                    blurRadius: 26,
+                    spreadRadius: -4,
+                  ),
+                ],
               ),
-              child: Icon(icon, size: 32, color: _accent),
+              child: Icon(
+                icon,
+                size: 30,
+                color: _accent.withValues(alpha: 0.9),
+              ),
             ),
             const SizedBox(height: 20),
             Text(title, style: ShadowTypography.h3, textAlign: TextAlign.center),

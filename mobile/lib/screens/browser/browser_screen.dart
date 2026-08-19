@@ -66,7 +66,6 @@ class _BrowserScreenState extends State<BrowserScreen> {
     final input = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: ShadowColors.surfaceElevated,
       builder: (_) => UrlPromptSheet(
         initialValue: browser.activeTab?.url?.toString() ?? '',
       ),
@@ -162,7 +161,6 @@ class _BrowserScreenState extends State<BrowserScreen> {
 
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
-      backgroundColor: ShadowColors.surfaceElevated,
       isScrollControlled: true,
       builder: (sheetContext) => _FillPreview(identity: identity),
     );
@@ -310,7 +308,6 @@ class _BrowserScreenState extends State<BrowserScreen> {
       final proceed = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          backgroundColor: ShadowColors.surfaceElevated,
           title: Text('This link leaves $expected',
               style: ShadowTypography.h3),
           content: Text(

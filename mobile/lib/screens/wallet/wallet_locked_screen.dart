@@ -146,12 +146,26 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
                     child: Column(
                       children: [
                 const Spacer(),
+                // A socket with the lock lit inside it, not a grey coin. This
+                // is the first thing seen on a cold launch, so it is the one
+                // shape that decides whether the app looks like Shadow before
+                // anything else has loaded.
                 Container(
                   width: 96,
                   height: 96,
-                  decoration: const BoxDecoration(
-                    color: ShadowColors.surfaceElevated,
+                  decoration: BoxDecoration(
+                    color: ShadowColors.recessDeep,
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: ShadowColors.primary.withValues(alpha: 0.26),
+                    ),
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: ShadowColors.primary.withValues(alpha: 0.16),
+                        blurRadius: 34,
+                        spreadRadius: -6,
+                      ),
+                    ],
                   ),
                   alignment: Alignment.center,
                   child: const Icon(Icons.lock_rounded,

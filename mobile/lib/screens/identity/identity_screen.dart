@@ -718,7 +718,6 @@ class _QuickUnlockRowState extends State<_QuickUnlockRow> {
     final passphrase = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: ShadowColors.surfaceElevated,
         title: Text('Your passphrase', style: ShadowTypography.h3),
         content: Column(
           mainAxisSize: MainAxisSize.min,

@@ -36,35 +36,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
+          // The last of the old Figma palette: a navy gradient card, a solid
+          // orange disc with an "S" in it, and the words "Shadow user" over an
+          // address. Two of those three were invented — there is no account
+          // and no display name in this app, so the avatar was a placeholder
+          // for a person who does not exist and the heading named nobody.
+          //
+          // What is actually true here is the address, so the address is the
+          // heading, in the same mono the home screen uses for it.
           GlassCard(
             padding: const EdgeInsets.all(20),
-            gradient: ShadowColors.navyGradient,
-            border: Border.all(color: ShadowColors.cardNavyBorder, width: 1),
             child: Row(
               children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: const BoxDecoration(
-                    gradient: ShadowColors.primaryGradient,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text('S',
-                      style: ShadowTypography.h2
-                          .copyWith(color: Colors.white)),
+                Image.asset(
+                  'assets/brand/shadow-mark.png',
+                  width: 44,
+                  height: 44,
+                  filterQuality: FilterQuality.medium,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Shadow user', style: ShadowTypography.h3),
+                      Text(
+                        'THIS DEVICE',
+                        style: ShadowTypography.caption.copyWith(
+                          letterSpacing: 2,
+                          color: ShadowColors.textTertiary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
                       Text(
                         wallet.walletAddress == null
                             ? 'No wallet connected'
                             : _short(wallet.walletAddress!),
-                        style: ShadowTypography.bodySm,
+                        style: TextStyle(
+                          fontFamily: ShadowTypography.monoFamily,
+                          fontSize: 14,
+                          color: wallet.walletAddress == null
+                              ? ShadowColors.textSecondary
+                              : ShadowColors.textPrimary,
+                        ),
                       ),
                     ],
                   ),

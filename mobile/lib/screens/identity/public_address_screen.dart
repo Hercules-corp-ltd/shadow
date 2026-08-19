@@ -324,7 +324,6 @@ class _PublicAddressScreenState extends State<PublicAddressScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: ShadowColors.surfaceElevated,
         title: Text('Claim $name?', style: ShadowTypography.h3),
         content: Text(
           'This is the only one you get. It cannot be renamed, given up or '

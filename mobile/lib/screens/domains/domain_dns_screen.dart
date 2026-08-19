@@ -135,7 +135,6 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: ShadowColors.surfaceElevated,
       builder: (_) => _AddDnsSheet(
         domain: widget.domain,
         onSave: _load,

@@ -633,9 +633,13 @@ class _ThresholdState extends State<_Threshold> {
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.50),
         borderRadius: BorderRadius.circular(4),
-        // Same trap as the niches: a non-uniform border beside a borderRadius
-        // throws while painting and takes the child down with it. That is why
-        // the search slot was missing entirely from the first builds.
+        // A uniform hairline, and it has to stay uniform: a *non*-uniform
+        // border beside a borderRadius throws while painting and takes the
+        // child down with it, which is why the slot was missing entirely from
+        // the first builds. Without any edge the cut is black on black and
+        // reads as nothing at all — the theme's own field box was standing in
+        // for it, badly, until the decoration below opted out.
+        border: Border.all(color: ShadowColors.edge),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -666,7 +670,13 @@ class _ThresholdState extends State<_Threshold> {
               cursorColor: ShadowColors.primary,
               decoration: const InputDecoration(
                 isDense: true,
+                // The container above is the slot. Without these three the
+                // theme fills and borders a second box inside it, and the cut
+                // ends up with a panel sitting in it.
+                filled: false,
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
                 hintText: 'Name a site, or a .shadow address',
                 hintStyle: TextStyle(
                   fontFamily: ShadowTypography.bodyFamily,

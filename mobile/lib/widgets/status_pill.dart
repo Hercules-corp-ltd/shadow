@@ -5,6 +5,12 @@ import '../theme/shadow_spacing.dart';
 import '../theme/shadow_typography.dart';
 
 /// Small dot + label pill used for status indicators (Mainnet/Devnet/etc.).
+///
+/// The dot already glows; the pill around it used to be an opaque grey block,
+/// so the one lit thing on it was fighting a surface that stopped the app's
+/// light dead. The pill is now a cut with a lit edge and the dot's colour
+/// bleeding faintly into the fill, which is what a small light inside a groove
+/// actually does.
 class StatusPill extends StatelessWidget {
   const StatusPill({
     super.key,
@@ -22,10 +28,10 @@ class StatusPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: ShadowColors.surfaceElevated,
+      color: ShadowColors.recess,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(ShadowRadius.pill),
-        side: const BorderSide(color: ShadowColors.border),
+        side: BorderSide(color: color.withValues(alpha: 0.28)),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(

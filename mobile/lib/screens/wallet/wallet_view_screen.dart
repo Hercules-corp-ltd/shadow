@@ -223,9 +223,9 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
         final nft = nfts[i];
         return Container(
           decoration: BoxDecoration(
-            color: ShadowColors.surfaceElevated,
+            color: ShadowColors.surfaceGlass,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: ShadowColors.border),
+            border: Border.all(color: ShadowColors.edge),
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(

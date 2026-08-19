@@ -111,7 +111,6 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
   void _showBookmarkMenu(BuildContext context, String domain) {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: ShadowColors.surfaceElevated,
       builder: (_) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,

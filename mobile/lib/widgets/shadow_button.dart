@@ -50,21 +50,29 @@ class ShadowButton extends StatelessWidget {
       ShadowButtonVariant.primary => ShadowColors.primary,
       ShadowButtonVariant.secondary => ShadowColors.surfaceElevated,
       ShadowButtonVariant.ghost => Colors.transparent,
-      ShadowButtonVariant.danger => ShadowColors.error,
+      // Not a filled red slab. A destructive action has to be unmistakable,
+      // which is not the same as being the brightest object on the screen —
+      // at the bottom of Settings the old one drew the eye before anything
+      // a user actually came here to do. Dark body, red edge, red label: it
+      // still cannot be confused with the button above it.
+      ShadowButtonVariant.danger =>
+        ShadowColors.error.withValues(alpha: 0.10),
     };
 
     final fg = switch (variant) {
       ShadowButtonVariant.primary => Colors.white,
       ShadowButtonVariant.secondary => ShadowColors.textPrimary,
       ShadowButtonVariant.ghost => ShadowColors.textPrimary,
-      ShadowButtonVariant.danger => Colors.white,
+      ShadowButtonVariant.danger => ShadowColors.error,
     };
 
     final border = switch (variant) {
       ShadowButtonVariant.secondary =>
-        const BorderSide(color: ShadowColors.border),
+        const BorderSide(color: ShadowColors.edge),
       ShadowButtonVariant.ghost =>
-        const BorderSide(color: ShadowColors.border),
+        const BorderSide(color: ShadowColors.edge),
+      ShadowButtonVariant.danger =>
+        BorderSide(color: ShadowColors.error.withValues(alpha: 0.55)),
       _ => BorderSide.none,
     };
 

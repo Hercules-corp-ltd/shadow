@@ -39,6 +39,28 @@ class ShadowColors {
   static const Color textTertiary = Color(0xFF6B7280);
   static const Color textDisabled = Color(0xFF4B5563);
 
+  // Cut into the stone, rather than laid on top of it.
+  //
+  // Everything you type into or choose from - inputs, chips at rest, switch
+  // tracks - is a recess: darker than the page, with a faint lit edge where a
+  // cut catches the light. The old vocabulary made all of them *lighter* than
+  // the page (an opaque `surfaceElevated` block with a solid border), which is
+  // the one thing a hole cannot be, and it read as stock Material on every
+  // settings screen. Panels that genuinely sit above the page keep the raised
+  // treatment in `GlassCard`.
+  //
+  // These are deliberately translucent so the app-wide light passes through.
+  // A solid grey stops the light dead at its edge and cuts the surface out of
+  // the scene, which is most of what made those screens look borrowed.
+  static const Color recess = Color(0x47000000); // black 28%
+  static const Color recessDeep = Color(0x80000000); // black 50%
+
+  // Lit edges, in three strengths: a hairline on a quiet cut, the standard
+  // edge, and the edge of something focused or held.
+  static const Color edgeFaint = Color(0x14FFFFFF); // white 8%
+  static const Color edge = Color(0x1FFFFFFF); // white 12%
+  static const Color edgeBright = Color(0x33FFFFFF); // white 20%
+
   // Borders & dividers
   static const Color border = Color(0xFF262A31);
   static const Color borderSubtle = Color(0xFF1A1D23);

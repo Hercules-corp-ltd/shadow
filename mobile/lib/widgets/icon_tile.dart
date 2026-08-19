@@ -4,9 +4,20 @@ import '../theme/shadow_colors.dart';
 import '../theme/shadow_spacing.dart';
 import '../theme/shadow_typography.dart';
 
-/// Colored rounded-square icon with a label below, matching the feature
-/// grid on the Shadow home page.
-class IconTile extends StatelessWidget {
+/// A round action button with a label under it — Send, Receive, Swap, Buy.
+///
+/// ## Why the colour moved off the fill
+///
+/// Four filled 56dp squares in blue, green, purple and amber, each with a
+/// coloured drop shadow, was the loudest thing in the wallet: a row of app
+/// icons sitting on Shadow's page. The colours carry almost no information —
+/// nobody learns that swap is the purple one — so they were spending all the
+/// attention on the screen and buying nothing.
+///
+/// The tile is now a socket cut into the page, ringed and lit in the action's
+/// colour, with the glyph itself carrying the accent. The row still reads as
+/// four distinct actions, in the same material as everything around it.
+class IconTile extends StatefulWidget {
   const IconTile({
     super.key,
     required this.label,
@@ -23,44 +34,77 @@ class IconTile extends StatelessWidget {
   final double size;
 
   @override
+  State<IconTile> createState() => _IconTileState();
+}
+
+class _IconTileState extends State<IconTile> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(ShadowRadius.md),
+    final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+
+    return Semantics(
+      button: true,
+      label: widget.label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: widget.onTap == null
+            ? null
+            : (_) => setState(() => _pressed = true),
+        onTapCancel: widget.onTap == null
+            ? null
+            : () => setState(() => _pressed = false),
+        onTap: widget.onTap == null
+            ? null
+            : () {
+                setState(() => _pressed = false);
+                widget.onTap!.call();
+              },
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: size,
-                height: size,
+              AnimatedContainer(
+                duration:
+                    still ? Duration.zero : const Duration(milliseconds: 130),
+                curve: Curves.easeOut,
+                width: widget.size,
+                height: widget.size,
                 decoration: BoxDecoration(
-                  color: color,
+                  color: ShadowColors.recessDeep,
                   borderRadius: BorderRadius.circular(ShadowRadius.md),
-                  boxShadow: [
+                  border: Border.all(
+                    color: widget.color
+                        .withValues(alpha: _pressed ? 0.62 : 0.34),
+                  ),
+                  boxShadow: <BoxShadow>[
+                    // Held in, not lifted: pressing brightens the light inside
+                    // the socket rather than raising the tile off the page.
                     BoxShadow(
-                      color: color.withValues(alpha: 0.35),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
+                      color: widget.color
+                          .withValues(alpha: _pressed ? 0.26 : 0.13),
+                      blurRadius: _pressed ? 22 : 16,
+                      spreadRadius: -4,
                     ),
                   ],
                 ),
                 child: Center(
                   child: IconTheme(
-                    data: const IconThemeData(color: Colors.white, size: 26),
-                    child: icon,
+                    data: IconThemeData(
+                      color: _pressed
+                          ? Colors.white
+                          : widget.color.withValues(alpha: 0.92),
+                      size: 24,
+                    ),
+                    child: widget.icon,
                   ),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                label,
+                widget.label,
                 style: ShadowTypography.bodySm.copyWith(
                   color: ShadowColors.textPrimary,
                   fontWeight: FontWeight.w500,
