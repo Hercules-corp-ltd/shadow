@@ -51,13 +51,13 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
           ),
           const SizedBox(height: 16),
           if (p.portfolio != null)
-            GlassCard(
+            GlassCard.lit(
+              accent: ShadowColors.primary,
               padding: const EdgeInsets.all(16),
-              gradient: ShadowColors.primaryGradient,
               child: Row(
                 children: [
                   const Icon(Icons.account_balance_wallet_rounded,
-                      color: Colors.white),
+                      color: ShadowColors.primary),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -66,9 +66,11 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
                         // Holdings, not a valuation. RPC returns balances and
                         // no price, and the previous dollar figure came from a
                         // backend that had hardcoded the SOL price.
-                        Text('Holdings',
-                            style: ShadowTypography.caption
-                                .copyWith(color: Colors.white70)),
+                        Text('HOLDINGS',
+                            style: ShadowTypography.caption.copyWith(
+                              letterSpacing: 2,
+                              color: ShadowColors.textTertiary,
+                            )),
                         Text(
                           '${p.portfolio!.solBalance.toStringAsFixed(4)} SOL',
                           style:
@@ -113,15 +115,21 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
                         Container(
                           width: 44,
                           height: 44,
-                          decoration: const BoxDecoration(
-                            gradient: ShadowColors.goldGradient,
+                          // Every token got the same gold coin, so the colour
+                          // said nothing and a list of them read as a row of
+                          // identical badges. Cut disc, lettering carries it.
+                          decoration: BoxDecoration(
+                            color: ShadowColors.recessDeep,
                             shape: BoxShape.circle,
+                            border: Border.all(color: ShadowColors.edge),
                           ),
                           alignment: Alignment.center,
                           child: Text(
                             t.symbol.isEmpty ? '?' : t.symbol[0].toUpperCase(),
-                            style: ShadowTypography.h4
-                                .copyWith(color: Colors.white),
+                            style: ShadowTypography.h4.copyWith(
+                              color: ShadowColors.primary
+                                  .withValues(alpha: 0.85),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),

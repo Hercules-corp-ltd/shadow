@@ -95,8 +95,6 @@ class _HeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassCard(
       padding: const EdgeInsets.all(24),
-      gradient: ShadowColors.navyGradient,
-      border: Border.all(color: ShadowColors.cardNavyBorder, width: 1),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

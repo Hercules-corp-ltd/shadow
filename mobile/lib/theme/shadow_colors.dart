@@ -12,9 +12,13 @@ class ShadowColors {
   static const Color surfaceGlass = Color(0x1AFFFFFF); // 10% white glass
   static const Color surfaceGlassBorder = Color(0x26FFFFFF); // 15% border
 
-  // Deep blue card background (Convert Your Existing Website)
-  static const Color cardNavy = Color(0xFF1A2332);
-  static const Color cardNavyBorder = Color(0xFF2A3446);
+  // The navy card colours and the gold and glass gradients that used to sit
+  // here are gone. They came from the original Figma file and named a look
+  // the app no longer has: four screens filled a card with navy or gold and
+  // set every string on it to white. Colour is light in this app now, so a
+  // card that carries an accent is GlassCard.lit and there is nothing left
+  // for a second flat palette to describe. Deleted rather than left unused,
+  // because an unused colour constant is an invitation.
 
   // Primary accent (Shadow orange)
   static const Color primary = Color(0xFFF97316);
@@ -82,23 +86,5 @@ class ShadowColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [Color(0xFFF97316), Color(0xFFEA580C)],
-  );
-
-  static const Gradient goldGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFFFBBF24), Color(0xFFF97316)],
-  );
-
-  static const Gradient glassGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0x26FFFFFF), Color(0x0DFFFFFF)],
-  );
-
-  static const Gradient navyGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF1A2332), Color(0xFF0F1620)],
   );
 }

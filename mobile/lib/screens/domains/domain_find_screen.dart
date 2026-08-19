@@ -52,8 +52,6 @@ class _DomainFindScreenState extends State<DomainFindScreen> {
         children: [
           GlassCard(
             padding: const EdgeInsets.all(16),
-            gradient: ShadowColors.navyGradient,
-            border: Border.all(color: ShadowColors.cardNavyBorder, width: 1),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

@@ -31,19 +31,26 @@ class DeployDeployedScreen extends StatelessWidget {
             child: Container(
               width: 120,
               height: 120,
+              // Success, and it is allowed to be bright - but as a light in
+              // a socket, like every other disc in the app, not a filled
+              // orange coin.
               decoration: BoxDecoration(
-                gradient: ShadowColors.primaryGradient,
+                color: ShadowColors.recessDeep,
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: ShadowColors.primary.withValues(alpha: 0.40),
+                  width: 1.5,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: ShadowColors.primary.withValues(alpha: 0.4),
-                    blurRadius: 40,
-                    spreadRadius: 4,
+                    color: ShadowColors.primary.withValues(alpha: 0.28),
+                    blurRadius: 48,
+                    spreadRadius: -6,
                   ),
                 ],
               ),
               child: const Icon(Icons.check_rounded,
-                  color: Colors.white, size: 64),
+                  color: ShadowColors.primary, size: 64),
             ).animate().scale(duration: 400.ms, curve: Curves.elasticOut),
           ),
           const SizedBox(height: 32),

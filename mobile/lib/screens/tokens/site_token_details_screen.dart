@@ -27,21 +27,27 @@ class SiteTokenDetailsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
-          GlassCard(
+          GlassCard.lit(
+            accent: ShadowColors.primary,
             padding: const EdgeInsets.all(20),
-            gradient: ShadowColors.primaryGradient,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Balance',
-                    style: ShadowTypography.caption
-                        .copyWith(color: Colors.white70)),
+                Text('BALANCE',
+                    style: ShadowTypography.caption.copyWith(
+                      letterSpacing: 2,
+                      color: ShadowColors.textTertiary,
+                    )),
                 const SizedBox(height: 4),
                 Text(
                   t == null
                       ? '–'
                       : '${t.balance.toStringAsFixed(4)} ${t.symbol}',
-                  style: ShadowTypography.h1.copyWith(color: Colors.white),
+                  style: ShadowTypography.h1.copyWith(
+                    color: t == null
+                        ? ShadowColors.textSecondary
+                        : ShadowColors.primaryHover,
+                  ),
                 ),
                 if (t != null && t.usdValue > 0) ...[
                   const SizedBox(height: 4),

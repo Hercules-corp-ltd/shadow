@@ -31,7 +31,30 @@ class GlassCard extends StatefulWidget {
     @Deprecated('Blur is no longer used; kept so callers still compile.')
     this.blur = 24,
     this.margin,
-  });
+  }) : accent = null;
+
+  /// A card that carries an accent colour — a balance, a result, a headline
+  /// figure.
+  ///
+  /// Four screens used to do this by filling the card with
+  /// `primaryGradient` and setting every string on it to white. That is a
+  /// slab of brand colour with the information painted on top of it, and it
+  /// made the least interesting label on each screen the highest-contrast
+  /// thing on it. Here the accent is *light*: a pool of it inside the card,
+  /// an edge of it, a bloom beneath. The text keeps the app's normal colours,
+  /// so whatever the card is actually about stays the brightest thing on it.
+  const GlassCard.lit({
+    super.key,
+    required this.child,
+    required Color this.accent,
+    this.padding = const EdgeInsets.all(ShadowSpacing.cardPadding),
+    this.radius = ShadowRadius.lg,
+    this.onTap,
+    this.margin,
+  })  : gradient = null,
+        color = null,
+        border = null,
+        blur = 0;
 
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -42,6 +65,9 @@ class GlassCard extends StatefulWidget {
   final BoxBorder? border;
   final double blur;
   final EdgeInsetsGeometry? margin;
+
+  /// Non-null only for [GlassCard.lit].
+  final Color? accent;
 
   @override
   State<GlassCard> createState() => _GlassCardState();
@@ -54,6 +80,7 @@ class _GlassCardState extends State<GlassCard> {
   Widget build(BuildContext context) {
     final borderRadius = BorderRadius.circular(widget.radius);
     final tappable = widget.onTap != null;
+    final accent = widget.accent;
 
     final decorated = AnimatedContainer(
       duration: const Duration(milliseconds: 120),
@@ -63,7 +90,18 @@ class _GlassCardState extends State<GlassCard> {
         // A vertical fall rather than the old flat fill: brighter along the
         // top edge, darker at the bottom, which is what a surface under a
         // light overhead actually does.
-        gradient: widget.gradient ??
+        gradient: accent != null
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[
+                  accent.withValues(alpha: widget.onTap != null && _pressed
+                      ? 0.24
+                      : 0.18),
+                  accent.withValues(alpha: 0.045),
+                ],
+              )
+            : widget.gradient ??
             (widget.color == null
                 ? LinearGradient(
                     begin: Alignment.topCenter,
@@ -78,7 +116,9 @@ class _GlassCardState extends State<GlassCard> {
         borderRadius: borderRadius,
         border: widget.border ??
             Border.all(
-              color: Colors.white.withValues(alpha: _pressed ? 0.20 : 0.13),
+              color: accent != null
+                  ? accent.withValues(alpha: _pressed ? 0.42 : 0.30)
+                  : Colors.white.withValues(alpha: _pressed ? 0.20 : 0.13),
               width: 1,
             ),
         boxShadow: <BoxShadow>[
@@ -90,6 +130,13 @@ class _GlassCardState extends State<GlassCard> {
             offset: Offset(0, _pressed ? 3 : 10),
             spreadRadius: -6,
           ),
+          if (accent != null)
+            BoxShadow(
+              color: accent.withValues(alpha: 0.10),
+              blurRadius: 40,
+              offset: const Offset(0, 10),
+              spreadRadius: -12,
+            ),
         ],
       ),
       child: widget.child,

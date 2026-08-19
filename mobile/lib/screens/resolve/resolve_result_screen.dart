@@ -97,8 +97,6 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
         children: [
           GlassCard(
             padding: const EdgeInsets.all(20),
-            gradient: ShadowColors.navyGradient,
-            border: Border.all(color: ShadowColors.cardNavyBorder, width: 1),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -108,11 +106,14 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
                       width: 56,
                       height: 56,
                       decoration: BoxDecoration(
-                        gradient: ShadowColors.primaryGradient,
+                        color: ShadowColors.recessDeep,
                         borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: ShadowColors.primary.withValues(alpha: 0.30),
+                        ),
                       ),
                       child: const Icon(Icons.public_rounded,
-                          color: Colors.white, size: 28),
+                          color: ShadowColors.primary, size: 28),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
