@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Deliberately identical to values-night. Shadow does not have a light
-         theme, so inheriting Theme.Light here — as the Flutter template does —
-         only bought a white flash on the way in for anyone whose phone is not
-         in dark mode. -->
+    <!-- Android 12 and up draw their own splash and ignore windowBackground
+         for it, so the black has to be stated again here or the system picks
+         the theme's colorBackground and we are back to a white flash. -->
     <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowSplashScreenBackground">@android:color/black</item>
     </style>
     <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowBackground">@android:color/black</item>
