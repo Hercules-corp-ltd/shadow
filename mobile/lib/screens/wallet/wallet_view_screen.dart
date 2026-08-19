@@ -77,26 +77,60 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
 
   Widget _buildBalanceCard(BuildContext context, TokensProvider tokens) {
     final portfolio = tokens.portfolio;
+    // A slab of solid brand orange with white text on it is what every
+    // wallet app does with this card, and it was the loudest object in
+    // Shadow by a distance — a bright rectangle sitting on a black page,
+    // with the least interesting thing on the screen (the word "balance")
+    // rendered at the highest contrast available.
+    //
+    // The orange stays, as light rather than as paint: a warm pool behind
+    // the figure, a warm edge, and the number itself carrying the colour.
+    // Same information, and the balance is now the brightest thing on the
+    // card instead of the third brightest.
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: ShadowColors.primaryGradient,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[
+            ShadowColors.primary.withValues(alpha: 0.18),
+            ShadowColors.primary.withValues(alpha: 0.045),
+          ],
+        ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: ShadowColors.primary.withValues(alpha: 0.30),
+        ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: ShadowColors.primary.withValues(alpha: 0.10),
+            blurRadius: 40,
+            spreadRadius: -12,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // SOL, not dollars. Nothing here knows a price, and the figure this
           // replaced was computed from a hardcoded one.
-          Text('SOL balance',
-              style: ShadowTypography.label
-                  .copyWith(color: Colors.white.withValues(alpha: 0.9))),
+          Text('SOL BALANCE',
+              style: ShadowTypography.label.copyWith(
+                letterSpacing: 2,
+                color: ShadowColors.textTertiary,
+              )),
           const SizedBox(height: 8),
           Text(
             portfolio == null
                 ? '—'
                 : portfolio.solBalance.toStringAsFixed(4),
-            style: ShadowTypography.displayMd.copyWith(color: Colors.white),
+            style: ShadowTypography.displayMd.copyWith(
+              color: portfolio == null
+                  ? ShadowColors.textSecondary
+                  : ShadowColors.primaryHover,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -104,7 +138,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                 ? 'Loading…'
                 : '${portfolio.tokenCount} SPL token'
                     '${portfolio.tokenCount == 1 ? '' : 's'}',
-            style: ShadowTypography.bodySm.copyWith(color: Colors.white70),
+            style: ShadowTypography.bodySm,
           ),
           const SizedBox(height: 16),
           Row(
@@ -119,11 +153,13 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                     );
                   }
                 },
-                icon: const Icon(Icons.copy_rounded, color: Colors.white),
+                icon: const Icon(Icons.copy_rounded,
+                    color: ShadowColors.textSecondary),
               ),
               IconButton(
                 onPressed: () => context.push('/wallet/receive'),
-                icon: const Icon(Icons.qr_code_rounded, color: Colors.white),
+                icon: const Icon(Icons.qr_code_rounded,
+                    color: ShadowColors.textSecondary),
               ),
             ],
           ),
