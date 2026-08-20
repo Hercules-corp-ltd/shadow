@@ -1,0 +1,6 @@
+# Generated masters: 2K PNGs, 5-8 MB each.
+#
+# They are the input to optimise.sh, not something the site serves - the page
+# loads the WebP in assets/img/ instead. Regenerate with generate.sh; the
+# prompts are the reproducible part, not the pixels.
+*.png
