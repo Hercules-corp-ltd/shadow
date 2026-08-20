@@ -57,7 +57,24 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
       _loading = true;
       _error = null;
     });
-    final result = await _quick.unlock();
+    // QuickUnlock.unlock reads and deletes through flutter_secure_storage,
+    // which throws PlatformException on a corrupted Android keystore. That
+    // throw used to escape as an unhandled async error with _loading still
+    // true — so the primary Unlock button stayed a disabled spinner for the
+    // life of the screen, with nothing said, on the screen whose only job is
+    // getting back into the wallet.
+    final QuickUnlockResult result;
+    try {
+      result = await _quick.unlock();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = 'Could not ask the phone to unlock. '
+            'Type your password instead.';
+      });
+      return;
+    }
     if (!mounted) return;
 
     if (!result.succeeded) {
@@ -282,9 +299,24 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
                               ),
                             );
                             if (confirm == true && context.mounted) {
-                              await context
-                                  .read<WalletProvider>()
-                                  .deleteWallet();
+                              // The destructive branch had no catch either:
+                              // deleteWallet awaits seven removals and then a
+                              // sign-out, and a throw anywhere in there meant
+                              // the navigation never ran and the user was left
+                              // on the locked screen with no idea whether the
+                              // deletion they had just confirmed had happened.
+                              try {
+                                await context
+                                    .read<WalletProvider>()
+                                    .deleteWallet();
+                              } catch (_) {
+                                if (!context.mounted) return;
+                                setState(() => _error =
+                                    'Deleting did not finish. Some of the '
+                                    'wallet may already be gone — check '
+                                    'before relying on it.');
+                                return;
+                              }
                               if (context.mounted) context.go('/welcome');
                             }
                           },

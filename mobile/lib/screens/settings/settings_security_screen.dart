@@ -21,21 +21,27 @@ class SettingsSecurityScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
-          GlassCard(
-            padding: const EdgeInsets.all(8),
+          const GlassCard(
+            padding: EdgeInsets.all(8),
             child: Column(
               children: [
-                SwitchListTile(
-                  value: s.requireUnlock,
-                  title: Text('Require password each launch',
-                      style: ShadowTypography.body),
-                  subtitle: Text('Always lock wallet when the app closes',
-                      style: ShadowTypography.bodySm),
-                  onChanged: (v) =>
-                      provider.update(s.copyWith(requireUnlock: v)),
+                // `requireUnlock` is written here and read nowhere. There is
+                // no lifecycle observer in the app, and WalletProvider's
+                // bootstrap sets WalletLifecycle.locked unconditionally
+                // whenever a stored address exists — so the wallet always
+                // locks at launch, and this switch could only ever disagree
+                // with the behaviour it named. A switch that moves is a
+                // promise.
+                UnbuiltTile(
+                  icon: Icons.lock_clock_rounded,
+                  title: 'Require password each launch',
+                  reason: 'Shadow already locks the wallet on every launch, '
+                      'and there is no way to turn that off yet — so this '
+                      'would only ever have been a switch that agreed with '
+                      'itself.',
                 ),
-                const Divider(height: 1, color: ShadowColors.border),
-                const UnbuiltTile(
+                Divider(height: 1, color: ShadowColors.border),
+                UnbuiltTile(
                   icon: Icons.fingerprint_rounded,
                   title: 'Unlock with biometrics',
                   reason: 'Shadow has no biometric integration yet — unlocking '

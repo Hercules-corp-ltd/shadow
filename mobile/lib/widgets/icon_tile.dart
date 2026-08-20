@@ -43,9 +43,17 @@ class _IconTileState extends State<IconTile> {
   @override
   Widget build(BuildContext context) {
     final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    // onTap was checked three times for gestures and never once for looks, so
+    // a tile with no handler rendered pixel-identical to a working one — the
+    // trap the wallet screen walked straight into when its "Buy" tile was
+    // disabled and stayed indistinguishable from Send, Receive and Swap.
+    final disabled = widget.onTap == null;
 
-    return Semantics(
+    return Opacity(
+      opacity: disabled ? 0.45 : 1,
+      child: Semantics(
       button: true,
+      enabled: !disabled,
       label: widget.label,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -116,6 +124,7 @@ class _IconTileState extends State<IconTile> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

@@ -20,6 +20,9 @@ class ExtensionsProvider with ChangeNotifier {
   String? get error => _error;
 
   Future<void> load() async {
+    // Same sticky-error bug as DomainsProvider.loadMine: only toggle() ever
+    // cleared this, so one failed load made "Try again" permanently useless.
+    _error = null;
     _isLoading = true;
     notifyListeners();
     try {

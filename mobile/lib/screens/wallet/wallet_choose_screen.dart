@@ -25,9 +25,22 @@ class WalletChooseScreen extends StatelessWidget {
       // moment Shadow can show them.
       if (context.mounted) context.go('/wallet/phrase', extra: phrase);
     } catch (e) {
+      // storeWallet re-throws as Exception('Failed to store wallet: $e'), so
+      // interpolating it showed a user a nested raw toString that said
+      // nothing about whether a wallet now exists. It does not: createNewWallet
+      // stores before it touches provider state, so a throw means nothing was
+      // saved, and that is the useful sentence.
+      assert(() {
+        debugPrint('createNewWallet failed: $e');
+        return true;
+      }());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create wallet: $e')),
+          const SnackBar(
+            content: Text(
+              'Could not create the wallet. Nothing was saved on this device.',
+            ),
+          ),
         );
       }
     }
@@ -156,7 +169,10 @@ Future<String?> _askPassword(
   final confirm = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
-  return showModalBottomSheet<String>(
+  // Disposed when the sheet closes. This is a plain function, so nothing owned
+  // these — every open of the password sheet, cancelled ones included, leaked
+  // two ChangeNotifiers for the life of the process.
+  final result = await showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
     backgroundColor: ShadowColors.surface,
@@ -230,4 +246,8 @@ Future<String?> _askPassword(
       );
     },
   );
+
+  controller.dispose();
+  confirm.dispose();
+  return result;
 }

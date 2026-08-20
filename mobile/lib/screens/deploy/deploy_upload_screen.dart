@@ -72,7 +72,19 @@ class _DeployUploadScreenState extends State<DeployUploadScreen> {
       if (!mounted) return;
       context.push('/deploy/files');
     } catch (e) {
-      setState(() => _error = e.toString());
+      // FilePicker failures arrive as PlatformException, whose toString is
+      // `PlatformException(read_external_storage_denied, User did not grant…)`
+      // — debug text in the user-facing error slot. The mounted guard was
+      // missing here too, though the finally below has one.
+      assert(() {
+        debugPrint('file picker failed: $e');
+        return true;
+      }());
+      if (mounted) {
+        setState(() => _error =
+            'Could not open the file picker on this device. Check that '
+            'Shadow is allowed to read files.');
+      }
     } finally {
       if (mounted) setState(() => _picking = false);
     }

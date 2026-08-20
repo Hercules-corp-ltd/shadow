@@ -56,8 +56,17 @@ class _WalletImportScreenState extends State<WalletImportScreen> {
       if (!mounted) return;
       context.go('/home');
     } catch (e) {
+      assert(() {
+        debugPrint('importFromSeedPhrase failed: $e');
+        return true;
+      }());
       setState(() {
-        _error = 'Failed to import: $e';
+        // fromMnemonic throws a library-level error on a bad BIP-39 checksum
+        // and storeWallet re-wraps it, so interpolating $e printed a debug
+        // toString at the exact moment somebody is trying to restore a wallet
+        // — and never actually told them the words were wrong.
+        _error = 'Those words are not a valid recovery phrase. Check the '
+            'spelling and the order, then try again.';
         _submitting = false;
       });
     }

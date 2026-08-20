@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../../providers/settings_provider.dart';
 import '../../theme/shadow_colors.dart';
-import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
+import '../../widgets/unbuilt_tile.dart';
 import '../../widgets/shadow_scaffold.dart';
 
 class SettingsGeneralScreen extends StatelessWidget {
@@ -12,46 +10,40 @@ class SettingsGeneralScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<SettingsProvider>();
-    final s = provider.settings;
-
     return ShadowScaffold(
       title: 'General',
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
-        children: [
+        children: const [
           GlassCard(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8),
             child: Column(
               children: [
-                SwitchListTile(
-                  value: s.analyticsEnabled,
-                  title:
-                      Text('Anonymous analytics', style: ShadowTypography.body),
-                  subtitle: Text(
-                      'Help improve Shadow by sharing anonymous usage data',
-                      style: ShadowTypography.bodySm),
-                  onChanged: (v) =>
-                      provider.update(s.copyWith(analyticsEnabled: v)),
+                // Every control on this screen wrote a field that nothing
+                // read. There is no analytics client, no crash reporter and no
+                // updater anywhere in the app, so all three subtitles
+                // described capabilities that do not exist — and "help improve
+                // Shadow by sharing anonymous usage data" invited a user to
+                // opt into something that could not happen either way.
+                UnbuiltTile(
+                  icon: Icons.insights_rounded,
+                  title: 'Anonymous analytics',
+                  reason: 'Shadow has no analytics client and sends nothing, '
+                      'so there is nothing here to turn on or off.',
                 ),
-                const Divider(height: 1, color: ShadowColors.border),
-                SwitchListTile(
-                  value: s.telemetryEnabled,
-                  title: Text('Crash telemetry', style: ShadowTypography.body),
-                  subtitle: Text('Send crash reports automatically',
-                      style: ShadowTypography.bodySm),
-                  onChanged: (v) =>
-                      provider.update(s.copyWith(telemetryEnabled: v)),
+                Divider(height: 1, color: ShadowColors.edge),
+                UnbuiltTile(
+                  icon: Icons.bug_report_outlined,
+                  title: 'Crash telemetry',
+                  reason: 'No crash reporter ships with Shadow, so no report '
+                      'has ever left this device.',
                 ),
-                const Divider(height: 1, color: ShadowColors.border),
-                SwitchListTile(
-                  value: s.autoUpdateEnabled,
-                  title:
-                      Text('Automatic updates', style: ShadowTypography.body),
-                  subtitle: Text('Keep Shadow up-to-date in the background',
-                      style: ShadowTypography.bodySm),
-                  onChanged: (v) =>
-                      provider.update(s.copyWith(autoUpdateEnabled: v)),
+                Divider(height: 1, color: ShadowColors.edge),
+                UnbuiltTile(
+                  icon: Icons.system_update_alt_rounded,
+                  title: 'Automatic updates',
+                  reason: 'Shadow has no updater — new versions arrive the '
+                      'same way this one was installed.',
                 ),
               ],
             ),

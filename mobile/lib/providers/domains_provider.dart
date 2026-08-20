@@ -25,12 +25,22 @@ class DomainsProvider with ChangeNotifier {
   String? get error => _error;
 
   Future<void> loadMine(String wallet) async {
+    // Clearing on entry matters as much as setting it. The finder gives
+    // `error` priority over the list, so a sticky error meant a successful
+    // retry refilled _myDomains and the user still saw "could not load" with
+    // their domains hidden — a retry button that could never change anything.
+    _error = null;
     _isLoading = true;
     notifyListeners();
     try {
       _myDomains = await _service.ownerDomains(wallet);
     } catch (e) {
-      _error = e.toString();
+      // The finder renders this verbatim, so a raw DioException put a debug
+      // dump — request URI, headers, the underlying SocketException — on the
+      // page. The sibling search() two methods down already did this right.
+      _error = e is DioException
+          ? describeDioFailure(e)
+          : 'Could not load your domains';
       _myDomains = const [];
     } finally {
       _isLoading = false;

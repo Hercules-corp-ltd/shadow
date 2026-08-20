@@ -55,7 +55,9 @@ class _DomainDnsScreenState extends State<DomainDnsScreen> {
       await _service.deleteDnsRecord(widget.domain, r.id);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = 'Could not delete that record: $e');
+      setState(() => _error = e is DioException
+          ? 'Could not delete that record: ${describeDioFailure(e)}'
+          : 'Could not delete that record.');
       return;
     }
     if (!mounted) return;

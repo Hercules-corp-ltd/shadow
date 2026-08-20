@@ -23,6 +23,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   final _searchCtrl = TextEditingController();
 
   @override
+  void dispose() {
+    // ShadowSearchField correctly disposes only the FocusNode it owns, so a
+    // controller handed to it has to be disposed here. Nothing did.
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(

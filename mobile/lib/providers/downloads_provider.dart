@@ -8,17 +8,28 @@ class DownloadsProvider with ChangeNotifier {
 
   List<Download> _items = const [];
   bool _isLoading = false;
+  String? _error;
 
   List<Download> get items => _items;
   bool get isLoading => _isLoading;
 
+  /// Why the last load failed. Same reasoning as every other list provider:
+  /// a failed read must not render as an empty account.
+  String? get error => _error;
+
   Future<void> load() async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
     try {
       _items = await _service.list();
-    } catch (_) {
+    } catch (e) {
       _items = const [];
+      _error = 'Could not read your downloads from this device.';
+      assert(() {
+        debugPrint('downloads load failed: $e');
+        return true;
+      }());
     } finally {
       _isLoading = false;
       notifyListeners();

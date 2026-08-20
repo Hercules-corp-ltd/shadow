@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:dio/dio.dart';
+
 import '../../providers/domains_provider.dart';
+import '../../services/fetch_outcome.dart';
 import '../../services/domain_service.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
@@ -61,8 +64,11 @@ class _DomainSettingsScreenState extends State<DomainSettingsScreen> {
                       ? 'This domain has not loaded, so its verification '
                           'state is unknown.'
                       : d.isVerified
-                          ? 'Your domain is verified — trust score '
-                              '${d.trustScore ?? 0}.'
+                          ? (d.trustScore == null
+                              ? 'Your domain is verified. No trust score was '
+                                  'reported.'
+                              : 'Your domain is verified — trust score '
+                                  '${d.trustScore}.')
                           : 'Increase trust by verifying content ownership.',
                   style: ShadowTypography.bodySm,
                 ),
@@ -154,7 +160,9 @@ class _DomainSettingsScreenState extends State<DomainSettingsScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _message = 'Verification failed: $e';
+        _message = e is DioException
+            ? 'Verification failed: ${describeDioFailure(e)}'
+            : 'Verification failed. Please try again.';
         _failed = true;
       });
     } finally {

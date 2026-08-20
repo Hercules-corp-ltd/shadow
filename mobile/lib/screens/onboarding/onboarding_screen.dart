@@ -72,20 +72,31 @@ const _slides = <_OnboardingSlide>[
     god: 'HERMES',
     title: 'An address per site',
     subtitle: 'And you can burn one without losing the rest',
+    // Careful about tense. Deriving the address is done and tested; actually
+    // *receiving* at it needs the mail Worker attached to a domain that takes
+    // mail, and the shipped config still points at mail.shadow.test with a
+    // placeholder database. Promising delivery would be promising the one
+    // part that is not finished.
     description:
-        'Sign-ups get an address that belongs to that site alone, arriving in '
-        'a mailbox only your phrase can open. When one starts drawing spam, '
-        'replace it — the site you sold it to is the only one affected.',
+        'Sign-ups get an address that belongs to that site alone, worked out '
+        'from your phrase rather than stored anywhere. When one starts '
+        'drawing spam, replace it — the site you gave it to is the only one '
+        'affected.',
     asset: 'assets/gods/Hermes - Onboarding.svg',
   ),
   _OnboardingSlide(
     god: 'ARES',
     title: 'Nothing follows you out',
     subtitle: 'Trackers stopped before they load',
+    // Blocking is real on both platforms. The cookie half is only *measured*
+    // on Android — StorageIsolationPolicy returns unknown() everywhere else,
+    // which its own label renders as "third-party cookies are allowed" — so
+    // stating it flatly would claim an iOS guarantee nothing checked.
     description:
-        'Known trackers are blocked at the request, not hidden after the '
-        'fact, and third-party cookies never reach the page. Both are '
-        'measured on a real device rather than assumed.',
+        'Known trackers are stopped at the request rather than hidden after '
+        'the fact. Where the platform lets Shadow check, third-party cookies '
+        'are blocked too — Settings reports what this device actually does, '
+        'rather than what we would like it to.',
     asset: 'assets/gods/Ares - Onboarding.svg',
   ),
 ];
