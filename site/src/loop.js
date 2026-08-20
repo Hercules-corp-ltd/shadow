@@ -103,15 +103,31 @@ export function createLoop({ length, onTick, config = {} }) {
     }
 
     // The wrap. Both numbers, same tick, same amount.
-    if (shown >= length) {
-      shown -= length;
-      raw -= length;
+    //
+    // Written as a modulo rather than a single subtraction. In ordinary use one
+    // subtraction is always enough — the ease moves `shown` by at most a few
+    // percent of the gap per frame, so it can never clear a whole loop length
+    // in one tick. It stops being enough the moment something puts the value
+    // several lengths out at once: a hard fling, a tab restored after a long
+    // sleep with a huge accumulated delta, or a caller driving the loop
+    // programmatically. Then a single subtract leaves it still out of range,
+    // the next frame subtracts one more, and the two race — which is how this
+    // reached 1e90 while being driven hard.
+    //
+    // A modulo is total: any finite input lands in range in one step.
+    if (shown >= length || (hasWrapped && shown < 0)) {
+      const wrapped = ((shown % length) + length) % length;
+      const shift = shown - wrapped;      // always an exact multiple of length
+      shown = wrapped;
+      raw -= shift;
+      if (glide) { glide.from -= shift; glide.to -= shift; }
       hasWrapped = true;
-      if (glide) { glide.from -= length; glide.to -= length; }
-    } else if (hasWrapped && shown < 0) {
-      shown += length;
-      raw += length;
-      if (glide) { glide.from += length; glide.to += length; }
+    }
+
+    // Last line of defence. If anything upstream ever hands us a non-finite
+    // number, park at zero rather than poisoning every frame that follows.
+    if (!Number.isFinite(shown) || !Number.isFinite(raw)) {
+      shown = 0; raw = 0; velocity = 0; glide = null;
     }
 
     return shown;

@@ -190,7 +190,18 @@ export const STAGES = [
  * walking the whole thing returns you to the door you came in by. That is the
  * conceit, and it is the reason the loop exists rather than decoration.
  */
-export const LOOP_LENGTH = ZOOM_SPAN + STAGES.length * STAGE_SPAN;
+/**
+ * Scroll spent closing the rectangle again at the far end.
+ *
+ * Without it the loop simply teleports from the last stage back to the hero.
+ * With it the camera pulls back out, the page shrinks into a phone screen
+ * again, and the wrap happens at the exact instant the rectangle is a phone —
+ * so you arrive back at the landing page having walked out the way you came
+ * in. It is the same transform run backwards, which is why it costs nothing.
+ */
+export const CLOSE_SPAN = 900;
+
+export const LOOP_LENGTH = ZOOM_SPAN + STAGES.length * STAGE_SPAN + CLOSE_SPAN;
 export const stagePosition = (i) => ZOOM_SPAN + i * STAGE_SPAN;
 
 /** Shown along the bottom, because a loop with no landmarks is disorienting. */

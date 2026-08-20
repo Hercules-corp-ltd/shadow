@@ -47,16 +47,6 @@
 <canvas id="backdrop" aria-hidden="true"></canvas>
 <div class="grid" aria-hidden="true"></div>
 
-<!-- Technical marginalia. Cheap, and it does a lot of work: it says the page
-     was drawn to a system rather than arranged by eye. -->
-<div class="marks" aria-hidden="true">
-  <span class="mark mark--tl">EST. 2026</span>
-  <span class="mark mark--tr">S.00</span>
-  <span class="mark mark--bl" id="markPerf">— FPS</span>
-  <span class="mark mark--bc">45PX GRID / 1:1</span>
-  <span class="mark mark--br" id="markRoute">SEC / HERO</span>
-</div>
-
 <div class="scene" id="scene">
   <div class="column">
 
@@ -82,6 +72,8 @@
       <div class="phone">
         <div class="phone__glow" aria-hidden="true"></div>
         <div class="phone__body">
+          <span class="phone__frame" aria-hidden="true"></span>
+          <span class="phone__screen" aria-hidden="true"></span>
           <div class="card" id="card">
             <main class="plane" id="plane"></main>
             <img class="card__shot" id="cardShot" src="assets/shots/home.png" alt="Shadow's home screen: an arched recess with a search slot beneath it." width="1080" height="2400">
@@ -102,8 +94,6 @@
 
   </div>
 </div>
-
-<p class="hint" aria-hidden="true"><span class="hint__key">scroll</span> to go in</p>
 
 <noscript>
   <div class="noscript">

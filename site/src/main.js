@@ -3,7 +3,7 @@ import { createBackdrop } from './backdrop.js';
 import { createCamera } from './camera.js';
 import { createPanel } from './panel.js';
 import { createMagnet, createMarker, scramble } from './effects.js';
-import { STAGES, STAGE_SPAN, ZOOM_SPAN, LOOP_LENGTH, NAV, stagePosition } from './content.js';
+import { STAGES, STAGE_SPAN, ZOOM_SPAN, CLOSE_SPAN, LOOP_LENGTH, NAV, stagePosition } from './content.js';
 import { TUNE, mountTunePane } from './tune.js';
 
 const sceneEl = document.getElementById('scene');
@@ -188,6 +188,8 @@ const loop = createLoop({
 const cardShot = document.getElementById('cardShot');
 const camera = createCamera({
   sceneEl, cardEl, planeEl,
+  // The bezel layers only — never .phone__body, which contains the card.
+  phoneEl: [...document.querySelectorAll('.phone__frame, .phone__screen, .phone__gloss')],
   // Left behind by the camera rather than dissolved: these fade only in the
   // last third, once they are already sliding past the edge of the frame.
   fadeEls: [document.querySelector('.topbar'), document.querySelector('.hero__title'),
@@ -239,9 +241,6 @@ let renderScale = 1;
 let calmFor = 0;
 let lastDraw = 0;
 let vw = 0, vh = 0;
-let fpsFrames = 0, fpsSince = performance.now();
-const markPerf = document.getElementById('markPerf');
-const markRoute = document.getElementById('markRoute');
 
 function measure() {
   vw = window.innerWidth;
@@ -271,16 +270,37 @@ function frame(now) {
     if (calmFor >= TUNE.motionResCalmMs) renderScale = 1;
   } else calmFor = 0;
 
-  // ---- the opening -----------------------------------------------------
-  // Distance to 0 is signed and continuous across the wrap, so coming back
-  // round from the download stage closes the portal again rather than jumping.
-  const toTop = loop.distanceTo(0);
-  const zoomT = toTop <= -ZOOM_SPAN || toTop > 0
-    ? (toTop > 0 ? 0 : 1)
-    : -toTop / ZOOM_SPAN;
+  // ---- the opening ------------------------------------------------------
+  //
+  // The rectangle opens over the first ZOOM_SPAN and closes again over the
+  // last CLOSE_SPAN, so the loop reads as: push in through the phone, walk
+  // the colonnade, pull back out, and arrive at the landing page you started
+  // on. Driven from the absolute position rather than a signed distance to
+  // zero — that was the earlier bug, and it made the camera snap all the way
+  // out halfway round the loop, which is what turned the whole thing into a
+  // fade.
+  const closeFrom = LOOP_LENGTH - CLOSE_SPAN;
+  let zoomT;
+  if (pos < ZOOM_SPAN) zoomT = pos / ZOOM_SPAN;
+  else if (pos < closeFrom) zoomT = 1;
+  else zoomT = 1 - (pos - closeFrom) / CLOSE_SPAN;
   camera.apply(zoomT);
-  // The app screen clears over the first half, revealing the page behind it.
-  if (cardShot) cardShot.style.opacity = String(1 - Math.min(1, Math.max(0, (zoomT - 0.06) / 0.44)));
+  // The section pill belongs to the inside, not the landing page. It used to
+  // sit on top of the lead paragraph and the download buttons on the hero.
+  const navIn = Math.max(0, Math.min(1, (zoomT - 0.55) / 0.35));
+  nav.style.opacity = String(navIn);
+  nav.style.pointerEvents = navIn > 0.9 ? 'auto' : 'none';
+  nav.style.transform = `translateX(-50%) translateY(${((1 - navIn) * 14).toFixed(1)}px)`;
+  // The app screen clears as the page behind it takes over, and comes back as
+  // the rectangle closes.
+  // Cleared against the EASED progress the camera actually uses, not the raw
+  // scroll — the two diverge a lot under a slow-in ease, and driving the
+  // screenshot off the raw value uncovered the page long before the opening
+  // had taken its shape.
+  if (cardShot) {
+    const eNow = camera.progress;
+    cardShot.style.opacity = String(1 - Math.min(1, Math.max(0, eNow / 0.3)));
+  }
 
   // ---- stages ----------------------------------------------------------
   for (let i = 0; i < stageEls.length; i++) {
@@ -344,21 +364,6 @@ function frame(now) {
     backdrop.resize(vw, vh, renderScale);
     backdrop.draw(now / 1000, pos / LOOP_LENGTH);
     lastDraw = now;
-  }
-
-  // ---- marginalia ------------------------------------------------------
-  // Real numbers. Annotations that read like instrumentation but are hard-
-  // coded are just decoration pretending to be data.
-  fpsFrames++;
-  if (now - fpsSince >= 500) {
-    const fps = Math.round((fpsFrames * 1000) / (now - fpsSince));
-    fpsFrames = 0; fpsSince = now;
-    if (markPerf) markPerf.textContent = 
-      (backdrop ? 'WEBGL2' : 'CANVAS') + ' — ' + fps + 'FPS' + (renderScale < 1 ? ' — RES x' + renderScale : '');
-  }
-  if (markRoute) {
-    const label = zoomT < 0.98 ? 'SEC / HERO' : 'SEC / ' + NAV[nearest].label.toUpperCase();
-    if (markRoute.textContent !== label) markRoute.textContent = label;
   }
 
   raf = requestAnimationFrame(frame);

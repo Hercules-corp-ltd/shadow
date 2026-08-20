@@ -110,21 +110,6 @@ body::before {
     radial-gradient(70% 60% at 4% 96%, rgba(255, 80, 0, 0.07), transparent 62%);
 }
 
-/* ----------------------------------------------------------- marginalia - */
-
-.marks { position: fixed; inset: 0; z-index: 55; pointer-events: none; }
-.mark {
-  position: absolute;
-  font-family: var(--mono); font-size: 6.5px; font-weight: 400;
-  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-5);
-  white-space: nowrap;
-}
-.mark--tl { top: 22px; left: 22px; }
-.mark--tr { top: 22px; right: 22px; }
-.mark--bl { bottom: 22px; left: 22px; }
-.mark--bc { bottom: 22px; left: 50%; transform: translateX(-50%); }
-.mark--br { bottom: 22px; right: 22px; }
-@media (max-width: 760px) { .mark--bc, .mark--tr { display: none; } }
 
 /* ================================================================ scene == */
 
@@ -136,6 +121,8 @@ body::before {
 .scene {
   position: fixed; inset: 0; z-index: 20;
   display: grid; place-items: center;
+  /* Room for the section pill, which used to sit on top of the lead. */
+  padding-bottom: 24px;
   will-change: transform;
 }
 
@@ -150,7 +137,7 @@ body::before {
 
 /* ------------------------------------------------------------- topbar --- */
 
-.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 58px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: clamp(26px, 5vh, 54px); }
 .topbar__brand { display: inline-flex; align-items: center; gap: 9px; color: var(--ink-strong); text-decoration: none; }
 .topbar__brand img { display: block; width: 22px; height: 22px; }
 .topbar__word { font-family: var(--serif); font-weight: 600; font-size: 20px; letter-spacing: 0.06em; }
@@ -165,19 +152,19 @@ body::before {
 
 .hero__title {
   margin: 0;
-  font-size: clamp(38px, 5.1vw, 74px);
+  font-size: clamp(34px, min(5.1vw, 8.4vh), 72px);
   line-height: 0.96; font-weight: 500; letter-spacing: -0.032em;
   color: var(--ink-strong);
 }
 
 .lead {
-  margin: 40px 0 0;
-  font-size: 17px; line-height: 1.62; letter-spacing: -0.01em;
+  margin: clamp(18px, 3vh, 34px) 0 0;
+  font-size: 16.5px; line-height: 1.62; letter-spacing: -0.01em;
   color: var(--ink-2); max-width: 46ch;
 }
 
-.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
-.cta__note { margin: 18px 0 0; font-size: 13px; color: var(--ink-4); }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: clamp(18px, 3vh, 30px); }
+.cta__note { margin: 14px 0 0; font-size: 12.5px; color: var(--ink-4); }
 
 /* ------------------------------------------------------------ buttons --- */
 
@@ -207,9 +194,18 @@ body::before {
 }
 .phone__body {
   position: relative;
-  width: clamp(168px, 17.5vw, 250px);
+  width: clamp(150px, min(17.5vw, 30vh), 240px);
   aspect-ratio: 1080 / 2400;
-  border-radius: 30px; padding: 6px;
+  padding: 6px;
+}
+/*
+  The bezel art lives here, not on .phone__body, because the camera fades the
+  bezel out early — and #card is a CHILD of the body. Fading the body faded the
+  card and everything inside it, which is why the middle of the zoom went
+  completely blank.
+*/
+.phone__frame {
+  position: absolute; inset: 0; border-radius: 30px; pointer-events: none;
   background: linear-gradient(160deg, #2b2c31, #101013 44%, #232429);
   box-shadow: 0 50px 100px -34px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.06) inset;
 }
@@ -222,7 +218,20 @@ body::before {
   The card IS the phone's screen and the camera's focal point. It clips, and
   the page lives inside it. Its radius is driven per-frame by camera.js.
 */
-.card { position: relative; width: 100%; height: 100%; border-radius: 25px; overflow: hidden; background: #000; }
+/*
+  Absolutely positioned INSIDE the phone, which is the whole point: the camera
+  animates this box's height every frame, and if it were in flow that would
+  reflow the phone, move the card's centre, and invalidate the transform
+  origin the camera measured at rest. The card then drifts out of frame
+  halfway through the zoom and you get an empty screen — which is exactly what
+  happened. Out of flow, its size can move nothing.
+*/
+.card {
+  position: absolute; left: 6px; top: 6px; right: 6px;
+  height: calc(100% - 12px);
+  border-radius: 25px; overflow: hidden; background: #000;
+  z-index: 2;
+}
 /* Centred in the card, not pinned to its corner. The card ends up taller
    than the viewport (it has to, to cover it), so a plane at the top-left
    corner would finish a thousand pixels above the fold. Both centres
@@ -314,15 +323,6 @@ body::before {
 .nav__marker { position: absolute; left: 0; bottom: 3px; height: 2px; border-radius: 2px; background: var(--amber); pointer-events: none; will-change: transform, width; }
 .nav__marker--trail { filter: blur(2.5px); }
 
-/* ---------------------------------------------------------------- hint -- */
-
-.hint {
-  position: fixed; right: 22px; bottom: 44px; z-index: 60; margin: 0;
-  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--ink-4);
-  pointer-events: none; display: flex; align-items: center; gap: 8px;
-}
-.hint__key { border: 1px solid var(--edge-faint); border-radius: 5px; padding: 4px 8px; color: var(--ink-3); background: rgba(255,255,255,0.03); }
-@media (max-width: 1000px) { .hint { display: none; } }
 
 .noscript { position: relative; z-index: 90; max-width: 60ch; margin: 0 auto; padding: 16vh 22px; }
 .noscript h1 { font-family: var(--serif); letter-spacing: 0.1em; }
@@ -339,7 +339,7 @@ body.static-layout .phone__body { width: clamp(180px, 40vw, 240px); margin: 0 au
 body.static-layout .card { overflow: visible; }
 body.static-layout .plane { position: static; transform: none !important; width: auto !important; height: auto !important; }
 body.static-layout .card__shot { position: static; height: auto; }
-body.static-layout .plates, body.static-layout .hint, body.static-layout .marks { display: none; }
+body.static-layout .plates { display: none; }
 body.static-layout .stage {
   position: relative; inset: auto; padding: clamp(60px, 11vh, 130px) clamp(22px, 5vw, 80px);
   opacity: 1 !important; filter: none !important; transform: none !important;

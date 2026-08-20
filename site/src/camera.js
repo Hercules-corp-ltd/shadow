@@ -1,109 +1,168 @@
 /**
- * The camera.
+ * The camera, and the opening rectangle.
  *
- * ## What the first attempt got wrong
+ * Three attempts got this wrong in three different ways, and the failures are
+ * worth keeping written down because each one looks fine in the numbers.
  *
- * It grew the card and left the rest of the hero still, fading it out. That
- * reads as a panel expanding over a page. Watch the reference frame by frame
- * and the headline is *also* getting bigger — by the third frame "Design,
- * build, ship, repeat." is half off the left edge at roughly three times its
- * starting size. Nothing is fading; the camera is moving toward the card and
- * the whole scene grows with it, exactly as it would through a lens.
+ *  1. Grew the card, held the hero still, faded it. Reads as a panel expanding
+ *     over a page — no sense of travel at all.
  *
- * So there is one transform on one element — the scene — and everything in the
- * hero is inside it. That is the whole trick.
+ *  2. Scaled the whole scene about the card. The headline grows and leaves,
+ *     which is right, but the card keeps the phone's 0.44 aspect the entire
+ *     way. A portrait window revealing landscape content has to grow to about
+ *     four times the viewport *height* before its width fills the screen, so
+ *     most of the zoom is a small block of content marooned in a tall black
+ *     rectangle. On screen it reads as a fade, because the only thing actually
+ *     changing is what is inside a shape whose edges left the frame early.
  *
- * ## The maths
+ *  3. This one. Two things move at once:
  *
- *   z    = Z ** e            Z = viewportWidth / cardWidth
- *   origin = the card's centre, in scene coordinates
- *   offset = (viewportCentre - cardCentre) * e
+ *       · the SCENE scales, so the headline grows and slides out of frame the
+ *         way it would through a lens;
+ *       · the RECTANGLE itself morphs — its on-screen box interpolates from
+ *         the phone's screen to the viewport, each axis on its own exponential.
  *
- * With the transform origin pinned to the card's centre, scaling leaves that
- * point where it is, and the offset walks it to the middle of the screen. At
- * e = 1 the card is exactly viewport-wide and exactly centred, which is to say
- * it *is* the viewport.
+ *     So the opening is always a real rectangle with visible edges, travelling
+ *     toward you *and* unfolding from a phone into a page. And the content
+ *     inside it fills it at every instant rather than floating in it, which is
+ *     what makes it read as a window rather than a picture frame.
  *
- * ## Why the content inside the card never changes scale
+ * ## Keeping the content exactly filling the opening
  *
- * The plane is a child of the card, so it already inherits `z`. It is laid out
- * at full viewport size and held at a constant `1 / Z`. At the start that makes
- * it fill the card as a miniature; at the end, `(1/Z) * Z = 1`, life size. It
- * is the same page the whole way through at the same relative size — the camera
- * did all of the work, which is why there is no seam to hide.
+ * The plane is a child of the card, so it inherits the scene scale `z`. Its own
+ * scale is therefore chosen to cancel `z` and land on the opening's current
+ * on-screen width:
+ *
+ *     planeScale = wScreen / (viewportWidth * z)
+ *
+ * At rest that is cardWidth/viewportWidth — a miniature exactly filling the
+ * phone. At the end it is 1/Z, which the scene's Z multiplies back to 1: life
+ * size, pixel for pixel, with nothing swapped.
  */
 
-/** Slow at the start, where the phone still reads as a phone. */
-function ease(t, easeIn = 1.75, easeOut = 2.15) {
+/**
+ * Slow at the front.
+ *
+ * The first third is where the phone still reads as a phone, and it is the
+ * part worth spending scroll on. Attempt 2 used (1.75, 2.15), which put the
+ * eased value at 0.57 by the time the raw one reached 0.5 — the headline was
+ * off-frame before half the gesture was done.
+ */
+function ease(t, easeIn = 2.6, easeOut = 1.5) {
   if (t <= 0) return 0;
   if (t >= 1) return 1;
   const n = Math.pow(t, easeIn);
   return n / (n + Math.pow(1 - t, easeOut));
 }
 
-export function createCamera({ sceneEl, cardEl, planeEl, fadeEls = [] }) {
+export function createCamera({ sceneEl, cardEl, planeEl, phoneEl, fadeEls = [] }) {
+  const bezelEls = phoneEl ? (Array.isArray(phoneEl) ? phoneEl : [phoneEl]) : [];
   let vw = 0, vh = 0;
   let Z = 4;
-  let origin = { x: 0, y: 0 };      // card centre, scene-local
-  let start = { x: 0, y: 0 };       // card centre, screen, at rest
-  let radius0 = 28;
+  let card0 = { w: 212, h: 486, r: 25 };
+  let origin = { x: 0, y: 0 };
+  let start = { x: 0, y: 0 };
+  let progress = 0;   // the eased value, exposed so callers can time against it
 
   function measure() {
     vw = window.innerWidth;
     vh = window.innerHeight;
 
-    // Measure with the scene untransformed, or every number is scaled.
     const prev = sceneEl.style.transform;
     sceneEl.style.transform = 'none';
+    // Clear any size we imposed, so we measure the layout's own idea of the card.
+    cardEl.style.height = '';
+    cardEl.style.top = '';
 
     const s = sceneEl.getBoundingClientRect();
     const c = cardEl.getBoundingClientRect();
+
+    card0 = {
+      w: Math.max(1, c.width),
+      h: Math.max(1, c.height),
+      r: parseFloat(getComputedStyle(cardEl).borderTopLeftRadius) || 25,
+    };
     origin = { x: c.left - s.left + c.width / 2, y: c.top - s.top + c.height / 2 };
     start = { x: c.left + c.width / 2, y: c.top + c.height / 2 };
-    radius0 = parseFloat(getComputedStyle(cardEl).borderTopLeftRadius) || 28;
-
-    Z = Math.max(vw / Math.max(1, c.width), vh / Math.max(1, c.height));
+    Z = vw / card0.w;
 
     sceneEl.style.transformOrigin = `${origin.x}px ${origin.y}px`;
     planeEl.style.width = `${vw}px`;
     planeEl.style.height = `${vh}px`;
-    planeEl.style.transform = `translate(-50%, -50%) scale(${(1 / Z).toFixed(6)})`;
 
     sceneEl.style.transform = prev;
   }
 
+  /**
+   * @param {number} t 0 = phone on the hero; 1 = the page fills the viewport.
+   */
   function apply(t) {
-    const e = ease(Math.min(1, Math.max(0, t)));
+    const e = progress = ease(Math.min(1, Math.max(0, t)));
     const z = Math.pow(Z, e);
+
+    // The card keeps the scene's scale for its WIDTH — so it stays married to
+    // everything else growing — and animates only its height, which is what
+    // opens the aspect from a phone to a window. Height is in scene units;
+    // the scene multiplies it by z.
+    //
+    // Front-loaded (e ** 0.55) so most of the opening happens while the app
+    // screenshot is still fading. If it lagged, the content would sit
+    // letterboxed in a tall black box for the middle third of the zoom, which
+    // was the previous failure.
+    // Open the aspect EARLY and be done with it.
+    //
+    // e ** 0.55 was far too lazy: with the slow-in ease, e is only ~0.29 when
+    // half the scroll is spent, so the box was still twice as tall as its
+    // content and the page sat letterboxed in black bands through the middle
+    // of the zoom. Reaching viewport aspect by e = 0.25 means the shape is
+    // settled while the screenshot is still covering it, and everything after
+    // that is pure travel — a rectangle of the right shape flying at you.
+    const k = Math.min(1, e / 0.25);
+    const hCss = card0.h + (vh / Z - card0.h) * k;
+    cardEl.style.height = `${hCss.toFixed(3)}px`;
+    // Grow about the centre rather than the top edge.
+    cardEl.style.top = `${(6 - (hCss - card0.h) / 2).toFixed(3)}px`;
+    cardEl.style.borderRadius = `${(card0.r * (1 - e)).toFixed(3)}px`;
+
+    // Constant: the plane fills the card's width at every instant, and since
+    // the card ends at exactly the viewport, so does the plane. (1/Z) * Z = 1.
+    planeEl.style.transform = `translate(-50%, -50%) scale(${(1 / Z).toFixed(6)})`;
+
     const dx = (vw / 2 - start.x) * e;
     const dy = (vh / 2 - start.y) * e;
+    sceneEl.style.transform =
+      `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px) scale(${z.toFixed(5)})`;
 
-    sceneEl.style.transform = `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px) scale(${z.toFixed(5)})`;
+    // The bezel goes early. It is only doing work while the thing still reads
+    // as a phone; once the aspect starts opening it is a chrome band around a
+    // window and it fights the illusion.
+    //
+    // A LIST of bezel layers, never the phone body — the card is a child of
+    // the body, so fading the body faded the page inside the opening too and
+    // the middle of the zoom went completely blank.
+    const bezel = String(Math.max(0, 1 - e / 0.32));
+    for (const n of bezelEls) n.style.opacity = bezel;
 
-    // Divided by z so the radius stays constant on screen while it relaxes.
-    cardEl.style.borderRadius = `${(radius0 * (1 - e) / z).toFixed(3)}px`;
-
-    // The hero copy holds its ground and only leaves near the end — it should
-    // read as having been left behind by the camera, not as having dissolved.
-    const out = Math.max(0, (e - 0.55) / 0.4);
+    const out = Math.max(0, (e - 0.62) / 0.3);
     for (const n of fadeEls) n.style.opacity = String(Math.max(0, 1 - out));
 
-    const done = e > 0.995;
-    cardEl.style.pointerEvents = done ? 'auto' : 'none';
+    cardEl.style.pointerEvents = e > 0.995 ? 'auto' : 'none';
     return e;
   }
 
   function flatten() {
-    sceneEl.style.transform = '';
-    sceneEl.style.transformOrigin = '';
-    cardEl.style.borderRadius = '';
-    cardEl.style.pointerEvents = '';
-    planeEl.style.transform = '';
-    planeEl.style.width = '';
-    planeEl.style.height = '';
+    for (const [el, props] of [
+      [sceneEl, ['transform', 'transformOrigin']],
+      [cardEl, ['height', 'top', 'borderRadius', 'pointerEvents']],
+      [planeEl, ['transform', 'width', 'height']],
+    ]) {
+      if (!el) continue;
+      for (const p of props) el.style[p] = '';
+    }
     for (const n of fadeEls) n.style.opacity = '';
+    for (const n of bezelEls) n.style.opacity = '';
   }
 
   measure();
-  return { measure, apply, flatten, get scaleToFill() { return Z; } };
+  return { measure, apply, flatten, get scaleToFill() { return Z; }, get progress() { return progress; } };
 }
