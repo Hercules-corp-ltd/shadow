@@ -1,6 +1,7 @@
 import { createLoop, approach } from './loop.js';
 import { createBackdrop } from './backdrop.js';
 import { createCamera } from './camera.js';
+import { createPanel } from './panel.js';
 import { createMagnet, createMarker, scramble } from './effects.js';
 import { STAGES, STAGE_SPAN, ZOOM_SPAN, LOOP_LENGTH, NAV, stagePosition } from './content.js';
 import { TUNE, mountTunePane } from './tune.js';
@@ -97,6 +98,26 @@ function buildStage(stage, i) {
     const dl = el('dl', 'facts');
     for (const [k, v] of stage.facts) { dl.append(el('dt', null, k)); dl.append(el('dd', null, v)); }
     inner.append(dl);
+  }
+
+  if (stage.shots) {
+    // A wall of the real app rather than a picture of it. The centre screen
+    // sits forward; the two flanking it are pushed back and dimmed, so the
+    // group reads as depth instead of as three thumbnails in a row.
+    const wall = el('div', 'wall');
+    for (const shot of stage.shots) {
+      const fig = el('figure', 'wall__item');
+      fig.style.setProperty('--depth', String(shot.depth));
+      const img = new Image();
+      img.src = `assets/shots/${shot.src}.png`;
+      img.alt = `Shadow — the ${shot.label.toLowerCase()} screen`;
+      img.loading = 'lazy';
+      img.width = 1080; img.height = 2400;
+      fig.append(img);
+      fig.append(el('figcaption', null, shot.label));
+      wall.append(fig);
+    }
+    inner.append(wall);
   }
 
   if (stage.platforms) {
@@ -365,6 +386,16 @@ if (reduced.matches) useStaticLayout();
 else raf = requestAnimationFrame(frame);
 
 reduced.addEventListener?.('change', (e) => { if (e.matches) useStaticLayout(); else location.reload(); });
+
+/* The build log. Lazy: nothing is fetched until it is opened. */
+const panel = createPanel();
+document.getElementById('openLog')?.addEventListener('click', (e) => panel.open(e.currentTarget));
+window.addEventListener('keydown', (e) => {
+  if (e.key.toLowerCase() === 'l' && !e.metaKey && !e.ctrlKey && !panel.isOpen) {
+    if (document.activeElement?.tagName === 'INPUT') return;
+    panel.open();
+  }
+});
 
 mountTunePane(TUNE, { loop });
 

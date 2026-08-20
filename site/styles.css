@@ -377,3 +377,132 @@ body.static-layout .grid { position: absolute; height: 100%; }
   .facts dd { padding-top: 4px; }
   .stage__god { opacity: 0.22; width: 42vw; right: -3vw; bottom: 4vh; }
 }
+
+/* ================================================================ panel == */
+
+/*
+  The slide-in build log. Its scroller carries `data-native-scroll`, which is
+  how the loop knows to stop eating wheel events inside it — see loop.js.
+*/
+.panel { position: fixed; inset: 0; z-index: 120; }
+.panel[hidden] { display: none; }
+
+.panel__scrim {
+  position: absolute; inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0; transition: opacity 280ms ease;
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+}
+.panel.is-open .panel__scrim { opacity: 1; }
+
+.panel__sheet {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: min(468px, 100vw);
+  display: flex; flex-direction: column;
+  background: #0b0b0d;
+  border-left: 1px solid var(--edge-faint);
+  box-shadow: -40px 0 90px -30px rgba(0, 0, 0, 0.9);
+  transform: translateX(100%);
+  transition: transform 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.panel.is-open .panel__sheet { transform: none; }
+
+.panel__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 0;
+}
+.panel__kicker {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--ink-4);
+}
+.panel__close {
+  appearance: none; display: inline-flex; align-items: center; gap: 8px;
+  background: none; border: 0; padding: 6px; cursor: pointer; color: var(--ink-3);
+  transition: color 150ms ease;
+}
+.panel__close:hover { color: var(--ink-strong); }
+.panel__close svg { width: 15px; height: 15px; }
+.panel__esc {
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border: 1px solid var(--edge-faint); border-radius: 4px; padding: 3px 6px;
+}
+
+.panel__title { padding: 26px 20px 18px; border-bottom: 1px solid var(--edge-faint); }
+.panel__title h2 { margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -0.03em; color: var(--ink-strong); }
+.panel__count { margin: 6px 0 0; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-4); }
+
+.panel__scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 0 0; }
+.panel__scroll::-webkit-scrollbar { width: 8px; }
+.panel__scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+.panel__scroll:focus-visible { outline-offset: -3px; }
+
+.log { list-style: none; margin: 0; padding: 0; }
+.log__row {
+  display: grid; grid-template-columns: 74px 1fr; gap: 12px;
+  padding: 14px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.log__date {
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.14em;
+  color: var(--ink-4); padding-top: 3px; white-space: nowrap;
+}
+.log__body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.log__title { font-size: 14px; font-weight: 500; letter-spacing: -0.012em; color: var(--ink); line-height: 1.35; }
+.log__blurb { font-size: 12.5px; line-height: 1.55; color: var(--ink-3); }
+.log__hash { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.1em; color: var(--ink-5); }
+
+.panel__end {
+  margin: 0; padding: 20px; text-align: center;
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--ink-5);
+}
+
+body.static-layout .panel { position: fixed; }
+
+.topbar__link {
+  appearance: none; background: none; border: 0; padding: 0;
+  font-family: var(--sans); font-size: 14.5px; color: var(--ink-3);
+  cursor: pointer; transition: color 150ms ease;
+}
+.topbar__link:hover { color: var(--ink-strong); }
+
+/* ------------------------------------------------------------ the wall -- */
+
+/* Three real screens at two depths. The middle one is forward and lit; the
+   outer two are pushed back, dimmed and slightly rotated, so the group reads
+   as a room rather than as a row of thumbnails. */
+.stage--showcase .stage__inner { align-items: center; text-align: center; }
+.stage--showcase .stage__lead { margin-left: auto; margin-right: auto; }
+
+.wall {
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: clamp(10px, 2.2vw, 28px);
+  margin-top: 12px; width: 100%;
+  perspective: 1200px;
+}
+.wall__item {
+  margin: 0; position: relative;
+  width: clamp(96px, 13vw, 176px);
+  opacity: calc(0.45 + (var(--depth) - 0.9) * 5.5);
+  transform: scale(var(--depth)) translateZ(0);
+  transition: opacity 200ms ease;
+}
+.wall__item:nth-child(1) { transform: scale(var(--depth)) rotateY(9deg); transform-origin: right center; }
+.wall__item:nth-child(3) { transform: scale(var(--depth)) rotateY(-9deg); transform-origin: left center; }
+.wall__item img {
+  display: block; width: 100%; height: auto;
+  border-radius: 14px;
+  border: 1px solid var(--edge-faint);
+  background: #000;
+  box-shadow: 0 30px 60px -26px rgba(0, 0, 0, 0.95);
+}
+.wall__item:nth-child(2) img { box-shadow: 0 34px 70px -22px rgba(255, 80, 0, 0.22), 0 30px 60px -26px rgba(0,0,0,0.95); }
+.wall__item figcaption {
+  margin-top: 9px;
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-4);
+}
+@media (max-width: 820px) {
+  .wall { gap: 8px; }
+  .wall__item { width: 26vw; }
+}

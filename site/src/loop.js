@@ -119,13 +119,31 @@ export function createLoop({ length, onTick, config = {} }) {
 
   // ---- input -------------------------------------------------------------
 
+  /**
+   * Anything inside `[data-native-scroll]` keeps its own scrolling.
+   *
+   * The loop takes the wheel globally and preventDefaults it, which is what
+   * makes the page a fixed viewport — and it also means any panel with real
+   * overflow is dead on arrival, because its wheel events never reach it. The
+   * handler bails out when the event started inside an element that has asked
+   * to be left alone, so a scroller inside an overlay behaves like a scroller.
+   *
+   * Checked with `closest` rather than a flag on the loop, so nothing has to
+   * remember to tell the loop when a panel opens and closes.
+   */
+  function isNativeScroll(target) {
+    return target instanceof Element && target.closest('[data-native-scroll]') !== null;
+  }
+
   function onWheel(e) {
+    if (isNativeScroll(e.target)) return;
     e.preventDefault();
     glide = null;
     raw = clamp(raw + e.deltaY);
   }
 
   function onTouchStart(e) {
+    if (isNativeScroll(e.target)) { lastTouchY = null; return; }
     lastTouchY = e.touches.length === 1 ? e.touches[0].clientY : null;
     lastTouchAt = e.timeStamp;
     velocity = 0;
@@ -135,6 +153,7 @@ export function createLoop({ length, onTick, config = {} }) {
 
   function onTouchMove(e) {
     if (e.touches.length !== 1 || lastTouchY === null) return;
+    if (isNativeScroll(e.target)) return;   // same exemption as the wheel
     e.preventDefault();
     const y = e.touches[0].clientY;
     const delta = (lastTouchY - y) * cfg.touchMultiplier;

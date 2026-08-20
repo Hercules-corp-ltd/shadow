@@ -44,6 +44,29 @@ export const STAGE_SPAN = 1100;
  */
 export const STAGES = [
   {
+    // The first thing through the opening.
+    //
+    // It used to be a text slide, which wasted the arrival: you push through
+    // a phone screen and land on a paragraph. The reference puts a composed
+    // scene behind its card — a wall of the actual product — so the zoom
+    // ends somewhere worth arriving at. This is ours: the app itself, three
+    // real screens at three depths.
+    id: 'canvas',
+    navLabel: 'The app',
+    kind: 'showcase',
+    eyebrow: 'ONE PHRASE, EVERY SITE',
+    title: 'This is the whole app',
+    lead:
+      'No dashboard, no account screen, no settings you have to understand. ' +
+      'A home you name a site from, an identity that recomputes itself, and a ' +
+      'browser that drops trackers before they load.',
+    shots: [
+      { src: 'identity', label: 'Identity', depth: 0.9 },
+      { src: 'home', label: 'Home', depth: 1 },
+      { src: 'browser', label: 'Browser', depth: 0.9 },
+    ],
+  },
+  {
     id: 'phrase',
     navLabel: 'Phrase',
     kind: 'feature',
