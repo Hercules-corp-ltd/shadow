@@ -589,6 +589,21 @@ const againScreenEl = document.querySelector('.again__screen');
  * to change one number.
  */
 const AGAIN_DEV_CAP = (w) => Math.min(w * (w <= 820 ? 0.74 : 0.92), 1400);
+
+/** Height of .again__chrome, which the stylesheet fixes at 34px. */
+const AGAIN_CHROME = 34;
+
+/**
+ * How much taller than strictly necessary the closing canvas is made.
+ *
+ * The coverage condition below is an equality at 1.0, and an equality means the
+ * canvas edge and the viewport edge land on the same pixel at the seam — where
+ * a rounding of half a pixel shows a hairline of device chrome across the top
+ * of the arriving page. 6% is far more than rounding and costs nothing: the
+ * page is then letterboxed inside the canvas by 3% top and bottom, in the
+ * canvas's own var(--bg), which is the page's own ground.
+ */
+const AGAIN_COVER = 1.06;
 const motesEl = document.getElementById('motes');
 const motes = motesEl && !reduced.matches ? createMotes(motesEl) : null;
 // Built unconditionally: under reduced motion the rules are still worth having
@@ -700,13 +715,56 @@ function measure() {
   // percentage of the stage, `.again__screen` fits inside `.again`, and
   // `.again__canvas` is a percentage of the screen. Each line below reads a box
   // the line before it settled.
+  // The closing device, sized so that it CANNOT crop the page it hands over to.
+  //
+  // The fly-in maps the canvas onto the viewport at the seam, and the canvas
+  // clips. So the canvas has to be at least as tall-relative-to-its-width as
+  // the viewport, or the arriving page is cropped on the one frame that has to
+  // be invisible:
+  //
+  //     canvasH / canvasW  >=  vh / vw
+  //
+  // Desktop satisfies it by accident of the 16/9 mock: 0.692 against 0.487. A
+  // 390x844 phone misses it by 3.8x — 0.573 against 2.164 — and the measured
+  // result was an arriving page at its correct 390x844 inside a 392x225 canvas,
+  // 619 of 844 viewport pixels cropped. No landscape mock can satisfy it on a
+  // portrait screen at any size, which is why the shape changes rather than the
+  // numbers.
+  //
+  // Two candidates, and the natural one is preferred so that nothing about the
+  // desktop ending moves:
+  //
+  //   A  the shape the mock wants to be — 16/9, filling the band
+  //   B  the shortest device that still satisfies coverage
+  //
+  // A is used whenever it already covers, which is every ordinary landscape
+  // window. B takes over otherwise: portrait phones, and also squarer landscape
+  // viewports like a 1024x768 tablet, where A misses at 0.684 against 0.795.
   if (againBandEl && againScreenEl) {
     const bandH = againBandEl.offsetHeight;
     if (bandH > 0) {
-      againScreenEl.style.setProperty(
-        '--again-dev-w',
-        `${Math.min(AGAIN_DEV_CAP(vw), (bandH * 16) / 9).toFixed(2)}px`,
-      );
+      const portrait = vh > vw;
+      // The rail is a desktop-browser idiom and it eats 23% of the width that
+      // coverage needs, so it goes on portrait. Toggled BEFORE the canvas is
+      // measured below, since hiding it changes the canvas width.
+      document.body.classList.toggle('again-portrait', portrait);
+
+      const frac = portrait ? 1 : 0.77;          // canvas width / device width
+      const need = (vh / vw) * AGAIN_COVER;      // required canvasH / canvasW
+      const cap = AGAIN_DEV_CAP(vw);
+
+      let devW = Math.min(cap, (bandH * 16) / 9);
+      let devH = (devW * 9) / 16;
+      const covers = !portrait
+        && (devH - AGAIN_CHROME) / Math.max(1, devW * frac) >= need;
+
+      if (!covers) {
+        devW = Math.min(cap, (bandH - AGAIN_CHROME) / Math.max(1e-3, frac * need));
+        devH = AGAIN_CHROME + devW * frac * need;
+      }
+
+      againScreenEl.style.setProperty('--again-dev-w', `${devW.toFixed(2)}px`);
+      againScreenEl.style.setProperty('--again-dev-h', `${devH.toFixed(2)}px`);
     }
   }
 
