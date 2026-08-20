@@ -14,7 +14,7 @@
 <meta property="og:image" content="assets/img/og-card.webp">
 <meta name="twitter:card" content="summary_large_image">
 
-<link rel="preload" as="font" type="font/ttf" href="assets/fonts/Inter-Variable.ttf" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/Geist-Variable.woff2" crossorigin>
 <link rel="preload" as="image" href="assets/shots/home.png">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -22,22 +22,24 @@
 <body class="is-loading">
 
 <!--
-  Two things carry this page.
+  Two mechanisms carry this page.
 
   1. There is no native scroll. The document is one viewport, the wheel is
      consumed, and the scroll position is a float we own. That is what lets the
      loop wrap without a seam.
 
-  2. The hero holds a phone, and scrolling zooms INTO its screen until the
-     screen is the viewport and you are inside the app. The phone screen is a
-     portal: the rest of the page really is behind it, already laid out, and
-     the zoom only grows the opening. Nothing is faked with a crossfade.
+  2. The camera. Everything in the hero lives inside `#scene`, and scrolling
+     applies ONE transform to it — a scale about the phone's centre. So the
+     headline grows and slides off the edge exactly as the phone grows, the way
+     it would through a lens. The phone's screen is a window onto the rest of
+     the page, which is really there the whole time at 1/Z scale; when the
+     camera has pushed in far enough that Z cancels, it is life size.
 
-  All of it is real, selectable, crawlable DOM. The site whose scroll technique
-  this borrows renders its entire landing page inside WebGL, which looks superb
-  and is invisible to a search engine, a screen reader, and anyone who has
-  asked for reduced motion. For a page whose only job is to hand over a
-  download, that trade is the wrong way round.
+  It is all real, selectable, crawlable DOM. The site whose technique this
+  borrows renders its hero — headline, buttons and all — inside WebGL as MSDF
+  text, which looks superb and is invisible to a search engine, a screen reader
+  and anyone who has asked for reduced motion. For a page whose only job is to
+  hand over a download, that trade is the wrong way round.
 -->
 
 <a class="skip" href="#get">Skip to download</a>
@@ -45,53 +47,63 @@
 <canvas id="backdrop" aria-hidden="true"></canvas>
 <div class="grid" aria-hidden="true"></div>
 
-<header class="masthead">
-  <a class="masthead__brand" href="#">
-    <img src="assets/brand/shadow-mark.png" alt="" width="24" height="24">
-    <span class="masthead__word">Shadow</span>
-  </a>
-  <nav class="masthead__links" aria-label="Site">
-    <span class="masthead__state">In build</span>
-  </nav>
-</header>
-
-<!-- The hero sits above the portal and pulls back as the portal opens. -->
-<section class="hero" id="hero" aria-label="Shadow">
-  <div class="hero__copy">
-    <p class="hero__eyebrow">Free · iOS and Android</p>
-    <h1 class="hero__title">Forget me,<br>on purpose.</h1>
-    <p class="hero__lead">
-      One phrase becomes your wallet, a different password for every site, and
-      a different address for every sign-up. None of it is stored — Shadow
-      works it out again each time you unlock.
-    </p>
-    <div class="hero__cta" id="cta"></div>
-    <p class="hero__note">No account. Nothing to sign up for.</p>
-  </div>
-
-  <div class="hero__device" id="device">
-    <div class="device">
-      <div class="device__glow" aria-hidden="true"></div>
-      <div class="device__body">
-        <img class="device__shot" src="assets/shots/home.png" alt="Shadow's home screen: an arched recess with a search slot beneath it." width="1080" height="2400">
-        <span class="device__gloss" aria-hidden="true"></span>
-      </div>
-    </div>
-    <p class="hero__scrollcue" aria-hidden="true"><span></span>Scroll in</p>
-  </div>
-</section>
-
-<!--
-  The portal. At rest it is exactly the phone's screen rectangle; scrolling
-  grows it to the viewport. `#plane` inside is the real content, laid out at
-  viewport size and scaled down to fit the opening.
--->
-<div class="portal" id="portal" aria-hidden="false">
-  <main class="plane" id="plane"></main>
-  <img class="portal__shot" id="portalShot" src="assets/shots/home.png" alt="" aria-hidden="true">
+<!-- Technical marginalia. Cheap, and it does a lot of work: it says the page
+     was drawn to a system rather than arranged by eye. -->
+<div class="marks" aria-hidden="true">
+  <span class="mark mark--tl">EST. 2026</span>
+  <span class="mark mark--tr">S.00</span>
+  <span class="mark mark--bl" id="markPerf">— FPS</span>
+  <span class="mark mark--bc">45PX GRID / 1:1</span>
+  <span class="mark mark--br" id="markRoute">SEC / HERO</span>
 </div>
 
-<p class="hint" aria-hidden="true"><span class="hint__key">scroll</span> the colonnade has no end</p>
+<div class="scene" id="scene">
+  <div class="column">
+
+    <header class="topbar">
+      <a class="topbar__brand" href="#">
+        <img src="assets/brand/shadow-mark.png" alt="" width="22" height="22">
+        <span class="topbar__word">Shadow</span>
+      </a>
+      <nav class="topbar__nav" aria-label="Site">
+        <a href="#get">Download</a>
+        <span class="topbar__slash" aria-hidden="true">/</span>
+        <a href="https://github.com/Hercules-corp-ltd/shadow" rel="noopener">Source</a>
+      </nav>
+    </header>
+
+    <div class="hero">
+      <h1 class="hero__title">Forget me,<br>on&nbsp;purpose.</h1>
+
+      <!--
+        The phone. Its screen is `#card`, which is the camera's focal point and
+        the opening the rest of the page is seen through.
+      -->
+      <div class="phone">
+        <div class="phone__glow" aria-hidden="true"></div>
+        <div class="phone__body">
+          <div class="card" id="card">
+            <main class="plane" id="plane"></main>
+            <img class="card__shot" id="cardShot" src="assets/shots/home.png" alt="Shadow's home screen: an arched recess with a search slot beneath it." width="1080" height="2400">
+          </div>
+          <span class="phone__gloss" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+
+    <p class="lead">
+      One phrase becomes your wallet, a different password for every site, and a
+      different address for every sign-up. None of it is stored — Shadow works
+      it out again each time you unlock.
+    </p>
+
+    <div class="cta" id="cta"></div>
+    <p class="cta__note">Free. No account. Nothing to sign up for.</p>
+
+  </div>
+</div>
+
+<p class="hint" aria-hidden="true"><span class="hint__key">scroll</span> to go in</p>
 
 <noscript>
   <div class="noscript">

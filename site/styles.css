@@ -2,296 +2,237 @@
    Shadow — download site
    =========================================================================
 
-   Look notes, because the first attempt got this wrong and it is worth
-   recording why.
+   Measured against the reference rather than guessed at, because two earlier
+   passes were guessed at and both were wrong.
 
-   The first pass used a generated photograph of a colonnade as a full-bleed
-   background. It made every screen a muddy brown, dropped the type to about
-   40% contrast against it, and buried the one thing the page is for. A product
-   page wants near-black, a faint structural grid, one warm light, and exactly
-   one bright object — the phone. The colonnade art survives, but as a distant,
-   heavily-dimmed plate deep in the loop rather than as wallpaper on the hero.
+   What reading their shipped CSS actually established:
+     · the face is Geist, not Inter — 400 for body, 500 for emphasis, with
+       negative tracking of about -0.01em that keeps large type tight;
+     · body text is rgba(255,255,255,0.7) and headings rgb(214,214,214) —
+       neither is pure white, which is why nothing glares;
+     · there is a whole layer of 6.5px monospace marginalia at 16-25% white
+       ("S.00", "ROUTE /HOME", "45PX GRID / 1:1"). It reads as a technical
+       drawing and costs nothing;
+     · the grid is 45px, by their own annotation.
 
-   The display face was Cinzel set enormous. Carved Roman capitals are right on
-   the app's home screen, where they are an inscription over an arch; blown up
-   as a web headline they read as a wedding invitation and lose all their
-   contrast. Headlines are Inter now, tight and heavy; Cinzel is kept for the
-   small brand word and the eyebrows, which is the job it is good at.
+   The layout is a single centred column with its edges drawn as hairlines.
+   Everything hangs off those two rules: the wordmark and the nav sit on top of
+   it, the headline starts at its left, the phone ends at its right.
    ========================================================================= */
 
+@font-face {
+  font-family: 'Geist';
+  src: url('assets/fonts/Geist-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900; font-display: swap;
+}
+@font-face {
+  font-family: 'GeistMono';
+  src: url('assets/fonts/GeistMono-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900; font-display: swap;
+}
 @font-face {
   font-family: 'Cinzel';
   src: url('assets/fonts/Cinzel-Variable.ttf') format('truetype-variations');
   font-weight: 400 900; font-display: swap;
 }
-@font-face {
-  font-family: 'InterVar';
-  src: url('assets/fonts/Inter-Variable.ttf') format('truetype-variations');
-  font-weight: 100 900; font-display: swap;
-}
-@font-face {
-  font-family: 'JetBrainsMonoVar';
-  src: url('assets/fonts/JetBrainsMono-Variable.ttf') format('truetype-variations');
-  font-weight: 100 800; font-display: swap;
-}
 
 :root {
   --bg: #08080a;
-  --ink: #fafafa;
-  --ink-2: #a8adb6;
-  --ink-3: #64696f;
+  --ink: #d6d6d6;
+  --ink-strong: #fafafa;
+  --ink-2: rgba(255, 255, 255, 0.7);
+  --ink-3: rgba(255, 255, 255, 0.42);
+  --ink-4: rgba(255, 255, 255, 0.25);
+  --ink-5: rgba(255, 255, 255, 0.16);
 
-  --amber: #ff5a1f;
-  --amber-hot: #ff7a3d;
+  --amber: #ff5000;
+  --amber-hot: #ff6a24;
 
+  --rule: rgba(255, 255, 255, 0.055);
   --edge-faint: rgba(255, 255, 255, 0.07);
   --edge: rgba(255, 255, 255, 0.12);
-  --edge-bright: rgba(255, 255, 255, 0.22);
-  --recess: rgba(255, 255, 255, 0.04);
 
-  --display: 'InterVar', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --body: 'InterVar', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sans: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'GeistMono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --serif: 'Cinzel', Georgia, serif;
-  --mono: 'JetBrainsMonoVar', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
-  --gutter: clamp(22px, 5.5vw, 88px);
+  --col: 736px;   /* the content column */
+  --grid: 45px;   /* their annotation says 45px, and it is */
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-
 html, body { margin: 0; padding: 0; height: 100%; }
 
 body {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  overscroll-behavior: none;
-  touch-action: none;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--body);
-  font-size: 16px;
+  position: fixed; inset: 0;
+  overflow: hidden; overscroll-behavior: none; touch-action: none;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--sans); font-size: 16px;
   -webkit-font-smoothing: antialiased;
 }
 
-body.is-loading .hero,
-body.is-loading .portal { opacity: 0; }
-.hero, .portal { transition: opacity 500ms ease; }
+body.is-loading .scene { opacity: 0; }
+.scene { transition: opacity 500ms ease; }
 
 ::selection { background: var(--amber); color: #fff; }
-
 :focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 4px; }
 
 .sr-only {
-  position: absolute; width: 1px; height: 1px;
-  margin: -1px; padding: 0; overflow: hidden;
-  clip-path: inset(50%); white-space: nowrap;
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
-
 .skip {
   position: fixed; top: 8px; left: 8px; z-index: 200;
-  padding: 10px 16px; background: #16161a; color: var(--ink);
+  padding: 10px 16px; background: #16161a; color: var(--ink-strong);
   border: 1px solid var(--edge); border-radius: 8px;
-  font: 500 14px/1 var(--body); text-decoration: none;
+  font: 500 14px/1 var(--sans); text-decoration: none;
   transform: translateY(-200%); transition: transform 160ms ease;
 }
 .skip:focus { transform: none; }
 
-/* ------------------------------------------------------- background ----- */
+/* ------------------------------------------------------------ backdrop -- */
 
-#backdrop {
-  position: fixed; inset: 0; z-index: 0;
-  display: block; width: 100%; height: 100%;
-  pointer-events: none;
-}
+#backdrop { position: fixed; inset: 0; z-index: 0; display: block; width: 100%; height: 100%; pointer-events: none; }
 
-/* The structural grid. Two layers: fine dots for texture, and a wide rule grid
-   that gives the page an architectural sense of plumb. Both are almost
-   invisible on their own, which is the point — they should register as order,
-   not as decoration. */
+/* 45px dot grid. The dots carry a little amber so the field is not neutral
+   grey — it is the same light everything else on the page is lit by. */
 .grid {
   position: fixed; inset: 0; z-index: 1; pointer-events: none;
-  background-image:
-    radial-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
-    linear-gradient(to right, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
-  background-size: 44px 44px, 176px 176px, 176px 176px;
-  mask-image: radial-gradient(120% 100% at 50% 40%, #000 30%, transparent 82%);
+  background-image: radial-gradient(rgba(255, 106, 36, 0.16) 1px, transparent 1px);
+  background-size: var(--grid) var(--grid);
+  mask-image: radial-gradient(130% 105% at 50% 45%, #000 22%, transparent 84%);
 }
 
-/* One warm light, low and left, plus a cool counter-light. Falls back to this
-   whenever WebGL is unavailable, and sits under the shader otherwise. */
 body::before {
   content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(70% 60% at 6% 92%, rgba(255, 90, 31, 0.15), transparent 62%),
-    radial-gradient(60% 50% at 88% 4%, rgba(120, 160, 255, 0.05), transparent 60%);
+    radial-gradient(58% 52% at 50% 46%, rgba(255, 80, 0, 0.12), transparent 68%),
+    radial-gradient(70% 60% at 4% 96%, rgba(255, 80, 0, 0.07), transparent 62%);
 }
 
-/* ---------------------------------------------------------- masthead ---- */
+/* ----------------------------------------------------------- marginalia - */
 
-.masthead {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 60;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: clamp(18px, 2.6vw, 30px) var(--gutter);
+.marks { position: fixed; inset: 0; z-index: 55; pointer-events: none; }
+.mark {
+  position: absolute;
+  font-family: var(--mono); font-size: 6.5px; font-weight: 400;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-5);
+  white-space: nowrap;
 }
-.masthead__brand {
-  display: inline-flex; align-items: center; gap: 10px;
-  color: var(--ink); text-decoration: none;
-}
-.masthead__brand img { display: block; width: 24px; height: 24px; }
-.masthead__word {
-  font-family: var(--serif); font-weight: 600; font-size: 17px;
-  letter-spacing: 0.1em;
-}
-.masthead__state {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
-  text-transform: uppercase; color: var(--ink-3);
-  border: 1px solid var(--edge-faint); border-radius: 999px;
-  padding: 6px 12px; background: rgba(255, 255, 255, 0.02);
-}
+.mark--tl { top: 22px; left: 22px; }
+.mark--tr { top: 22px; right: 22px; }
+.mark--bl { bottom: 22px; left: 22px; }
+.mark--bc { bottom: 22px; left: 50%; transform: translateX(-50%); }
+.mark--br { bottom: 22px; right: 22px; }
+@media (max-width: 760px) { .mark--bc, .mark--tr { display: none; } }
 
-/* -------------------------------------------------------------- hero ---- */
+/* ================================================================ scene == */
 
-.hero {
-  position: fixed; inset: 0; z-index: 30;
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  align-items: center;
-  gap: clamp(24px, 4vw, 72px);
-  padding: 0 var(--gutter);
-  transform-origin: 50% 46%;
-  will-change: transform, opacity;
+/*
+  Everything the camera moves. ONE transform on this element; nothing inside it
+  transforms independently, or the two would multiply and the geometry would
+  stop being predictable.
+*/
+.scene {
+  position: fixed; inset: 0; z-index: 20;
+  display: grid; place-items: center;
+  will-change: transform;
 }
 
-.hero__copy { max-width: 620px; }
-
-.hero__eyebrow {
-  margin: 0 0 20px;
-  font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em;
-  text-transform: uppercase; color: var(--ink-3);
+.column {
+  position: relative;
+  width: min(var(--col), calc(100vw - 44px));
+  padding: 0 34px;
+  /* The two hairlines the whole layout hangs off. */
+  border-left: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
 }
+
+/* ------------------------------------------------------------- topbar --- */
+
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 58px; }
+.topbar__brand { display: inline-flex; align-items: center; gap: 9px; color: var(--ink-strong); text-decoration: none; }
+.topbar__brand img { display: block; width: 22px; height: 22px; }
+.topbar__word { font-family: var(--serif); font-weight: 600; font-size: 20px; letter-spacing: 0.06em; }
+.topbar__nav { display: flex; align-items: center; gap: 12px; font-size: 14.5px; }
+.topbar__nav a { color: var(--ink-3); text-decoration: none; transition: color 150ms ease; }
+.topbar__nav a:hover { color: var(--ink-strong); }
+.topbar__slash { color: var(--ink-5); }
+
+/* --------------------------------------------------------------- hero --- */
+
+.hero { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 22px; }
 
 .hero__title {
   margin: 0;
-  font-family: var(--display);
-  font-weight: 620;
-  font-size: clamp(42px, 6.4vw, 92px);
-  line-height: 0.98;
-  letter-spacing: -0.035em;
-  color: var(--ink);
+  font-size: clamp(38px, 5.1vw, 74px);
+  line-height: 0.96; font-weight: 500; letter-spacing: -0.032em;
+  color: var(--ink-strong);
 }
 
-.hero__lead {
-  margin: 26px 0 0; max-width: 48ch;
-  font-size: clamp(15px, 1.22vw, 18px); line-height: 1.62; color: var(--ink-2);
+.lead {
+  margin: 40px 0 0;
+  font-size: 17px; line-height: 1.62; letter-spacing: -0.01em;
+  color: var(--ink-2); max-width: 46ch;
 }
 
-.hero__cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
-.hero__note { margin: 18px 0 0; font-size: 13px; color: var(--ink-3); }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.cta__note { margin: 18px 0 0; font-size: 13px; color: var(--ink-4); }
 
-/* ---------------------------------------------------------- buttons ----- */
+/* ------------------------------------------------------------ buttons --- */
 
 .btn {
-  appearance: none; border: 1px solid transparent; border-radius: 10px;
-  font: 600 15px/1 var(--body); letter-spacing: -0.005em;
-  cursor: pointer; padding: 0; overflow: hidden; position: relative;
+  appearance: none; border: 1px solid transparent; border-radius: 8px;
+  font-family: var(--sans); font-size: 14.5px; font-weight: 500; letter-spacing: -0.01em;
+  cursor: pointer; padding: 0; position: relative; overflow: hidden;
   will-change: transform;
-  transition: background-color 160ms ease, border-color 160ms ease;
+  transition: background-color 150ms ease, border-color 150ms ease;
 }
-.btn__label {
-  display: flex; align-items: center; gap: 10px;
-  padding: 15px 24px; will-change: transform;
-}
-.btn__state {
-  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em;
-  text-transform: uppercase; opacity: 0.72; font-weight: 500;
-}
-.btn svg { width: 16px; height: 16px; flex: none; }
-
+.btn__label { display: flex; align-items: center; gap: 9px; padding: 13px 20px; will-change: transform; }
+.btn__state { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.66; font-weight: 400; }
+.btn svg { width: 15px; height: 15px; flex: none; }
 .btn--primary { background: var(--amber); color: #fff; }
 .btn--primary:hover { background: var(--amber-hot); }
-
-.btn--secondary {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: var(--edge); color: var(--ink);
-}
-.btn--secondary:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--edge-bright); }
-
-/* aria-disabled, not disabled: a disabled button is skipped by a screen
-   reader's button list and cannot be focused to hear why it does nothing. */
+.btn--secondary { background: #171719; border-color: var(--edge-faint); color: var(--ink-strong); }
+.btn--secondary:hover { background: #1e1e21; border-color: var(--edge); }
 .btn[aria-disabled='true'] { cursor: default; }
 
-/* --------------------------------------------------------- the phone ---- */
+/* -------------------------------------------------------------- phone --- */
 
-.hero__device {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 22px; position: relative;
+.phone { position: relative; }
+.phone__glow {
+  position: absolute; inset: -16% -24%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(255, 80, 0, 0.3), transparent 68%);
+  filter: blur(24px); pointer-events: none;
 }
-
-.device { position: relative; }
-
-.device__glow {
-  position: absolute; inset: -18% -26%;
-  background: radial-gradient(50% 50% at 50% 52%, rgba(255, 90, 31, 0.24), transparent 68%);
-  filter: blur(26px);
-  pointer-events: none;
-}
-
-.device__body {
+.phone__body {
   position: relative;
-  width: clamp(210px, 20vw, 292px);
+  width: clamp(168px, 17.5vw, 250px);
   aspect-ratio: 1080 / 2400;
-  border-radius: 34px;
-  padding: 7px;
-  background: linear-gradient(160deg, #2a2b30, #101013 42%, #26272c);
-  box-shadow:
-    0 60px 120px -40px rgba(0, 0, 0, 0.95),
-    0 0 0 1px rgba(255, 255, 255, 0.07) inset;
+  border-radius: 30px; padding: 6px;
+  background: linear-gradient(160deg, #2b2c31, #101013 44%, #232429);
+  box-shadow: 0 50px 100px -34px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.06) inset;
 }
-
-/* This img IS the portal's start rect — portal.js measures it. Its radius and
-   the opening's starting radius are therefore the same number by construction,
-   which is why the corners do not pop on the first frame of the zoom. */
-.device__shot {
-  display: block; width: 100%; height: 100%;
-  border-radius: 28px; object-fit: cover;
-  background: #000;
+.phone__gloss {
+  position: absolute; inset: 6px; border-radius: 25px; pointer-events: none; z-index: 4;
+  background: linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 32%);
 }
-
-.device__gloss {
-  position: absolute; inset: 7px; border-radius: 28px; pointer-events: none;
-  background: linear-gradient(148deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 34%);
-}
-
-.hero__scrollcue {
-  margin: 0; display: flex; align-items: center; gap: 10px;
-  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.18em;
-  text-transform: uppercase; color: var(--ink-3);
-}
-.hero__scrollcue span {
-  width: 22px; height: 1px; background: linear-gradient(90deg, transparent, var(--amber));
-}
-
-/* ------------------------------------------------------------ portal ---- */
 
 /*
-  The opening. Positioned and sized every frame by portal.js; the only thing
-  CSS owns here is that it clips, and that what is inside it is anchored to its
-  top-left so the scale has a stable origin.
+  The card IS the phone's screen and the camera's focal point. It clips, and
+  the page lives inside it. Its radius is driven per-frame by camera.js.
 */
-.portal {
-  position: fixed;
-  z-index: 20;
-  overflow: hidden;
-  background: var(--bg);
-  will-change: width, height, left, top;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-.plane {
-  position: absolute; top: 0; left: 0;
-  transform-origin: 0 0;
-  will-change: transform;
+.card { position: relative; width: 100%; height: 100%; border-radius: 25px; overflow: hidden; background: #000; }
+/* Centred in the card, not pinned to its corner. The card ends up taller
+   than the viewport (it has to, to cover it), so a plane at the top-left
+   corner would finish a thousand pixels above the fold. Both centres
+   coincide, and the card centre is what the camera walks to the middle of
+   the screen. */
+  .plane { position: absolute; top: 50%; left: 50%; transform-origin: 50% 50%; }
+.card__shot {
+  position: absolute; inset: 0; z-index: 3;
+  width: 100%; height: 100%; object-fit: cover; object-position: 50% 0;
+  pointer-events: none;
 }
 
 /* -------------------------------------------------------------- stages -- */
@@ -299,156 +240,108 @@ body::before {
 .stage {
   position: absolute; inset: 0;
   display: grid; place-items: center;
-  padding: max(88px, 11vh) var(--gutter) max(104px, 13vh);
-  will-change: transform, opacity;
-  backface-visibility: hidden;
+  padding: max(80px, 10vh) clamp(22px, 5vw, 80px) max(96px, 12vh);
+  will-change: transform, opacity; backface-visibility: hidden;
 }
 .stage__inner {
-  position: relative; z-index: 2;
-  width: min(760px, 100%);
-  display: flex; flex-direction: column; align-items: flex-start; gap: 16px;
+  position: relative; z-index: 2; width: min(760px, 100%);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 15px;
 }
 .stage--download .stage__inner { align-items: center; text-align: center; }
 
-.eyebrow {
-  margin: 0; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.22em;
-  text-transform: uppercase; color: var(--amber);
-}
-.stage__num {
-  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.18em; color: var(--ink-3);
-}
-.stage__title {
-  margin: 0; font-family: var(--display); font-weight: 620;
-  font-size: clamp(34px, 4.6vw, 62px); line-height: 1.02; letter-spacing: -0.03em;
-}
-.stage__lead {
-  margin: 0; max-width: 52ch;
-  font-size: clamp(15px, 1.2vw, 17.5px); line-height: 1.62; color: var(--ink-2);
-}
-.stage__note { margin: 0; font-size: 13px; line-height: 1.6; color: var(--ink-3); max-width: 50ch; }
+.eyebrow { margin: 0; font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); }
+.stage__num { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; color: var(--ink-4); }
+.stage__title { margin: 0; font-size: clamp(32px, 4.4vw, 58px); line-height: 1.02; font-weight: 500; letter-spacing: -0.03em; color: var(--ink-strong); }
+.stage__lead { margin: 0; max-width: 52ch; font-size: 17px; line-height: 1.62; letter-spacing: -0.01em; color: var(--ink-2); }
+.stage__note { margin: 0; font-size: 13px; line-height: 1.6; color: var(--ink-4); max-width: 50ch; }
 
-.facts {
-  margin: 8px 0 0; display: grid;
-  grid-template-columns: minmax(130px, max-content) 1fr;
-  width: 100%; border-top: 1px solid var(--edge-faint);
-}
-.facts dt, .facts dd {
-  margin: 0; padding: 12px 0; border-bottom: 1px solid var(--edge-faint);
-  font-size: 13px; line-height: 1.5;
-}
-.facts dt {
-  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--ink-3); padding-right: 22px;
-}
+.facts { margin: 8px 0 0; display: grid; grid-template-columns: minmax(130px, max-content) 1fr; width: 100%; border-top: 1px solid var(--edge-faint); }
+.facts dt, .facts dd { margin: 0; padding: 12px 0; border-bottom: 1px solid var(--edge-faint); font-size: 13px; line-height: 1.5; }
+.facts dt { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); padding-right: 22px; }
 .facts dd { color: var(--ink-2); }
 
-.stage__god {
-  position: absolute; right: max(1vw, 8px); bottom: 7vh; z-index: 1;
-  width: clamp(110px, 19vw, 250px); pointer-events: none; opacity: 0.4;
-}
+.stage__god { position: absolute; right: max(1vw, 8px); bottom: 7vh; z-index: 1; width: clamp(110px, 19vw, 250px); pointer-events: none; opacity: 0.38; }
 .stage__god img { display: block; width: 100%; height: auto; }
-
-/* The colonnade art, demoted to a dim plate well behind the type. */
-.stage__relief { position: absolute; inset: 0; z-index: 0; display: grid; place-items: center;
-  pointer-events: none; overflow: hidden; }
+.stage__relief { position: absolute; inset: 0; z-index: 0; display: grid; place-items: center; pointer-events: none; overflow: hidden; }
 .stage__relief img {
   width: min(1000px, 88vw); max-height: 76vh; object-fit: contain;
-  opacity: 0.17; mix-blend-mode: screen;
+  opacity: 0.16; mix-blend-mode: screen;
   mask-image: radial-gradient(62% 58% at 50% 50%, #000 38%, transparent 76%);
 }
 
+.plates { position: absolute; inset: -6% -3%; z-index: 0; pointer-events: none; }
+.plate { position: absolute; inset: 0; background-repeat: no-repeat; background-position: center; background-size: cover; will-change: transform; }
+.plate--colonnade-far { opacity: 0.28; }
+.plate--colonnade-near { opacity: 0.18; mix-blend-mode: screen; }
+
 /* ----------------------------------------------------------- platforms -- */
 
-.platforms {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
-  gap: 14px; width: 100%; max-width: 640px; margin-top: 6px;
-}
+.platforms { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 14px; width: 100%; max-width: 640px; margin-top: 6px; }
 .platform {
   display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
   padding: 22px; border: 1px solid var(--edge-faint); border-radius: 14px;
   background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.017));
   text-align: left; box-shadow: 0 16px 34px -18px rgba(0,0,0,0.9);
 }
-.platform__name { margin: 0; font-size: 21px; font-weight: 620; letter-spacing: -0.02em; }
-.platform__sub { margin: 0; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; color: var(--ink-3); }
+.platform__name { margin: 0; font-size: 20px; font-weight: 500; letter-spacing: -0.02em; color: var(--ink-strong); }
+.platform__sub { margin: 0; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; color: var(--ink-4); }
 .platform__state {
-  margin-top: 8px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em;
+  margin-top: 8px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--amber);
-  border: 1px solid rgba(255, 90, 31, 0.3); border-radius: 999px;
-  padding: 5px 11px; background: rgba(255, 90, 31, 0.07);
+  border: 1px solid rgba(255, 80, 0, 0.3); border-radius: 999px; padding: 5px 11px;
+  background: rgba(255, 80, 0, 0.07);
 }
-.platform__note { margin: 4px 0 0; font-size: 12px; color: var(--ink-3); }
+.platform__note { margin: 4px 0 0; font-size: 12px; color: var(--ink-4); }
 
 /* ----------------------------------------------------------------- nav -- */
 
 .nav {
-  position: fixed; left: 50%; bottom: max(18px, 2.6vh);
-  transform: translateX(-50%); z-index: 70;
+  position: fixed; left: 50%; bottom: max(30px, 4vh); transform: translateX(-50%); z-index: 70;
   display: flex; align-items: center; gap: 2px; padding: 5px;
   border: 1px solid var(--edge-faint); border-radius: 999px;
-  background: rgba(10, 10, 12, 0.72);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  background: rgba(10,10,12,0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   max-width: calc(100vw - 28px); overflow-x: auto; scrollbar-width: none;
 }
 .nav::-webkit-scrollbar { display: none; }
 .nav__item {
-  appearance: none; border: 0; background: none; color: var(--ink-3);
-  font: 500 12.5px/1 var(--body); letter-spacing: -0.005em;
+  appearance: none; border: 0; background: none; color: var(--ink-4);
+  font: 500 12.5px/1 var(--sans); letter-spacing: -0.01em;
   padding: 9px 15px; border-radius: 999px; cursor: pointer; white-space: nowrap;
-  transition: color 160ms ease;
+  transition: color 150ms ease;
 }
 .nav__item:hover { color: var(--ink-2); }
-.nav__item.is-current { color: var(--ink); }
-.nav__marker {
-  position: absolute; left: 0; bottom: 3px; height: 2px; border-radius: 2px;
-  background: var(--amber); pointer-events: none; will-change: transform, width;
-}
+.nav__item.is-current { color: var(--ink-strong); }
+.nav__marker { position: absolute; left: 0; bottom: 3px; height: 2px; border-radius: 2px; background: var(--amber); pointer-events: none; will-change: transform, width; }
 .nav__marker--trail { filter: blur(2.5px); }
 
 /* ---------------------------------------------------------------- hint -- */
 
 .hint {
-  position: fixed; right: var(--gutter); bottom: max(18px, 2.6vh); z-index: 60;
-  margin: 0; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em;
-  color: var(--ink-3); pointer-events: none; display: flex; align-items: center; gap: 8px;
+  position: fixed; right: 22px; bottom: 44px; z-index: 60; margin: 0;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--ink-4);
+  pointer-events: none; display: flex; align-items: center; gap: 8px;
 }
-.hint__key {
-  border: 1px solid var(--edge-faint); border-radius: 5px; padding: 4px 8px;
-  color: var(--ink-2); background: rgba(255,255,255,0.03);
-}
+.hint__key { border: 1px solid var(--edge-faint); border-radius: 5px; padding: 4px 8px; color: var(--ink-3); background: rgba(255,255,255,0.03); }
 @media (max-width: 1000px) { .hint { display: none; } }
 
-/* ------------------------------------------------------------ noscript -- */
-
-.noscript { position: relative; z-index: 90; max-width: 60ch; margin: 0 auto; padding: 16vh var(--gutter); }
+.noscript { position: relative; z-index: 90; max-width: 60ch; margin: 0 auto; padding: 16vh 22px; }
 .noscript h1 { font-family: var(--serif); letter-spacing: 0.1em; }
 .noscript p { color: var(--ink-2); line-height: 1.65; }
 
 /* ==========================================================================
    Static layout — reduced motion, or no scripting.
-   The zoom and the endless scroll are exactly what that setting switches off,
-   so the answer is a different page rather than a faster one: the document
-   scrolls, the phone is just an image, and the page ends.
    ========================================================================== */
 
 body.static-layout { position: static; overflow: visible auto; touch-action: auto; height: auto; }
-body.static-layout .hero {
-  position: relative; inset: auto; opacity: 1 !important;
-  transform: none !important; visibility: visible !important;
-  min-height: 92vh; padding-top: 96px;
-}
-body.static-layout .portal,
-body.static-layout .portal--flat {
-  position: relative; inset: auto; width: auto !important; height: auto !important;
-  left: auto !important; top: auto !important; border-radius: 0 !important;
-  overflow: visible; box-shadow: none;
-}
-body.static-layout .plane {
-  position: static; transform: none !important; width: auto !important; height: auto !important;
-}
+body.static-layout .scene { position: relative; inset: auto; transform: none !important; display: block; padding: 90px 0 60px; }
+body.static-layout .column { margin: 0 auto; }
+body.static-layout .phone__body { width: clamp(180px, 40vw, 240px); margin: 0 auto; }
+body.static-layout .card { overflow: visible; }
+body.static-layout .plane { position: static; transform: none !important; width: auto !important; height: auto !important; }
+body.static-layout .card__shot { position: static; height: auto; }
+body.static-layout .plates, body.static-layout .hint, body.static-layout .marks { display: none; }
 body.static-layout .stage {
-  position: relative; inset: auto;
-  padding: clamp(60px, 11vh, 130px) var(--gutter);
+  position: relative; inset: auto; padding: clamp(60px, 11vh, 130px) clamp(22px, 5vw, 80px);
   opacity: 1 !important; filter: none !important; transform: none !important;
   border-top: 1px solid var(--edge-faint);
 }
@@ -456,8 +349,6 @@ body.static-layout .stage__inner { margin: 0 auto; }
 body.static-layout .stage__god { position: static; margin: 22px auto 0; }
 body.static-layout .stage__relief { position: static; margin-top: 24px; }
 body.static-layout .stage__relief img { max-height: 38vh; opacity: 0.3; }
-body.static-layout .hint,
-body.static-layout .hero__scrollcue { display: none; }
 body.static-layout .nav { position: static; transform: none; margin: 26px auto; }
 body.static-layout .nav__marker { display: none; }
 body.static-layout .grid { position: absolute; height: 100%; }
@@ -471,51 +362,18 @@ body.static-layout .grid { position: absolute; height: 100%; }
 
 /* ------------------------------------------------------------- narrow --- */
 
-@media (max-width: 900px) {
-  .hero {
-    grid-template-columns: 1fr;
-    align-content: center;
-    gap: 30px;
-    padding-top: 90px;
-  }
-  .hero__copy { max-width: none; }
-  .hero__device { order: -1; }
-  .device__body { width: clamp(150px, 42vw, 208px); }
-  .device__glow { inset: -14% -20%; }
-  .hero__title { font-size: clamp(34px, 8.6vw, 56px); }
-  .hero__cta { width: 100%; }
+@media (max-width: 820px) {
+  .column { padding: 0 20px; border: 0; }
+  .topbar { margin-bottom: 40px; }
+  .hero { grid-template-columns: 1fr; gap: 28px; }
+  .phone { justify-self: center; }
+  .hero__title { font-size: clamp(34px, 9vw, 52px); }
+  .lead { margin-top: 28px; font-size: 16px; }
+  .cta { width: 100%; }
   .btn { flex: 1 1 auto; }
   .btn__label { justify-content: center; }
   .facts { grid-template-columns: 1fr; }
   .facts dt { padding-bottom: 0; border-bottom: 0; }
   .facts dd { padding-top: 4px; }
-  .stage__god { opacity: 0.24; width: 42vw; right: -3vw; bottom: 4vh; }
+  .stage__god { opacity: 0.22; width: 42vw; right: -3vw; bottom: 4vh; }
 }
-
-@media (max-width: 900px) and (max-height: 720px) {
-  .hero__device { display: none; }   /* the zoom needs room; below this it is a plain page */
-}
-
-/* The app's screen, on top of the content inside the opening. Same image and
-   same rect as the one in the phone frame behind it, so at rest the two are
-   indistinguishable; it clears during the zoom to reveal the page. */
-.portal__shot {
-  position: absolute; inset: 0; z-index: 3;
-  width: 100%; height: 100%;
-  object-fit: cover; object-position: 50% 0;
-  pointer-events: none;
-}
-body.static-layout .portal__shot { display: none; }
-
-/* The colonnade, only ever seen through the opening. Deliberately dim: it is
-   depth behind the type, not wallpaper in front of it. The first pass had this
-   at full strength on the hero and it swallowed the page. */
-.plates { position: absolute; inset: -6% -3%; z-index: 0; pointer-events: none; }
-.plate {
-  position: absolute; inset: 0;
-  background-repeat: no-repeat; background-position: center; background-size: cover;
-  will-change: transform;
-}
-.plate--colonnade-far { opacity: 0.3; }
-.plate--colonnade-near { opacity: 0.2; mix-blend-mode: screen; }
-body.static-layout .plates { display: none; }

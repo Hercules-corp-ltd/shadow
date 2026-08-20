@@ -1,14 +1,13 @@
 import { createLoop, approach } from './loop.js';
 import { createBackdrop } from './backdrop.js';
-import { createPortal } from './portal.js';
+import { createCamera } from './camera.js';
 import { createMagnet, createMarker, scramble } from './effects.js';
 import { STAGES, STAGE_SPAN, ZOOM_SPAN, LOOP_LENGTH, NAV, stagePosition } from './content.js';
 import { TUNE, mountTunePane } from './tune.js';
 
-const heroEl = document.getElementById('hero');
-const portalEl = document.getElementById('portal');
+const sceneEl = document.getElementById('scene');
+const cardEl = document.getElementById('card');
 const planeEl = document.getElementById('plane');
-const deviceEl = document.getElementById('device');
 const ctaEl = document.getElementById('cta');
 const canvas = document.getElementById('backdrop');
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -165,7 +164,15 @@ const loop = createLoop({
   },
 });
 
-const portal = createPortal({ portalEl, planeEl, deviceEl, heroEl, shotEl: document.getElementById("portalShot") });
+const cardShot = document.getElementById('cardShot');
+const camera = createCamera({
+  sceneEl, cardEl, planeEl,
+  // Left behind by the camera rather than dissolved: these fade only in the
+  // last third, once they are already sliding past the edge of the frame.
+  fadeEls: [document.querySelector('.topbar'), document.querySelector('.hero__title'),
+            document.querySelector('.lead'), document.querySelector('.cta'),
+            document.querySelector('.cta__note')].filter(Boolean),
+});
 const backdrop = createBackdrop(canvas, TUNE);
 if (!backdrop) document.body.classList.add('no-webgl');
 
@@ -211,11 +218,14 @@ let renderScale = 1;
 let calmFor = 0;
 let lastDraw = 0;
 let vw = 0, vh = 0;
+let fpsFrames = 0, fpsSince = performance.now();
+const markPerf = document.getElementById('markPerf');
+const markRoute = document.getElementById('markRoute');
 
 function measure() {
   vw = window.innerWidth;
   vh = window.innerHeight;
-  portal.measure();
+  camera.measure();
 }
 measure();
 window.addEventListener('resize', measure);
@@ -247,7 +257,9 @@ function frame(now) {
   const zoomT = toTop <= -ZOOM_SPAN || toTop > 0
     ? (toTop > 0 ? 0 : 1)
     : -toTop / ZOOM_SPAN;
-  portal.apply(zoomT);
+  camera.apply(zoomT);
+  // The app screen clears over the first half, revealing the page behind it.
+  if (cardShot) cardShot.style.opacity = String(1 - Math.min(1, Math.max(0, (zoomT - 0.06) / 0.44)));
 
   // ---- stages ----------------------------------------------------------
   for (let i = 0; i < stageEls.length; i++) {
@@ -313,6 +325,21 @@ function frame(now) {
     lastDraw = now;
   }
 
+  // ---- marginalia ------------------------------------------------------
+  // Real numbers. Annotations that read like instrumentation but are hard-
+  // coded are just decoration pretending to be data.
+  fpsFrames++;
+  if (now - fpsSince >= 500) {
+    const fps = Math.round((fpsFrames * 1000) / (now - fpsSince));
+    fpsFrames = 0; fpsSince = now;
+    if (markPerf) markPerf.textContent = 
+      (backdrop ? 'WEBGL2' : 'CANVAS') + ' — ' + fps + 'FPS' + (renderScale < 1 ? ' — RES x' + renderScale : '');
+  }
+  if (markRoute) {
+    const label = zoomT < 0.98 ? 'SEC / HERO' : 'SEC / ' + NAV[nearest].label.toUpperCase();
+    if (markRoute.textContent !== label) markRoute.textContent = label;
+  }
+
   raf = requestAnimationFrame(frame);
 }
 
@@ -324,7 +351,8 @@ function useStaticLayout() {
   document.body.classList.add('static-layout');
   detach();
   cancelAnimationFrame(raf);
-  portal.flatten();
+  camera.flatten();
+  if (cardShot) cardShot.style.opacity = '';
   for (const s of stageEls) {
     s.style.cssText = '';
     s.removeAttribute('aria-hidden');
@@ -344,4 +372,4 @@ document.body.classList.remove('is-loading');
 
 /* Exposed for verification: the browser pane cannot composite while hidden, so
  * rAF never runs there and the only way to check the geometry is to step it. */
-window.__shadow = { loop, portal, frame, stageEls };
+window.__shadow = { loop, camera, frame, stageEls };
