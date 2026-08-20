@@ -71,8 +71,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* The page switches on. It does not fade in.
+   This was the last dissolve left on the site, and it was the very first thing
+   anyone saw -- a page whose entire argument is that nothing dissolves, opening
+   with a half-second dissolve. The reveal fires at the end of module execution,
+   after every stage is built, measured and positioned, so there is nothing to
+   cover up: turning it on instantly is safe as well as more honest. */
 body.is-loading .scene { opacity: 0; }
-.scene { transition: opacity 500ms ease; }
 
 ::selection { background: var(--amber); color: #fff; }
 :focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 4px; }
@@ -513,9 +518,12 @@ body.static-layout .panel { position: fixed; }
 .wall__item {
   margin: 0; position: relative;
   width: clamp(96px, 13vw, 176px);
+  /* A static depth cue, not an animation: the two flanking screens sit further
+     back, so they are dimmer and smaller. --depth is written once from the
+     content data and never changes, which made the transition below dead code
+     that only ever showed up in audits as a fade. */
   opacity: calc(0.45 + (var(--depth) - 0.9) * 5.5);
   transform: scale(var(--depth)) translateZ(0);
-  transition: opacity 200ms ease;
 }
 .wall__item:nth-child(1) { transform: scale(var(--depth)) rotateY(9deg); transform-origin: right center; }
 .wall__item:nth-child(3) { transform: scale(var(--depth)) rotateY(-9deg); transform-origin: left center; }
@@ -601,35 +609,85 @@ body.static-layout .panel { position: fixed; }
 /* Copy above, screen below — centred over each other put the headline
    straight across the miniature hero it is describing. */
 .stage--recursion { align-content: start; }
+/* Compact on purpose -- every pixel this copy does not take is a pixel the
+   device gets, and the device is the point of the section. */
 .stage--recursion .stage__inner {
   align-items: center; text-align: center;
-  gap: 10px; padding-top: clamp(10px, 3vh, 34px);
+  gap: 6px; padding-top: clamp(6px, 1.8vh, 20px);
 }
+.stage--recursion .stage__title { font-size: clamp(22px, 3.1vw, 44px); margin: 0; }
+.stage--recursion .stage__lead { font-size: clamp(11px, 1.05vw, 14px); margin: 0; }
 /* An explicit band under the copy. Sizing the screen by WIDTH let it grow
-   taller than the space left for it and climb back over the headline. */
+   taller than the space left for it and climb back over the headline.
+
+   The band starts far higher than it used to. At 46% the device was a
+   letterbox strip along the bottom of the frame, small enough that there was
+   nothing in it to read -- which is exactly why the ending felt like it cut
+   straight to the landing page. It now takes most of the frame. */
 .again {
   position: absolute; left: 0; right: 0;
-  top: 46%; bottom: clamp(58px, 9vh, 92px);
+  top: 25%; bottom: clamp(24px, 3.2vh, 44px);
   display: grid; place-items: center; pointer-events: none; z-index: 0;
 }
 .again__screen {
   position: relative;
   height: 100%; width: auto;
-  aspect-ratio: 16 / 10;
-  max-width: min(70vw, 900px);
-  border-radius: 14px;
+  aspect-ratio: 16 / 9;
+  max-width: min(92vw, 1400px);
+  border-radius: 12px;
   overflow: hidden;
-  background: var(--bg);
+  background: #0d0d0f;
   border: 1px solid var(--edge);
-  box-shadow: 0 50px 110px -40px rgba(0,0,0,0.95), 0 0 90px -30px rgba(255,80,0,0.25);
+  box-shadow: 0 60px 130px -40px rgba(0,0,0,0.96), 0 0 110px -30px rgba(255,80,0,0.28);
 }
-/* The clone is laid out at a fraction of real size so it reads as a screen. */
+/* The rail: the sections you have just walked, as browser history. */
+.again__rail {
+  position: absolute; top: 34px; left: 0; bottom: 0; width: 23%;
+  border-right: 1px solid var(--edge-faint);
+  padding: 12px 0; display: flex; flex-direction: column; gap: 1px;
+  background: rgba(255,255,255,0.014);
+}
+.again__railcap {
+  font-family: var(--mono); font-size: clamp(6px, 0.5vw, 7.5px);
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(255,255,255,0.22);
+  padding: 0 clamp(9px, 1.1vw, 15px) 8px;
+}
+.again__row {
+  font-size: clamp(7px, 0.68vw, 10px); color: var(--ink-4);
+  padding: clamp(4px, 0.6vh, 7px) clamp(9px, 1.1vw, 15px);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  border-left: 2px solid transparent;
+}
+.again__row.is-on {
+  color: var(--ink-2); background: rgba(255, 80, 0, 0.10);
+  border-left-color: var(--amber);
+}
+/* The canvas the page lives in. Clips like a real viewport, and scales with
+   everything else during the fly-in, so its edges pass the frame rather than
+   cropping the hero at the seam. */
+.again__canvas {
+  position: absolute; top: 34px; left: 23%; right: 0; bottom: 0;
+  overflow: hidden;
+}
+/* The clone is laid out at a fraction of real size so it reads as a screen.
+   Smaller than it was (0.42 -> 0.32) because the device around it got so much
+   bigger -- this is what buys the fly-in its distance to cover. */
 .again__screen .column {
   position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%) scale(0.42);
+  transform: translate(-50%, -50%) scale(0.32);
   transform-origin: 50% 50%;
   width: var(--col);
 }
+.again__tab {
+  display: inline-flex; align-items: center; gap: 6px; min-width: 0;
+  margin-left: 6px; padding: 4px 11px; border-radius: 5px 5px 0 0;
+  background: rgba(255,255,255,0.055);
+  border: 1px solid var(--edge-faint); border-bottom: none;
+  font-size: clamp(6.5px, 0.55vw, 8.5px); color: var(--ink-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 34%;
+}
+.again__favi { width: 7px; height: 7px; border-radius: 2px; background: var(--amber); flex: none; }
 .stage--recursion .stage__inner { position: relative; z-index: 2; pointer-events: none; }
 .stage--recursion .stage__title,
 .stage--recursion .eyebrow,
@@ -685,4 +743,20 @@ body.static-layout .panel { position: fixed; }
   display: flex; align-items: center; padding: 0 9px;
   font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.08em; color: var(--ink-4);
 }
-.again__screen .column { top: calc(50% + 17px); }
+/* (The clone used to need a +17px nudge to clear the chrome bar. It now sits
+   inside .again__canvas, which already starts below it.) */
+
+
+/* ==================================================== motes in the light = */
+
+/*
+  See src/motes.js. Above the scene and the grain, below the download bar and
+  the build-log panel -- it is atmosphere, and atmosphere must never be the
+  thing you click.
+*/
+#motes {
+  position: fixed; inset: 0; z-index: 22; pointer-events: none;
+  mix-blend-mode: plus-lighter;
+}
+body.static-layout #motes { display: none; }
+@media (prefers-reduced-motion: reduce) { #motes { display: none; } }

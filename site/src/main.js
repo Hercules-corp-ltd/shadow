@@ -1,4 +1,5 @@
 import { createLoop, approach } from './loop.js';
+import { createMotes } from './motes.js';
 import { createBackdrop } from './backdrop.js';
 import { createCamera } from './camera.js';
 import { createPanel } from './panel.js';
@@ -168,11 +169,44 @@ function buildStage(stage, i) {
     for (const n of clone.querySelectorAll('[id]')) n.removeAttribute('id');
     clone.setAttribute('aria-hidden', 'true');
     clone.inert = true;
+    // A device with a body, not a framed thumbnail.
+    //
+    // The reference's ending is a whole desktop application -- a rail of real
+    // file names down the left, a canvas in the middle, a conversation panel
+    // on the right -- and its landing page is a small thing sitting INSIDE the
+    // canvas. That arrangement is the trick: the device is big enough to read
+    // and inhabit, which leaves the page inside it far enough away to be
+    // somewhere you travel TO.
+    //
+    // Ours was the inverse: a small box with a large page in it, so there was
+    // nothing to look at and nowhere to go. Now it is the browser -- chrome, a
+    // tab, an address, and a rail of the very sections you just walked, with
+    // this page rendered small in the canvas.
     const chrome = el('div', 'again__chrome');
     chrome.append(el('span', 'again__dot'), el('span', 'again__dot'), el('span', 'again__dot'));
+    const tab = el('span', 'again__tab');
+    tab.append(el('span', 'again__favi'));
+    tab.append(el('span', null, 'Shadow \u2014 forget me, on purpose'));
+    chrome.append(tab);
     chrome.append(el('span', 'again__url', 'shadow.browser'));
-    screen.append(clone);
+
+    // The rail names the walk you have just taken. It is the ending's one
+    // piece of wit: the sections are the browser's history.
+    const rail = el('div', 'again__rail');
+    rail.append(el('span', 'again__railcap', 'This session'));
+    for (const [label, on] of [['Home', true], ['One phrase', false],
+                               ['An identity per site', false], ['Mail that forgets', false],
+                               ['Trackers', false], ['The ledger', false],
+                               ['Get it', false]]) {
+      rail.append(el('span', 'again__row' + (on ? ' is-on' : ''), label));
+    }
+
+    const canvasArea = el('div', 'again__canvas');
+    canvasArea.append(clone);
+
     screen.append(chrome);
+    screen.append(rail);
+    screen.append(canvasArea);
     dev.append(screen);
     s.append(dev);
   }
@@ -361,6 +395,8 @@ const camera = createCamera({
             document.querySelector('.cta__note')].filter(Boolean),
 });
 const recursion = createRecursion(reelZoom);
+const motesEl = document.getElementById('motes');
+const motes = motesEl && !reduced.matches ? createMotes(motesEl) : null;
 const backdrop = createBackdrop(canvas, TUNE);
 if (!backdrop) document.body.classList.add('no-webgl');
 
@@ -476,7 +512,25 @@ function frame(now) {
 
   // ---- the reel --------------------------------------------------------
   // A single translate. Fractional index in, pixels out.
-  const idx = Math.max(0, pos - ZOOM_SPAN) / STAGE_SPAN;
+  //
+  // Clamped at the top end, and that clamp is the whole ending.
+  //
+  // Without it the pan keeps running through the close: at closeFrom the index
+  // reaches STAGES.length exactly, which is one full viewport PAST the last
+  // stage, and it carries on to 9.75 by the end of the loop. So the camera
+  // spent the entire close flying into a device that had already left the top
+  // of the screen. Measured: the closing device sat at y = -540 in a 720px
+  // viewport the moment the close began -- entirely above the fold.
+  //
+  // That is why the ending read as "it just shows the landing page". The
+  // fly-in was working perfectly and landing the clone exactly on the hero;
+  // you simply never saw the device it was flying out of, so all that was
+  // left to see was the arrival. The pan now parks on the last stage and holds
+  // there while the camera does the travelling.
+  const idx = Math.min(
+    STAGES.length - 1,
+    Math.max(0, pos - ZOOM_SPAN) / STAGE_SPAN,
+  );
   reel.style.transform = `translate3d(0, ${(-idx * vh).toFixed(1)}px, 0)`;
 
   for (let i = 0; i < stageEls.length; i++) {
@@ -525,6 +579,28 @@ function frame(now) {
   for (const m of magnets) {
     if (pointer.active && zoomT < 0.5) m.point(pointer.x, pointer.y); else m.release();
     m.tick(dt);
+  }
+
+  // ---- motes -----------------------------------------------------------
+  //
+  // Lit by where you are, not by a timer. The field builds through the last
+  // three sections the way the reference's flame builds under its closing
+  // ones, peaks with the device fully on screen, and dies back to its resting
+  // level as the camera enters the device.
+  //
+  // That last part is not decoration -- it is what keeps the seam invisible.
+  // The motes are a fixed overlay, so if the field were still at full strength
+  // at LOOP_LENGTH it would jump to its resting level the instant the position
+  // wrapped to 0, and the one frame nobody is allowed to notice would flash.
+  // Ramping down across the close makes the value continuous across the wrap,
+  // and it is the honest reading too: you are leaving the room the device is
+  // standing in.
+  if (motes) {
+    const from = stagePosition(5);
+    const up = Math.max(0, Math.min(1, (pos - from) / Math.max(1, closeFrom - from)));
+    const into = pos < closeFrom ? 0 : (pos - closeFrom) / CLOSE_SPAN;
+    motes.resize(vw, vh);
+    motes.draw(dt, 0.26 + 0.74 * up * (1 - into), Math.min(1, speedEMA * 0.9));
   }
 
   // ---- backdrop --------------------------------------------------------
@@ -577,4 +653,4 @@ document.body.classList.remove('is-loading');
 
 /* Exposed for verification: the browser pane cannot composite while hidden, so
  * rAF never runs there and the only way to check the geometry is to step it. */
-window.__shadow = { loop, camera, frame, stageEls };
+window.__shadow = { loop, camera, frame, stageEls, recursion, motes };

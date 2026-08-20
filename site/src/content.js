@@ -224,9 +224,11 @@ export const STAGES = [
     kind: 'recursion',
     eyebrow: 'AND ROUND',
     title: 'A browser, browsing itself.',
-    lead:
-      'Shadow renders this page like any other — no account, no trackers, ' +
-      'nothing kept. Keep going and you will end up where you came in.',
+    // One line. The section before this one is the call to action and carries
+    // the argument; this one's whole job is to hand you a device big enough to
+    // read and then fly you into it. Two paragraphs of prose here cost the
+    // device a third of its height and left it a letterbox strip.
+    lead: 'Keep going and you end up where you came in.',
   },
 ];
 
@@ -251,7 +253,16 @@ export const STAGES = [
  * so you arrive back at the landing page having walked out the way you came
  * in. It is the same transform run backwards, which is why it costs nothing.
  */
-export const CLOSE_SPAN = 620;
+// Longer than the opening, deliberately.
+//
+// "It literally just shows the landing page when you scroll to the last part"
+// was an arithmetic problem, not a taste one. At 620px the closing device was
+// on screen for about six wheel notches before the camera was already inside
+// it -- there was no stretch where you simply LOOKED at the thing you were
+// about to travel into. The reference gives its ending roughly half again as
+// much scroll as its opening and spends it holding still on a device you can
+// read. You have to be somewhere before you can travel from it.
+export const CLOSE_SPAN = 980;
 
 export const LOOP_LENGTH = ZOOM_SPAN + STAGES.length * STAGE_SPAN + CLOSE_SPAN;
 export const stagePosition = (i) => ZOOM_SPAN + i * STAGE_SPAN;
