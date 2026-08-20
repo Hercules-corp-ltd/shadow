@@ -201,8 +201,38 @@ function buildStage(stage, i) {
       rail.append(el('span', 'again__row' + (on ? ' is-on' : ''), label));
     }
 
+    // The canvas holds a VIEWPORT, not a column.
+    //
+    // It used to hold the bare hero column at scale 0.32 — 236px wide inside a
+    // 705px canvas, where the lead is 5.3px tall, both buttons 4.6px and the
+    // wordmark 6.4px. `.again__page` is a stand-in viewport instead: measure()
+    // sizes it to the exact box the real hero column is centred in and scales it
+    // by canvasWidth / viewportWidth, so it fills the canvas the way a rendered
+    // page fills a browser window — same column, much larger, with the ground,
+    // the 45px grid, the topbar, the headline, the lead and both buttons around
+    // it.
+    //
+    // The grid is cloned in explicitly because the real one is a SIBLING of
+    // #scene, not a child, so no amount of cloning the column can reach it.
+    //
+    // NOT a clone of #scene, which is the obvious alternative and is wrong
+    // twice. #scene is written to by camera.apply() every frame, and cloneNode
+    // copies the inline style attribute, so a clone taken at any other moment
+    // inherits a stale transform. And a second `.scene .column` in the document
+    // would make createRecursion's selector correct only by document order — an
+    // accident worth not depending on.
+    const page = el('div', 'again__page');
+    const gridCopy = document.querySelector('.grid').cloneNode(false);
+    const view = el('div', 'again__view');
+    view.append(clone);
+    page.append(gridCopy, view);
+    // Scenery, all of it. The clone is already inert and aria-hidden; saying it
+    // again on the wrapper covers the ground and grid copies too.
+    page.setAttribute('aria-hidden', 'true');
+    page.inert = true;
+
     const canvasArea = el('div', 'again__canvas');
-    canvasArea.append(clone);
+    canvasArea.append(page);
 
     screen.append(chrome);
     screen.append(rail);
@@ -407,6 +437,10 @@ const camera = createCamera({
             document.querySelector('.cta__note')].filter(Boolean),
 });
 const recursion = createRecursion(reelZoom);
+/* The stand-in viewport inside the closing device, and the canvas it fills.
+ * Sized and scaled from layout in measure() — never from `pos`. */
+const againPageEl = document.querySelector('.again__page');
+const againCanvasEl = document.querySelector('.again__canvas');
 const motesEl = document.getElementById('motes');
 const motes = motesEl && !reduced.matches ? createMotes(motesEl) : null;
 const backdrop = createBackdrop(canvas, TUNE);
@@ -465,6 +499,43 @@ function measure() {
     stageEls[i].style.height = `${vh}px`;
   }
   reel.style.height = `${stageEls.length * vh}px`;
+
+  // The miniature at the end of the loop is a real viewport, so give it the
+  // real viewport's box.
+  //
+  // Sized from the scene's own layout box rather than from 100vw/100vh: the
+  // scene is `position: fixed; inset: 0`, and on a phone that box and the vh
+  // unit disagree by the height of the URL bar. The clone column has to be
+  // centred in exactly the box the real column is centred in or the two will not
+  // coincide at the wrap. offsetWidth/offsetHeight are LAYOUT values, so neither
+  // the camera's transform nor the closing device's own scale can corrupt them
+  // and nothing has to be toggled off first.
+  //
+  // The scale fits the page to the canvas by WIDTH. Fitting by height instead
+  // would crop the page's sides and give the fly-in less to cover.
+  //
+  // One pixel of underscan, because offsetWidth is the true width ROUNDED: it
+  // is at most true+0.5, so offsetWidth-1 is at most true-0.5 and the page can
+  // never be wider than the canvas. That asymmetry is deliberate: a wrapper a
+  // fraction wider than the canvas puts a sliver of the browser rail across the
+  // edge of the arriving page at the seam, whereas half a pixel of canvas
+  // ground costs nothing, because it is the same ground.
+  //
+  // Read AFTER the stage heights above: `.again` is a percentage of the stage,
+  // so the canvas has no correct size until those are written.
+  //
+  // None of this is a function of `pos`. It changes on resize and on
+  // fonts.ready, and is therefore constant across the wrap by construction.
+  if (againPageEl && againCanvasEl) {
+    const boxW = Math.max(1, sceneEl.offsetWidth);
+    const boxH = Math.max(1, sceneEl.offsetHeight);
+    againPageEl.style.width = `${boxW}px`;
+    againPageEl.style.height = `${boxH}px`;
+    againPageEl.style.setProperty(
+      '--again-page-scale',
+      (Math.max(1, againCanvasEl.offsetWidth - 1) / boxW).toFixed(6),
+    );
+  }
 }
 measure();
 window.addEventListener('resize', measure);
