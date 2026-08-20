@@ -148,7 +148,19 @@ body::before {
 
 /* --------------------------------------------------------------- hero --- */
 
-.hero { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 22px; }
+/*
+  Two real columns. The headline used to sit alone in the grid with the lead
+  and the buttons stacked underneath it, so the phone's full height was added
+  to the copy's full height and the buttons ended up below the fold on any
+  laptop. Copy on the left, phone on the right, both vertically centred.
+*/
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(20px, 3.5vw, 56px);
+}
+.hero__copy { display: flex; flex-direction: column; align-items: flex-start; }
 
 .hero__title {
   margin: 0;
@@ -158,7 +170,7 @@ body::before {
 }
 
 .lead {
-  margin: clamp(18px, 3vh, 34px) 0 0;
+  margin: clamp(14px, 2.4vh, 26px) 0 0;
   font-size: 16.5px; line-height: 1.62; letter-spacing: -0.01em;
   color: var(--ink-2); max-width: 46ch;
 }
@@ -194,7 +206,7 @@ body::before {
 }
 .phone__body {
   position: relative;
-  width: clamp(150px, min(17.5vw, 30vh), 240px);
+  width: clamp(132px, min(15vw, 26vh), 208px);
   aspect-ratio: 1080 / 2400;
   padding: 6px;
 }

@@ -2,8 +2,8 @@ import { createLoop, approach } from './loop.js';
 import { createBackdrop } from './backdrop.js';
 import { createCamera } from './camera.js';
 import { createPanel } from './panel.js';
-import { createMagnet, createMarker, scramble } from './effects.js';
-import { STAGES, STAGE_SPAN, ZOOM_SPAN, CLOSE_SPAN, LOOP_LENGTH, NAV, stagePosition } from './content.js';
+import { createMagnet, scramble } from './effects.js';
+import { STAGES, STAGE_SPAN, ZOOM_SPAN, CLOSE_SPAN, LOOP_LENGTH, stagePosition } from './content.js';
 import { TUNE, mountTunePane } from './tune.js';
 
 const sceneEl = document.getElementById('scene');
@@ -205,20 +205,15 @@ stageEls.forEach((s) => reel.append(s));
 reelZoom.append(reel);
 planeEl.append(reelZoom);
 
-/* Nav */
-const nav = el('nav', 'nav');
-nav.setAttribute('aria-label', 'Sections');
-const trailEl = el('span', 'nav__marker nav__marker--trail');
-const markerEl = el('span', 'nav__marker');
-nav.append(trailEl, markerEl);
-const navButtons = NAV.map((n) => {
-  const b = el('button', 'nav__item', n.label);
-  b.type = 'button';
-  b.addEventListener('click', () => loop.glideTo(n.at, { ms: TUNE.navGlideMs }));
-  nav.append(b);
-  return b;
-});
-document.body.append(nav);
+/*
+ * There is no section pill.
+ *
+ * It was a row of nine labels floating over the page, and on the hero it sat
+ * squarely on top of the download buttons. A page whose whole job is one
+ * gesture — scroll — does not need a table of contents for the gesture, and
+ * the reference does not have one either. Keyboard users still get Home/End
+ * and the arrows; see the keydown handler below.
+ */
 
 /**
  * The recursive close.
@@ -356,7 +351,6 @@ const backdrop = createBackdrop(canvas, TUNE);
 if (!backdrop) document.body.classList.add('no-webgl');
 
 const magnets = [...document.querySelectorAll('.btn')].map((b) => createMagnet(b, TUNE));
-const marker = createMarker(TUNE);
 
 const pointer = { x: -1e4, y: -1e4, active: false };
 window.addEventListener('pointermove', (e) => {
@@ -448,8 +442,19 @@ function frame(now) {
   const closeFrom = LOOP_LENGTH - CLOSE_SPAN;
   const zoomT = pos < ZOOM_SPAN ? pos / ZOOM_SPAN : 1;
   camera.apply(zoomT);
+  // The app screen SLIDES away, it does not fade.
+  //
+  // Every dissolve on this page has been removed for the same reason: the
+  // moment something changes opacity it reads as a slideshow transition
+  // rather than as one thing moving out of the way of another. The reference
+  // slides its app icon down out of the frame over the first two thirds of
+  // the zoom; this does the same, so the page behind is uncovered rather than
+  // revealed.
   if (cardShot) {
-    cardShot.style.opacity = String(1 - Math.min(1, Math.max(0, camera.progress / 0.3)));
+    const k = Math.min(1, Math.max(0, (camera.progress - 0.04) / 0.42));
+    const slide = k * k * (3 - 2 * k);          // smoothstep, so it eases out
+    cardShot.style.transform =
+      `translateY(${(slide * 108).toFixed(2)}%) scale(${(1 - slide * 0.06).toFixed(4)})`;
   }
 
   // The last span flies into the hero living inside the final stage's screen.
@@ -483,22 +488,6 @@ function frame(now) {
     if (pointer.active && zoomT < 0.5) m.point(pointer.x, pointer.y); else m.release();
     m.tick(dt);
   }
-
-  // ---- nav marker ------------------------------------------------------
-  let nearest = 0, best = Infinity;
-  for (let i = 0; i < NAV.length; i++) {
-    const d = Math.abs(loop.distanceTo(NAV[i].at));
-    if (d < best) { best = d; nearest = i; }
-  }
-  navButtons.forEach((b, i) => b.classList.toggle('is-current', i === nearest));
-  const r = navButtons[nearest].getBoundingClientRect();
-  const nr = nav.getBoundingClientRect();
-  const m = marker.tick(r.left - nr.left + r.width / 2, r.width * TUNE.markerWidthFrac, true, dt);
-  markerEl.style.transform = `translate3d(${(m.x - m.width / 2).toFixed(1)}px, 0, 0)`;
-  markerEl.style.width = `${m.width.toFixed(1)}px`;
-  trailEl.style.transform = `translate3d(${(m.tail - m.width / 2).toFixed(1)}px, 0, 0)`;
-  trailEl.style.width = `${m.width.toFixed(1)}px`;
-  trailEl.style.opacity = String(TUNE.markerTrailAmt * m.alpha);
 
   // ---- backdrop --------------------------------------------------------
   const busy = speedEMA > 0.05 || loop.isGliding;

@@ -143,8 +143,13 @@ export function createCamera({ sceneEl, cardEl, planeEl, phoneEl, fadeEls = [] }
     const bezel = String(Math.max(0, 1 - e / 0.32));
     for (const n of bezelEls) n.style.opacity = bezel;
 
-    const out = Math.max(0, (e - 0.62) / 0.3);
-    for (const n of fadeEls) n.style.opacity = String(Math.max(0, 1 - out));
+    // The hero copy is NOT faded. It is carried out of frame by the same scale
+    // that is carrying everything else, which is the only reason the move reads
+    // as travel — the instant you dim something it reads as a slideshow
+    // transition instead, however slow the dim is. By the time it would have
+    // started fading it is already several viewports wide and mostly past the
+    // edge; there is nothing left to hide.
+    void fadeEls;
 
     cardEl.style.pointerEvents = e > 0.995 ? 'auto' : 'none';
     return e;

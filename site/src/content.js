@@ -30,10 +30,10 @@
  * arrival is not abrupt; short enough that somebody who came to press
  * "download" is not held hostage. One flick of a trackpad covers it.
  */
-export const ZOOM_SPAN = 900;
+export const ZOOM_SPAN = 620;
 
 /** Distance along the loop between one niche and the next, in pixels. */
-export const STAGE_SPAN = 1100;
+export const STAGE_SPAN = 560;
 
 /**
  * The hero is no longer a stage.
@@ -251,7 +251,7 @@ export const STAGES = [
  * so you arrive back at the landing page having walked out the way you came
  * in. It is the same transform run backwards, which is why it costs nothing.
  */
-export const CLOSE_SPAN = 900;
+export const CLOSE_SPAN = 620;
 
 export const LOOP_LENGTH = ZOOM_SPAN + STAGES.length * STAGE_SPAN + CLOSE_SPAN;
 export const stagePosition = (i) => ZOOM_SPAN + i * STAGE_SPAN;
