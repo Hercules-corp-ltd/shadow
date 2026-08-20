@@ -133,15 +133,21 @@ export function createCamera({ sceneEl, cardEl, planeEl, phoneEl, fadeEls = [] }
     sceneEl.style.transform =
       `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px) scale(${z.toFixed(5)})`;
 
-    // The bezel goes early. It is only doing work while the thing still reads
-    // as a phone; once the aspect starts opening it is a chrome band around a
-    // window and it fights the illusion.
+    // You go THROUGH the phone. It does not fade.
     //
-    // A LIST of bezel layers, never the phone body — the card is a child of
-    // the body, so fading the body faded the page inside the opening too and
-    // the middle of the zoom went completely blank.
-    const bezel = String(Math.max(0, 1 - e / 0.32));
-    for (const n of bezelEls) n.style.opacity = bezel;
+    // Fading it out was the lazy answer and it read exactly like what it was:
+    // the device dissolving rather than the camera arriving. A frame you fly
+    // into has to pass you — grow until its edges leave the viewport on all
+    // four sides and you are through it.
+    //
+    // So the bezel gets its own scale ON TOP of the scene's. The scene is
+    // already at z = Z**e; multiplying by Z**(e*rush) means the bezel reaches
+    // full-viewport width at e = 1/(1+rush) instead of at e = 1, and keeps
+    // going after that. With rush = 1.22 it passes the frame edge at about
+    // 45% of the zoom, which is where a doorway stops being a doorway and
+    // becomes the walls either side of you.
+    const rush = Math.pow(Z, e * 1.22);
+    for (const n of bezelEls) n.style.transform = `scale(${rush.toFixed(4)})`;
 
     // The hero copy is NOT faded. It is carried out of frame by the same scale
     // that is carrying everything else, which is the only reason the move reads
@@ -165,7 +171,7 @@ export function createCamera({ sceneEl, cardEl, planeEl, phoneEl, fadeEls = [] }
       for (const p of props) el.style[p] = '';
     }
     for (const n of fadeEls) n.style.opacity = '';
-    for (const n of bezelEls) n.style.opacity = '';
+    for (const n of bezelEls) n.style.transform = '';
   }
 
   measure();

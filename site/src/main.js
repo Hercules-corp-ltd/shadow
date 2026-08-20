@@ -84,6 +84,16 @@ function buildStage(stage, i) {
     s.append(g);
   }
 
+  // The light that rakes across the stone as you pass.
+  //
+  // The reference drives a beam, a heat ramp and a flame off each section's
+  // own progress — that is what stops its middle from being a slideshow of
+  // static frames. Ours is colder because Shadow is: one hard-edged shaft of
+  // warm light that sweeps the section as you traverse it, and a wash that
+  // brightens as it arrives and dims as it leaves. Both are LIGHT, not
+  // opacity on content — nothing dissolves.
+  if (stage.kind !== 'features') s.append(el('div', 'stage__beam'));
+
   const inner = el('div', 'stage__inner');
   if (stage.eyebrow) inner.append(el('p', 'eyebrow', stage.eyebrow));
   if (stage.index) inner.append(el('span', 'stage__num', stage.index));
@@ -158,7 +168,11 @@ function buildStage(stage, i) {
     for (const n of clone.querySelectorAll('[id]')) n.removeAttribute('id');
     clone.setAttribute('aria-hidden', 'true');
     clone.inert = true;
+    const chrome = el('div', 'again__chrome');
+    chrome.append(el('span', 'again__dot'), el('span', 'again__dot'), el('span', 'again__dot'));
+    chrome.append(el('span', 'again__url', 'shadow.browser'));
     screen.append(clone);
+    screen.append(chrome);
     dev.append(screen);
     s.append(dev);
   }
@@ -476,6 +490,30 @@ function frame(now) {
       if (off) st.setAttribute('aria-hidden', 'true');
       else st.removeAttribute('aria-hidden');
     }
+    // Life inside the section.
+    //
+    // The reel moves everything at one rate, which is a pan — correct, but on
+    // its own it is eight static pictures sliding by. Each layer now moves at
+    // its own rate against that pan, so the art and the type separate as you
+    // travel and the section has depth rather than just position. Signed, so
+    // it leads on the way in and trails on the way out.
+    const dd = Math.max(-1.4, Math.min(1.4, idx - i));
+    if (!off) {
+      const relief = st.querySelector('.stage__relief');
+      const god = st.querySelector('.stage__god');
+      const body = st.querySelector('.stage__inner');
+      const beam = st.querySelector('.stage__beam');
+      if (relief) relief.style.transform = `translate3d(0, ${(dd * vh * 0.22).toFixed(1)}px, 0) scale(${(1 + Math.abs(dd) * 0.04).toFixed(3)})`;
+      if (god) god.style.transform = `translate3d(${(dd * 34).toFixed(1)}px, ${(dd * vh * 0.13).toFixed(1)}px, 0)`;
+      if (body) body.style.transform = `translate3d(0, ${(dd * vh * -0.055).toFixed(1)}px, 0)`;
+      if (beam) {
+        // Sweeps left to right across the section as it passes, and is only
+        // bright while the section is near the middle of the screen.
+        beam.style.setProperty('--sweep', `${(50 - dd * 78).toFixed(1)}%`);
+        beam.style.setProperty('--lit', (Math.max(0, 1 - Math.abs(dd) * 1.25)).toFixed(3));
+      }
+    }
+
     if (d < 0.18 && !scrambled.has(st) && !reduced.matches) {
       scrambled.add(st);
       const h = st.querySelector('[data-scramble]');

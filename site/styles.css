@@ -206,6 +206,8 @@ body::before {
 }
 .phone__body {
   position: relative;
+  /* The bezel layers scale past this box on the way in, so nothing may clip. */
+  overflow: visible;
   width: clamp(132px, min(15vw, 26vh), 208px);
   aspect-ratio: 1080 / 2400;
   padding: 6px;
@@ -218,11 +220,13 @@ body::before {
 */
 .phone__frame {
   position: absolute; inset: 0; border-radius: 30px; pointer-events: none;
+  transform-origin: 50% 50%; will-change: transform;
   background: linear-gradient(160deg, #2b2c31, #101013 44%, #232429);
   box-shadow: 0 50px 100px -34px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.06) inset;
 }
 .phone__gloss {
   position: absolute; inset: 6px; border-radius: 25px; pointer-events: none; z-index: 4;
+  transform-origin: 50% 50%; will-change: transform;
   background: linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 32%);
 }
 
@@ -268,6 +272,12 @@ body::before {
 .reel { position: absolute; top: 0; left: 0; width: 100%; will-change: transform; }
 .stage {
   position: absolute; left: 0; width: 100%;
+  /* Each section clips its own content. Without this the art parallaxes out
+     of its own frame and into its neighbour, so mid-pan you see two god
+     figures and two eyebrows at once and neither section has an edge. With
+     it, one frame leaves as the next arrives — which is the whole point of
+     panning rather than dissolving. */
+  overflow: hidden;
   display: grid; place-items: center;
   padding: max(80px, 10vh) clamp(22px, 5vw, 80px) max(96px, 12vh);
   backface-visibility: hidden;
@@ -626,3 +636,53 @@ body.static-layout .panel { position: fixed; }
 .stage--recursion .stage__lead {
   text-shadow: 0 2px 30px rgba(0,0,0,0.9);
 }
+
+
+/* ============================================================ the beam == */
+
+/*
+  One shaft of raking light per section, swept by scroll. It is the closest
+  cold equivalent of the reference's flame: something that is genuinely alive
+  while you travel through a section, rather than a still frame that slides.
+
+  Deliberately additive light on the background — never opacity on the
+  content, which is the thing that makes a page feel like a slideshow.
+*/
+.stage__beam {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  opacity: var(--lit, 0);
+  background:
+    radial-gradient(58% 120% at var(--sweep, 50%) 108%,
+      rgba(255, 122, 40, 0.20), transparent 62%),
+    linear-gradient(103deg,
+      transparent calc(var(--sweep, 50%) - 26%),
+      rgba(255, 168, 96, 0.055) calc(var(--sweep, 50%) - 4%),
+      rgba(255, 196, 130, 0.085) var(--sweep, 50%),
+      rgba(255, 168, 96, 0.05) calc(var(--sweep, 50%) + 4%),
+      transparent calc(var(--sweep, 50%) + 26%));
+  mix-blend-mode: plus-lighter;
+}
+.stage__relief, .stage__god, .stage__inner { will-change: transform; }
+
+/* ===================================================== the last screen == */
+
+/*
+  The ending needs to look like a DEVICE you are flying into, not a rectangle
+  the page happens to be in. A browser chrome — bar, three dots, a URL — reads
+  as one instantly, and it is honest: this really is Shadow rendering this page.
+*/
+.again__chrome {
+  position: absolute; top: 0; left: 0; right: 0; height: 34px; z-index: 3;
+  display: flex; align-items: center; gap: 7px; padding: 0 12px;
+  background: #141417;
+  border-bottom: 1px solid var(--edge-faint);
+  transform-origin: 50% 50%;
+}
+.again__dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.16); }
+.again__url {
+  margin-left: 8px; flex: 1; height: 18px; border-radius: 5px;
+  background: rgba(255,255,255,0.05);
+  display: flex; align-items: center; padding: 0 9px;
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.08em; color: var(--ink-4);
+}
+.again__screen .column { top: calc(50% + 17px); }
