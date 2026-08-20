@@ -411,10 +411,48 @@ const LAST_STAGE_AT =
  * position whenever the column is not exactly centred.
  */
 function createRecursion(zoomEl) {
-  let base = null;   // { cx, cy, w } of the clone column, unzoomed
+  let base = null;    // { cx, cy, w } of the clone column, unzoomed
+  let baseKey = '';   // the transform state `base` was measured under
+  let target = null;  // the real hero column's rect, at rest
+
+  /*
+   * Element handles, looked up once.
+   *
+   * Only their inline `style.transform` STRINGS are read per frame, which is a
+   * CSSOM property read and forces nothing — that is the whole basis of the
+   * cache below.
+   */
+  let sceneRef = null, reelRef = null, devRef = null;
+  function refs() {
+    if (!sceneRef) sceneRef = document.getElementById('scene');
+    if (!reelRef) reelRef = zoomEl.querySelector('.reel');
+    if (!devRef) devRef = zoomEl.querySelector('.again');
+    return { sceneRef, reelRef, devRef };
+  }
+
+  /**
+   * Everything the measurement below depends on, as a string.
+   *
+   * `base` is a function of exactly three transforms — the camera's on `.scene`,
+   * the pan on `.reel`, and the approach's on `.again` — plus the viewport,
+   * which measure() handles. Nothing else can move it. So if all three strings
+   * are byte-identical to the ones the cached measurement was taken under, the
+   * measurement is still valid, and re-taking it can only produce the same
+   * numbers at the cost of two forced layouts.
+   */
+  function stateKey() {
+    const r = refs();
+    const a = r.sceneRef ? r.sceneRef.style.transform : '';
+    const b = r.reelRef ? r.reelRef.style.transform : '';
+    const c = r.devRef ? r.devRef.style.transform : '';
+    return a + '|' + b + '|' + c;
+  }
 
   function measure() {
     base = null;
+    baseKey = '';
+    // Viewport or fonts changed, so the hero's resting box has moved.
+    target = null;
   }
 
   /**
@@ -429,14 +467,37 @@ function createRecursion(zoomEl) {
    * pixels above the fold.
    */
   function ensure() {
-    // Deliberately NOT cached.
+    // Cached against the transform state it was measured under.
     //
-    // The baseline depends on the camera's scale, the reel's pan and the
-    // viewport, and caching it meant one measurement taken on the wrong frame
-    // poisoned the whole close — the clone was measured at 39px instead of
-    // 309 (the camera happened to be shut) and the fly-in then overshot by a
-    // factor of eight. This costs one extra layout per frame, and only during
-    // the 900px of scroll the close actually occupies.
+    // This was flatly uncached, with a comment insisting it had to be: an
+    // earlier attempt cached it unconditionally, measured once on a frame where
+    // the camera happened to be shut, got 39px instead of 309, and overshot the
+    // whole close by a factor of eight. That comment was right about the hazard
+    // and wrong about the remedy — the fix for "cached the wrong frame" is to
+    // know WHICH frame you cached, not to refuse to cache.
+    //
+    // The cost it was paying is real and lands where it hurts most. The two
+    // getBoundingClientRect calls below are separated from two style writes, so
+    // each forces a synchronous layout of a document holding eight stages, a
+    // cloned hero and the browser mock — and the close is the ONLY stretch of
+    // the loop that does this. Measured at 390x844: 1.075ms per frame inside the
+    // close against 0.272ms walking, a 4x step, on a desktop CPU. A phone is
+    // several times slower again, and this is precisely the stretch that is
+    // supposed to feel like flight.
+    //
+    // stateKey() reads three inline transform strings. A CSSOM property read
+    // forces no layout, so a hit costs three string reads and a compare.
+    //
+    // Behaviour is preserved exactly, including the awkward case. apply() runs
+    // BEFORE the reel and `.again` transforms are written for the current frame,
+    // so a frame that jumps into the close from far away measures against the
+    // previous frame's values and is wrong — as it always has been. The only
+    // difference is that a stale reading is now cached under a stale KEY, so the
+    // next frame, whose key differs, re-measures and corrects it. One frame
+    // wrong either way; the cache cannot make it stick.
+    const key = stateKey();
+    if (base && key === baseKey) return base;
+
     const prev = zoomEl.style.transform;
     zoomEl.style.transform = 'none';
     // `.again` now carries the approach's own transform, and it is written
@@ -466,6 +527,7 @@ function createRecursion(zoomEl) {
     };
     zoomEl.style.transform = prev;
     if (dev) dev.style.transform = prevDev;
+    baseKey = key;
     return base;
   }
 
@@ -473,10 +535,8 @@ function createRecursion(zoomEl) {
     if (u <= 0) { zoomEl.style.transform = 'none'; return; }
     const b = ensure();
     if (!b) return;
-    const real = document.querySelector('.scene .column');
-    if (!real) return;
 
-    // Measured with the scene transform OFF.
+    // Measured with the scene transform OFF, and held until the viewport moves.
     //
     // This is the whole seam. The target is not where the real hero is *now* —
     // during the close the camera is fully pushed in, so the hero column reads
@@ -484,12 +544,33 @@ function createRecursion(zoomEl) {
     // when the camera is back at rest and the column is its plain 736px. Aiming
     // at the live rect matched that 5829 exactly and was, by construction,
     // eight times too big at the only instant that matters.
-    const sceneEl_ = document.getElementById('scene');
-    const prevScene = sceneEl_.style.transform;
-    sceneEl_.style.transform = 'none';
-    const tb = real.getBoundingClientRect();
-    const t = { left: tb.left, top: tb.top, width: tb.width, height: tb.height };
-    sceneEl_.style.transform = prevScene;
+    //
+    // Cached on a plain measure() invalidation rather than on a state key,
+    // because unlike `base` this does not depend on the scroll position at all —
+    // it is the column's LAYOUT box, and the only per-frame writes anywhere near
+    // it are to `.card` and `.phone__frame`, both of which are absolutely
+    // positioned precisely so their size cannot reflow the column. (That is not
+    // incidental: `.card` was moved out of flow when animating its height
+    // reflowed the phone mid-zoom and walked the card off screen.) So the
+    // viewport and the fonts are the only things that can move it, and both
+    // land in measure().
+    //
+    // `#scene > .column`, not `.scene .column`. The recursion clone is a
+    // `.column` inside `.scene` as well — it lives in the plane inside this very
+    // card — so the old selector matched both and returned the right one only
+    // because the real column comes first in document order. Depending on that
+    // is depending on the markup never being reordered.
+    if (!target) {
+      const real = document.querySelector('#scene > .column');
+      if (!real) return;
+      const sceneEl_ = refs().sceneRef;
+      const prevScene = sceneEl_.style.transform;
+      sceneEl_.style.transform = 'none';
+      const tb = real.getBoundingClientRect();
+      target = { left: tb.left, top: tb.top, width: tb.width, height: tb.height };
+      sceneEl_.style.transform = prevScene;
+    }
+    const t = target;
 
     // The same ramp the rest of the ending is built on: a constant zoom rate
     // through the middle, flat to second order at both ends.
@@ -826,7 +907,28 @@ function pageScroll(u) {
 }
 
 function frame(now) {
-  const dt = Math.min(64, now - last) || 16.7;
+  // Clamped at BOTH ends. The upper bound stops a backgrounded tab resuming
+  // with a two-second step; the lower one is the interesting half.
+  //
+  // A negative delta is poison here rather than merely wrong. Every ease on the
+  // page is k = 1 - exp(-dt / tau), so dt < 0 gives exp(positive) > 1 and k < 0
+  // — the easing steps AWAY from its target instead of toward it, and does so
+  // by a larger factor each frame. It diverges rather than glitching: a harness
+  // driving frame() with timestamps ahead of the clock produced a position of
+  // -2.15e12 in about three hundred frames. This page has already shipped one
+  // runaway of that shape (a wrap that subtracted one loop length per frame and
+  // could never normalise a value several lengths out, fixed with a modulo),
+  // and the lesson from it was to bound the inputs rather than to trust that
+  // the arithmetic can only be driven sensibly.
+  //
+  // performance.now() is monotonic, so a real rAF cannot deliver this. It costs
+  // one Math.max to be sure of that rather than to assume it — and it is what
+  // makes frame() safe to step by hand, which is the only way any of this page
+  // can be verified in a pane that will not composite.
+  //
+  // `|| 16.7` still catches the exactly-zero case, which two rAF callbacks in
+  // the same tick will produce.
+  const dt = Math.min(64, Math.max(0, now - last)) || 16.7;
   last = now;
 
   const pos = loop.advance(dt, now);
