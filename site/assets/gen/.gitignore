@@ -4,3 +4,11 @@
 # loads the WebP in assets/img/ instead. Regenerate with generate.sh; the
 # prompts are the reproducible part, not the pixels.
 *.png
+
+# Same intent as *.png above, for the formats the OG card pipeline emits.
+# assets/gen holds MASTERS — whatever the generator returned, at whatever size
+# it returned it. Only the optimised derivative in assets/img ships, and only
+# that derivative is worth versioning.
+*.jpg
+*.jpeg
+*.webp

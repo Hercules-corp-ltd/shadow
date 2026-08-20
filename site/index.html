@@ -3,16 +3,57 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Shadow — a browser that forgets you on purpose</title>
-<meta name="description" content="One phrase becomes a wallet, a password for every site, and an address for every sign-up. Nothing derived is stored. Shadow for iOS and Android.">
+<title>Shadow — the browser that forgets you, on purpose</title>
+<meta name="description" content="One phrase becomes your wallet, a different password for every site and a different address for every sign-up. Nothing is stored — Shadow derives it again each time you unlock.">
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="assets/brand/shadow-mark.png" type="image/png">
+<link rel="canonical" href="https://shadow-pi-six.vercel.app/">
 
+<!--
+  The link preview.
+
+  Three things here were broken rather than merely plain, and all three are the
+  same class of mistake — believing a scraper behaves like a browser.
+
+  1. `og:image` was `assets/img/og-card.webp`, a RELATIVE url. A browser
+     resolves that against the page and it fetches fine, which is exactly why
+     it looked correct locally. Scrapers are not browsers: X, LinkedIn, Slack
+     and Discord all require an absolute url and simply drop a relative one. So
+     the card rendered with no image anywhere it mattered.
+
+  2. It was WebP. X does not accept WebP for summary_large_image at all, and
+     LinkedIn is unreliable with it. JPEG, which everything has supported for
+     thirty years.
+
+  3. It was 1200x678 — 1.77:1, against the 1.91:1 every consumer crops to. The
+     top and bottom were being cut off by whatever the platform felt like.
+
+  Also absent: og:url, og:site_name, the image dimensions (which let a scraper
+  lay out the card before the image has downloaded), alt text, and the whole
+  twitter:* set. Twitter falls back to og:* for most fields, but not reliably
+  for the image, so both are stated.
+
+  93KB rather than the 587KB the same card weighs as a PNG. The content is
+  photographic and nearly black, so JPEG is both the right format and six times
+  lighter — and scrapers time out on heavy images, which is a silent failure
+  that looks identical to having no card at all.
+-->
 <meta property="og:type" content="website">
-<meta property="og:title" content="Shadow — a browser that forgets you on purpose">
-<meta property="og:description" content="One phrase becomes a wallet, a password for every site, and an address for every sign-up. Nothing derived is stored.">
-<meta property="og:image" content="assets/img/og-card.webp">
+<meta property="og:site_name" content="Shadow">
+<meta property="og:url" content="https://shadow-pi-six.vercel.app/">
+<meta property="og:title" content="Shadow — forget me, on purpose">
+<meta property="og:description" content="Every site meets a different you. One phrase derives the wallet, the password and the address — and Shadow keeps none of it.">
+<meta property="og:image" content="https://shadow-pi-six.vercel.app/assets/img/og-card.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A marble bust lit by a single shaft of amber light, its far side breaking apart into drifting fragments and disappearing into the dark.">
+
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Shadow — forget me, on purpose">
+<meta name="twitter:description" content="Every site meets a different you. One phrase derives the wallet, the password and the address — and Shadow keeps none of it.">
+<meta name="twitter:image" content="https://shadow-pi-six.vercel.app/assets/img/og-card.jpg">
+<meta name="twitter:image:alt" content="A marble bust lit by a single shaft of amber light, its far side breaking apart into drifting fragments and disappearing into the dark.">
 
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/Geist-Variable.woff2" crossorigin>
 <link rel="preload" as="image" href="assets/shots/home.png">
