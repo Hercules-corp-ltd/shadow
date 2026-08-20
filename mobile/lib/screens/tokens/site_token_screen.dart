@@ -42,7 +42,11 @@ class _SiteTokenScreenState extends State<SiteTokenScreen> {
 
     return ShadowScaffold(
       title: 'Site Tokens',
-      subtitle: 'Tokens issued by Shadow sites you follow',
+      // TokensService returns every SPL token account the wallet holds.
+      // There is no notion of "sites you follow" anywhere in the code, and no
+      // link between a mint and a Shadow site, so this described a filter
+      // that does not exist.
+      subtitle: 'Every SPL token this wallet holds',
       body: Column(
         children: [
           ShadowSearchField(

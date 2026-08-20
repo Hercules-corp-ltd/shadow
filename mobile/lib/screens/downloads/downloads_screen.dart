@@ -8,7 +8,7 @@ import '../../models/download.dart';
 import '../../providers/downloads_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/load_state_view.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/shadow_scaffold.dart';
 
@@ -61,16 +61,20 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
               p.items.isEmpty ? null : () => context.push('/downloads/clear'),
         ),
       ],
-      body: p.isLoading && p.items.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : p.items.isEmpty
-              ? const EmptyState(
-                  icon: Icons.download_rounded,
-                  title: 'No downloads yet',
-                  message:
-                      'Files you download from Shadow sites will appear here.',
-                )
-              : ListView.separated(
+      // DownloadsService.add() has no callers and the browser intercepts no
+      // downloads, so nothing can ever land in this list — "files you
+      // download from Shadow sites will appear here" was a promise about a
+      // path that does not exist.
+      body: LoadStateView(
+        isLoading: p.isLoading,
+        isEmpty: p.items.isEmpty,
+        error: p.error,
+        onRetry: p.load,
+        emptyIcon: Icons.download_rounded,
+        emptyTitle: 'Downloading is not built yet',
+        emptyMessage: 'Shadow does not intercept downloads from the pages you '
+            'visit, so nothing arrives here yet.',
+        child: ListView.separated(
                   padding: const EdgeInsets.only(bottom: 24),
                   itemBuilder: (_, i) {
                     final d = p.items[i];
@@ -133,14 +137,20 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                                       : Icons.more_vert_rounded,
                               color: ShadowColors.textSecondary,
                             ),
-                            onPressed: () {
-                              final provider =
-                                  context.read<DownloadsProvider>();
-                              if (d.status == DownloadStatus.downloading) {
-                                provider.pause(d.id);
-                              } else if (d.status == DownloadStatus.paused) {
-                                provider.resume(d.id);
-                              }
+                            // Null for every other status. Queued, complete
+                            // and failed rows rendered a fully enabled
+                            // more_vert button whose handler fell through both
+                            // branches and did nothing at all — no menu, no
+                            // feedback, no way to tell a dead control from a
+                            // slow one.
+                            onPressed: switch (d.status) {
+                              DownloadStatus.downloading => () => context
+                                  .read<DownloadsProvider>()
+                                  .pause(d.id),
+                              DownloadStatus.paused => () => context
+                                  .read<DownloadsProvider>()
+                                  .resume(d.id),
+                              _ => null,
                             },
                           ),
                         ],
@@ -150,6 +160,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemCount: p.items.length,
                 ),
+      ),
     );
   }
 }

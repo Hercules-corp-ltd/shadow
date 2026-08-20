@@ -15,7 +15,10 @@ class Site {
   /// and the resolve screen printed that as fact next to the real content
   /// address. An absent date is not today's date.
   final DateTime? lastDeployedAt;
-  final int visitCount;
+  /// Null when the server did not say. Same reasoning as [lastDeployedAt]:
+  /// `?? 0` turned an absent field into the assertion "nobody has visited
+  /// this", printed as a counted fact beside real on-chain values.
+  final int? visitCount;
 
   const Site({
     required this.domain,
@@ -27,7 +30,7 @@ class Site {
     this.thumbnailCid,
     this.deployVersion = 'v1',
     this.lastDeployedAt,
-    this.visitCount = 0,
+    this.visitCount,
   });
 
   factory Site.fromJson(Map<String, dynamic> json) => Site(
@@ -41,6 +44,6 @@ class Site {
         deployVersion: json['deploy_version'] ?? 'v1',
         lastDeployedAt:
             DateTime.tryParse(json['last_deployed_at']?.toString() ?? ''),
-        visitCount: (json['visit_count'] ?? 0) as int,
+        visitCount: json['visit_count'] as int?,
       );
 }

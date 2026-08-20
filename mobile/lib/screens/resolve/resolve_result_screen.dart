@@ -161,7 +161,7 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
                         : DateFormat.yMMMd()
                             .add_jm()
                             .format(site.lastDeployedAt!)),
-                _row('Visits', site.visitCount.toString()),
+                _row('Visits', site.visitCount?.toString() ?? 'Not reported'),
                 _row('Content CID', site.contentCid, copy: true),
                 _row('Program', site.programAddress, copy: true),
                 _row('Owner', site.ownerPubkey, copy: true),

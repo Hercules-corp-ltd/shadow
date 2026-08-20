@@ -5,6 +5,7 @@ import '../../providers/settings_provider.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
+import '../../widgets/unbuilt_tile.dart';
 import '../../widgets/shadow_scaffold.dart';
 
 class SettingsAdvancedScreen extends StatelessWidget {
@@ -20,27 +21,25 @@ class SettingsAdvancedScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
-          GlassCard(
-            padding: const EdgeInsets.all(8),
+          const GlassCard(
+            padding: EdgeInsets.all(8),
             child: Column(
               children: [
-                SwitchListTile(
-                  value: s.developerMode,
-                  title: Text('Developer mode', style: ShadowTypography.body),
-                  subtitle: Text('Show internal dev tools',
-                      style: ShadowTypography.bodySm),
-                  onChanged: (v) =>
-                      provider.update(s.copyWith(developerMode: v)),
+                // Neither of these is read anywhere. No screen changes when
+                // developer mode is on — there are no internal dev tools to
+                // show — and nothing in the app is gated on the experimental
+                // flag, so both switches only ever moved themselves.
+                UnbuiltTile(
+                  icon: Icons.terminal_rounded,
+                  title: 'Developer mode',
+                  reason: 'Nothing on any screen is gated on this yet, so '
+                      'turning it on shows no extra tools.',
                 ),
-                const Divider(height: 1, color: ShadowColors.border),
-                SwitchListTile(
-                  value: s.experimentalFeatures,
-                  title: Text('Experimental features',
-                      style: ShadowTypography.body),
-                  subtitle: Text('Enable unstable features in progress',
-                      style: ShadowTypography.bodySm),
-                  onChanged: (v) =>
-                      provider.update(s.copyWith(experimentalFeatures: v)),
+                Divider(height: 1, color: ShadowColors.edge),
+                UnbuiltTile(
+                  icon: Icons.science_outlined,
+                  title: 'Experimental features',
+                  reason: 'No feature is behind this flag yet.',
                 ),
               ],
             ),
@@ -80,6 +79,9 @@ class SettingsAdvancedScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // The four chips selected a string that never reached a log
+                // call — no logger in the app consults logLevel. Kept visible
+                // and inert rather than pretending to filter something.
                 Text('Log level', style: ShadowTypography.h4),
                 const SizedBox(height: 8),
                 Wrap(
@@ -89,10 +91,15 @@ class SettingsAdvancedScreen extends StatelessWidget {
                       ChoiceChip(
                         label: Text(l.toUpperCase()),
                         selected: s.logLevel == l,
-                        onSelected: (_) =>
-                            provider.update(s.copyWith(logLevel: l)),
+                        onSelected: null,
                       ),
                   ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Shadow has no logger reading this yet, so the choice is '
+                  'stored and nothing filters on it.',
+                  style: ShadowTypography.bodySm,
                 ),
               ],
             ),

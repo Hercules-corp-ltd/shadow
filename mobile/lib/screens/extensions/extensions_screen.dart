@@ -45,9 +45,15 @@ class _ExtensionsScreenState extends State<ExtensionsScreen> {
         error: p.error,
         onRetry: p.load,
         emptyIcon: Icons.extension_rounded,
-        emptyTitle: 'No extensions yet',
-        emptyMessage:
-            'Install extensions from the Shadow directory to supercharge your browsing.',
+        // There is no install path and no "Shadow directory": the service
+        // exposes only list/toggle/uninstall/clearAll, nothing ever writes an
+        // extension, and extensions_service.dart says so outright — "Shadow
+        // has no extension runtime yet… the screen must not imply otherwise".
+        // This string implied exactly that, and sent people looking for a
+        // storefront that does not exist.
+        emptyTitle: 'Extensions are not built yet',
+        emptyMessage: 'Shadow has no extension runtime and no directory to '
+            'install from, so nothing can be added here yet.',
         child: ListView.separated(
           padding: const EdgeInsets.only(bottom: 24),
           itemBuilder: (_, i) {
@@ -60,11 +66,14 @@ class _ExtensionsScreenState extends State<ExtensionsScreen> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: ShadowColors.tilePurple.withValues(alpha: 0.18),
+                      color: ShadowColors.recessDeep,
                       borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: ShadowColors.edge),
                     ),
-                    child: const Icon(Icons.extension_rounded,
-                        color: ShadowColors.tilePurple),
+                    child: Icon(
+                      Icons.extension_rounded,
+                      color: ShadowColors.tilePurple.withValues(alpha: 0.85),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

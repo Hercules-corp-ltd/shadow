@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import '../../models/activity.dart';
 import '../../providers/activity_provider.dart';
 import '../../theme/shadow_colors.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/load_state_view.dart';
 import '../../widgets/list_item_card.dart';
 import '../../widgets/shadow_scaffold.dart';
 
@@ -57,17 +57,21 @@ class _ActivityScreenState extends State<ActivityScreen> {
           onPressed: () => context.push('/activity/logs'),
         ),
       ],
-      body: p.isLoading && p.recent.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : p.recent.isEmpty
-              ? EmptyState(
-                  icon: Icons.timeline_rounded,
-                  title: 'No activity yet',
-                  message: 'Your deploys, purchases and visits will show here.',
-                  actionLabel: 'View logs',
-                  onAction: () => context.push('/activity/logs'),
-                )
-              : ListView.separated(
+      // "Your deploys, purchases and visits will show here" described a
+      // capability that does not exist: ActivityService.record() has no
+      // callers anywhere in the app — the browser records visits through
+      // HistoryService instead — so nothing can ever put a row in this list.
+      body: LoadStateView(
+        isLoading: p.isLoading,
+        isEmpty: p.recent.isEmpty,
+        error: p.error,
+        onRetry: p.loadRecent,
+        emptyIcon: Icons.timeline_rounded,
+        emptyTitle: 'Nothing is recorded here yet',
+        emptyMessage: 'Shadow does not write to an activity log yet, so this '
+            'stays empty whatever you do. Browsing history is kept '
+            'separately, under History.',
+        child: ListView.separated(
                   padding: const EdgeInsets.only(bottom: 24),
                   itemBuilder: (_, i) {
                     final a = p.recent[i];
@@ -83,6 +87,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemCount: p.recent.length,
                 ),
+      ),
     );
   }
 }

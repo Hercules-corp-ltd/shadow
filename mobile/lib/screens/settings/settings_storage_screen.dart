@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../theme/shadow_typography.dart';
 import '../../widgets/glass_card.dart';
+import '../../widgets/unbuilt_tile.dart';
 import '../../widgets/shadow_scaffold.dart';
 
 class SettingsStorageScreen extends StatelessWidget {
@@ -24,6 +25,12 @@ class SettingsStorageScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Both sliders were live and neither limit is enforced:
+                // there is no cache manager and no history trimmer anywhere
+                // in the app, so the screen reported "512 MB" and "1000
+                // items" as live ceilings that nothing has ever applied. The
+                // controls stay visible so the intent is legible, but they do
+                // not move, because a slider that moves is a promise.
                 Text('Max cache size', style: ShadowTypography.h4),
                 Text('${s.maxCacheMb} MB', style: ShadowTypography.bodySm),
                 Slider(
@@ -32,8 +39,7 @@ class SettingsStorageScreen extends StatelessWidget {
                   divisions: 31,
                   value: s.maxCacheMb.toDouble().clamp(128, 4096),
                   label: '${s.maxCacheMb} MB',
-                  onChanged: (v) =>
-                      provider.update(s.copyWith(maxCacheMb: v.toInt())),
+                  onChanged: null,
                 ),
                 const SizedBox(height: 12),
                 Text('History retention', style: ShadowTypography.h4),
@@ -44,22 +50,27 @@ class SettingsStorageScreen extends StatelessWidget {
                   max: 10000,
                   divisions: 99,
                   value: s.maxHistoryItems.toDouble().clamp(100, 10000),
-                  onChanged: (v) =>
-                      provider.update(s.copyWith(maxHistoryItems: v.toInt())),
+                  onChanged: null,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Neither limit is applied yet — Shadow has no cache manager '
+                  'and does not trim history, so these are stored numbers '
+                  'rather than ceilings. Clear history from the History '
+                  'screen in the meantime.',
+                  style: ShadowTypography.bodySm,
                 ),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          GlassCard(
-            padding: const EdgeInsets.all(8),
-            child: SwitchListTile(
-              value: s.autoClearCache,
-              title:
-                  Text('Auto-clear cache weekly', style: ShadowTypography.body),
-              subtitle: Text('Remove non-pinned content every Sunday',
-                  style: ShadowTypography.bodySm),
-              onChanged: (v) => provider.update(s.copyWith(autoClearCache: v)),
+          const GlassCard(
+            padding: EdgeInsets.all(8),
+            child: UnbuiltTile(
+              icon: Icons.auto_delete_outlined,
+              title: 'Auto-clear cache weekly',
+              reason: 'No scheduled job runs in Shadow, so nothing would '
+                  'happen on Sunday or any other day.',
             ),
           ),
         ],

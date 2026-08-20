@@ -95,9 +95,20 @@ class ResolveFailedScreen extends StatelessWidget {
             child: Container(
               width: 112,
               height: 112,
+              // A socket, not a coin: the treatment EmptyState already
+              // uses, so the largest object on the screen stops being a flat
+              // filled disc of accent colour.
               decoration: BoxDecoration(
-                color: tone.withValues(alpha: 0.12),
+                color: ShadowColors.recessDeep,
                 shape: BoxShape.circle,
+                border: Border.all(color: tone.withValues(alpha: 0.24)),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: tone.withValues(alpha: 0.13),
+                    blurRadius: 30,
+                    spreadRadius: -6,
+                  ),
+                ],
               ),
               child: Icon(
                 isUnreachable
