@@ -576,6 +576,19 @@ const recursion = createRecursion(reelZoom);
  * Sized and scaled from layout in measure() — never from `pos`. */
 const againPageEl = document.querySelector('.again__page');
 const againCanvasEl = document.querySelector('.again__canvas');
+const againBandEl = document.querySelector('.again');
+const againScreenEl = document.querySelector('.again__screen');
+
+/**
+ * How much of the frame the closing device is allowed to take.
+ *
+ * Narrower on a phone, and not for taste: below about 820px the device would
+ * otherwise run edge to edge, which leaves it no air and leaves the fly-in
+ * almost nothing to cover. This was a `@media (max-width: 820px)` rule until
+ * the sizing moved into JS; keeping it there as well would have been two places
+ * to change one number.
+ */
+const AGAIN_DEV_CAP = (w) => Math.min(w * (w <= 820 ? 0.74 : 0.92), 1400);
 const motesEl = document.getElementById('motes');
 const motes = motesEl && !reduced.matches ? createMotes(motesEl) : null;
 // Built unconditionally: under reduced motion the rules are still worth having
@@ -678,6 +691,25 @@ function measure() {
   //
   // None of this is a function of `pos`. It changes on resize and on
   // fonts.ready, and is therefore constant across the wrap by construction.
+  // The device fits inside BOTH the band's height and the frame's width, at a
+  // fixed 16/9. CSS cannot express that — see the note on .again__screen — so
+  // the min() is taken here, where both numbers are already measured, and the
+  // stylesheet derives the height from the ratio.
+  //
+  // Ordered deliberately: the stage heights are written above, `.again` is a
+  // percentage of the stage, `.again__screen` fits inside `.again`, and
+  // `.again__canvas` is a percentage of the screen. Each line below reads a box
+  // the line before it settled.
+  if (againBandEl && againScreenEl) {
+    const bandH = againBandEl.offsetHeight;
+    if (bandH > 0) {
+      againScreenEl.style.setProperty(
+        '--again-dev-w',
+        `${Math.min(AGAIN_DEV_CAP(vw), (bandH * 16) / 9).toFixed(2)}px`,
+      );
+    }
+  }
+
   if (againPageEl && againCanvasEl) {
     const boxW = Math.max(1, sceneEl.offsetWidth);
     const boxH = Math.max(1, sceneEl.offsetHeight);

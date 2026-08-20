@@ -693,11 +693,30 @@ body.static-layout .panel { position: fixed; }
   top: 25%; bottom: clamp(24px, 3.2vh, 44px);
   display: grid; place-items: center; pointer-events: none; z-index: 0;
 }
+/*
+  Width is written by measure(), not by this sheet, and that is not fussiness.
+
+  It used to be `height: 100%; width: auto; aspect-ratio: 16/9; max-width: ...`,
+  which is the obvious spelling and is quietly wrong. `height: 100%` is a
+  DEFINITE size, so the ratio derives the width from it — and when `max-width`
+  then clamps that width, nothing goes back and re-derives the height. The ratio
+  is simply abandoned. On desktop the cap never binds and it looks correct; at
+  390x844 it binds hard and the device came out 289 x 606. A browser window
+  taller than it is wide does not read as a browser window at all, which undoes
+  the entire point of the ending on every phone.
+
+  There is no CSS spelling that fits a fixed-ratio box inside BOTH a width cap
+  and a height cap — you always have to make one axis definite, and whichever
+  one you choose is the one that breaks when the other constraint binds. So the
+  min() is taken in JS, where both numbers are already known, and `height: auto`
+  lets the ratio do the rest. --again-dev-w is the fallback for the one frame
+  before measure() first runs.
+*/
 .again__screen {
   position: relative;
-  height: 100%; width: auto;
+  width: var(--again-dev-w, 60%);
+  height: auto;
   aspect-ratio: 16 / 9;
-  max-width: min(92vw, 1400px);
   border-radius: 12px;
   overflow: hidden;
   background: #0d0d0f;
@@ -820,9 +839,9 @@ body.static-layout .panel { position: fixed; }
    nothing to cover. Pulling the device in to 74vw puts the travel back and
    composes better with air around it. Must sit after the .again__screen rule
    above; same specificity, so order decides. */
-@media (max-width: 820px) {
-  .again__screen { max-width: min(74vw, 1400px); }
-}
+/* (The 74vw narrow cap moved into measure() with the rest of the sizing — see
+   AGAIN_DEV_CAP in main.js. Splitting it across a media query and a JS min()
+   would have been two sources of truth for one number.) */
 
 /* Reduced motion turns this page into a document, and those rules unpick the
    phone so the screenshot can flow down it. The miniature is a PICTURE of the
@@ -1018,3 +1037,24 @@ body:not(.static-layout) .column { border-color: transparent; }
 .rails.is-still .rail__seg { display: none; }
 @media (prefers-reduced-motion: reduce) { .rail__seg { display: none; } }
 body.static-layout .rails { position: absolute; height: 100%; }
+
+/*
+  On a phone the closing device is WIDTH-limited, not height-limited: the cap is
+  74vw and 16/9 makes that 162px tall inside a band 606px tall. Centred, it sat
+  marooned with 222px of nothing above and below it.
+
+  The cap itself stays. Z_close is vw / canvasW and the canvas is 77% of the
+  device, so the width fraction IS the fly-in's travel — 74vw gives 1.77, and
+  widening to 92vw to fill the band would drop it to 1.41 and take the flight
+  out of the ending to fix a composition problem. Shrink the band instead: the
+  device then sits just under the copy that names it, which is where it belongs.
+*/
+@media (max-width: 820px) {
+  /* Anchored to the TOP of the band, not centred in it. The band still has to
+     reach the bottom of the frame so the device has somewhere to rise FROM
+     during the approach, but a 162px object centred in a 446px band sat 372px
+     below the headline naming it. Start-aligned it sits just under the copy,
+     and the approach still lifts it up from below the fold exactly as before —
+     that motion is a transform on .again, not a property of its box. */
+  .again { top: 30%; place-items: start center; }
+}
