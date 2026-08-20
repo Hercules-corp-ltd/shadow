@@ -211,27 +211,61 @@ body::before {
 }
 .phone__body {
   position: relative;
-  /* The bezel layers scale past this box on the way in, so nothing may clip. */
+  /* Nothing scales past this box any more — the bezel is sized from the card's
+     box instead — but its drop shadow still falls outside it. (The 6px padding
+     below is inert: the containing block for absolutely positioned children is
+     the PADDING box, which equals the border box here, so the rim you see is
+     .card's own left/top/right: 6px, not this.) */
   overflow: visible;
   width: clamp(132px, min(15vw, 26vh), 208px);
   aspect-ratio: 1080 / 2400;
   padding: 6px;
 }
 /*
-  The bezel art lives here, not on .phone__body, because the camera fades the
-  bezel out early — and #card is a CHILD of the body. Fading the body faded the
-  card and everything inside it, which is why the middle of the zoom went
-  completely blank.
+  The bezel art lives here, not on .phone__body, because #card is a CHILD of
+  the body: anything done to the body is done to the card and everything inside
+  it, and the middle of the zoom went blank the one time that was tried.
+
+  Its box is written every frame by camera.js — the card's box, grown by the
+  rim — so the horizontal edges are pinned here and the vertical ones are not.
+  There is deliberately no `bottom`: with top, height and bottom all set the
+  declarations are over-constrained and the browser silently drops one, and it
+  is better not to have to know which.
+
+  It is repainted rather than composited now, which is a real cost and is the
+  price of the shape being right. Scaling a fixed box uniformly is what made
+  the frame and the card two unrelated rectangles: at t = 0.60 the card was
+  485x273 inside a 1791x3981 frame — 1854px of grey above and below a landscape
+  sliver. A non-uniform scale cannot substitute either; it turns a 31px corner
+  into a 31 x 7.75px ellipse, which is a different way of losing the bezel.
 */
 .phone__frame {
-  position: absolute; inset: 0; border-radius: 30px; pointer-events: none;
-  transform-origin: 50% 50%; will-change: transform;
+  position: absolute; left: 0; right: 0; top: 0; height: 100%;
+  /* 25 + 6 — the card's radius plus the rim, so the two are concentric. This is
+     exactly what camera.js writes at e = 0, and the recursion clone keeps this
+     static value: they have to agree at the seam, which is why this moves from
+     30 to 31. Left at 30 it would put a 1px corner discontinuity at four
+     corners at the wrap. */
+  border-radius: 31px;
+  pointer-events: none;
   background: linear-gradient(160deg, #2b2c31, #101013 44%, #232429);
   box-shadow: 0 50px 100px -34px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.06) inset;
 }
+/*
+  Inside .card now. inset:0 of the card is the same box inset:6px of the body
+  was — measured identical at rest — but the card clips, so the highlight can
+  slide out of frame instead of fading.
+
+  `border-radius: inherit` rather than nothing: body.static-layout sets
+  .card { overflow: visible }, so in reduced motion there is no clip at all and
+  a square 12%-white corner would poke out at the top left of a 25px-rounded
+  card. Inheriting takes the card's own radius, including the per-frame value
+  the camera writes, so it is right in both paths.
+*/
 .phone__gloss {
-  position: absolute; inset: 6px; border-radius: 25px; pointer-events: none; z-index: 4;
-  transform-origin: 50% 50%; will-change: transform;
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; z-index: 4;
+  will-change: transform;
   background: linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 32%);
 }
 
@@ -259,9 +293,27 @@ body::before {
    coincide, and the card centre is what the camera walks to the middle of
    the screen. */
   .plane { position: absolute; top: 50%; left: 50%; transform-origin: 50% 50%; }
+/*
+  Anchored to the BOTTOM edge, not the top, and that is load-bearing.
+
+  This image is the page above the fold. Its bottom edge is the page break that
+  the first section's top edge is welded to, and main.js scrolls it up by
+  exactly one page across the opening. Anchored at the top, `cover` ate the
+  screenshot from the BOTTOM as the card opened — the frame closing on content
+  that stayed put, which is the opposite of a scroll. Anchored at the bottom the
+  crop eats from the top, the content is rigid against the break, and the last
+  thing you see before the section arrives is the bottom of the home screen.
+
+  It costs nothing at rest, which is what keeps the recursion clone identical.
+  `.phone__body` is aspect-ratio 1080/2400 with 6px of padding, so the card is
+  (2.222w - 12) / (w - 12) tall: 2.344 at the clamp's 132px floor, 2.306 at
+  1280x720, 2.297 at the 208px ceiling. All of them are taller than the image's
+  own 2.222, so `cover` is height-driven at rest and crops nothing vertically —
+  measured 0.000px. The vertical anchor is inert until the card starts to open.
+*/
 .card__shot {
   position: absolute; inset: 0; z-index: 3;
-  width: 100%; height: 100%; object-fit: cover; object-position: 50% 0;
+  width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%;
   pointer-events: none;
 }
 

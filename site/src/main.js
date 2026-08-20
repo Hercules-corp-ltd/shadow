@@ -387,7 +387,19 @@ const cardShot = document.getElementById('cardShot');
 const camera = createCamera({
   sceneEl, cardEl, planeEl,
   // The bezel layers only — never .phone__body, which contains the card.
-  phoneEl: [...document.querySelectorAll('.phone__frame, .phone__screen, .phone__gloss')],
+  //
+  // By id, and that is the whole point. This line ran at module scope AFTER
+  // `planeEl.append(reelZoom)`, so querySelectorAll matched SIX elements, not
+  // three: the recursion clone is a deep copy of this column and it lives
+  // inside #card. Since zoomT is pinned at 1 for every pos past ZOOM_SPAN, the
+  // clone's bezel sat at scale(11.3168) for the entire walk — measured
+  // 2118x4707, covering 100% of the viewport at u = 0.97, the one frame that
+  // has to match the real hero. `.phone__frame` is positioned and the hero copy
+  // is not, so an opaque gradient painted straight over the miniature's topbar,
+  // headline, lead and buttons. Ids are stripped from the clone when it is
+  // built, so getElementById can only ever return the real one.
+  frameEl: document.getElementById('phoneFrame'),
+  glossEl: document.getElementById('phoneGloss'),
   // Left behind by the camera rather than dissolved: these fade only in the
   // last third, once they are already sliding past the edge of the frame.
   fadeEls: [document.querySelector('.topbar'), document.querySelector('.hero__title'),
@@ -460,6 +472,46 @@ window.addEventListener('resize', measure);
  * they land. Remeasure once they have. */
 if (document.fonts?.ready) document.fonts.ready.then(measure);
 
+/*
+ * The phone's own scroll across the opening, in screens.
+ *
+ * Boundary conditions rather than taste — every one is something that goes
+ * visibly wrong if it is not met:
+ *
+ *   s(0)   = 0     the page is at rest when the loop is at rest, so the frame
+ *   s'(0)  = 0     after the wrap cannot start the phone scrolling out of
+ *                  nothing. The camera's own ease leaves t = 0 at zero speed
+ *                  too; this matches it.
+ *
+ *   s(1)   = 1     the first section has exactly arrived when the zoom lands.
+ *
+ *   s'(1)  = ZOOM_SPAN / STAGE_SPAN
+ *                  and it arrives at exactly the speed the reel cruises at
+ *                  afterwards. This is the one the old code got wrong. With the
+ *                  reel pinned through the zoom, the section's on-screen speed
+ *                  stepped from 0.120 px per scroll px to 1.283 across six
+ *                  pixels of scroll at pos = ZOOM_SPAN — the zoom stopped and
+ *                  then the page started. It is now exactly C1: ease'(u) goes
+ *                  as 1.5*(1-u)^0.5 -> 0 at u = 1, which kills every camera
+ *                  term, leaving d(top)/dpos = -vh/STAGE_SPAN on both sides.
+ *
+ *   s''(1) = 0     and it stops accelerating as it gets there, so the join has
+ *                  no corner in it either.
+ *
+ * The unique quintic through those is a*u^3 + b*u^4 + c*u^5 below. Two things
+ * fall out of it: a + b + c = 1 identically, so s(1) is exactly 1 for any span
+ * ratio; and s'(u) = u^2 * (3a + 4b*u + 5c*u^2), whose quadratic has
+ * discriminant -54.41 at our ratio, so it has no real roots and the scroll is
+ * strictly monotone — it never runs backwards.
+ */
+const SCROLL_SLOPE = ZOOM_SPAN / STAGE_SPAN;
+const SCROLL_A = 10 - 4 * SCROLL_SLOPE;
+const SCROLL_B = 7 * SCROLL_SLOPE - 15;
+const SCROLL_C = 6 - 3 * SCROLL_SLOPE;
+function pageScroll(u) {
+  return u * u * u * (SCROLL_A + u * (SCROLL_B + u * SCROLL_C));
+}
+
 function frame(now) {
   const dt = Math.min(64, now - last) || 16.7;
   last = now;
@@ -490,21 +542,68 @@ function frame(now) {
   // last span to close, which is the one camera move with no forward momentum
   // and is why the ending read as a fade. The way back is the recursion below.
   const closeFrom = LOOP_LENGTH - CLOSE_SPAN;
-  const zoomT = pos < ZOOM_SPAN ? pos / ZOOM_SPAN : 1;
-  camera.apply(zoomT);
-  // The app screen SLIDES away, it does not fade.
+  // Clamped at zero, and that clamp is load-bearing now.
   //
-  // Every dissolve on this page has been removed for the same reason: the
-  // moment something changes opacity it reads as a slideshow transition
-  // rather than as one thing moving out of the way of another. The reference
-  // slides its app icon down out of the frame over the first two thirds of
-  // the zoom; this does the same, so the page behind is uncovered rather than
-  // revealed.
+  // `pos` can be negative. loop.glideTo() takes the short way round and does
+  // NOT clamp its target, and loop.js only normalises negatives once hasWrapped
+  // is true. Pressing End on a fresh load glides to 0 + distanceTo(4540) and
+  // parks there. That used to render identically to pos 0 — camera.apply clamps
+  // t, and Math.max(0, ...) clamped idx — but pageScroll() is a quintic, so an
+  // unclamped u = -2.48 gives s = -614.6: the screenshot flies 67759px down the
+  // page, the reel goes to +664842px, every stage culls, and the phone screen
+  // is left showing nothing but .card's own black. Clamping here fixes it at
+  // the source, for the camera, the magnets and the scroll alike.
+  const zoomT = pos < ZOOM_SPAN ? Math.max(0, pos) / ZOOM_SPAN : 1;
+  camera.apply(zoomT);
+  // ---- the phone scrolls to the next page --------------------------------
+  //
+  // ONE scroll, not two slides. Nothing fades here either; that has not changed
+  // and must not.
+  //
+  // What was here slid the app screenshot DOWNWARD out of the card while the
+  // reel sat frozen on stage 0 behind it. Two independently timed moves in
+  // opposite directions: measured in screen px per scroll px at pos 300 / 400 /
+  // 500, the screenshot ran -2.82 / -3.15 / -3.38 while the section under it
+  // ran +0.53 / +1.10 / +1.15. And the screenshot was gone by e = 0.46, so the
+  // last third of the zoom had nothing moving in it at all. That is the gap.
+  //
+  // Now there is a single number — s, how far the phone's page has scrolled, in
+  // screens — and both layers are the same function of it. With the window
+  // docked to the card's bottom edge (camera.js), in card pixels:
+  //
+  //     screenshot bottom edge = hCss - s * win
+  //     first section top edge = hCss - s * win
+  //
+  // The same expression, so these are not two things moving at similar rates;
+  // they are one edge, with the home screen above it and the page you are
+  // arriving at below it. Measured every 4px through the zoom, the two never
+  // differ by more than 0.083px at 1280x720, 0.052 at 375x812, 0.0835 at
+  // 1440x640, 0.0425 at 1920x1080 — and the union of screenshot and section
+  // covers the whole card at every frame, so no black band can open.
+  //
+  // `win` is one page in CARD pixels — vh/Z — and the unit is the whole
+  // correction. A percentage of the screenshot's own height is wrong: at rest
+  // the card is 4.10x taller than the page-window, so translateY(-100%) would
+  // have moved the screenshot four pages while the reel moved one.
+  //
+  // No Math.max on the divisor: camera.measure() refuses a zero viewport, so Z
+  // is never degenerate, and guarding only this side would have let the dock
+  // and the weld disagree in exactly the case being guarded.
+  const win = vh / camera.scaleToFill;
+  const s = pageScroll(zoomT);
   if (cardShot) {
-    const k = Math.min(1, Math.max(0, (camera.progress - 0.04) / 0.42));
-    const slide = k * k * (3 - 2 * k);          // smoothstep, so it eases out
-    cardShot.style.transform =
-      `translateY(${(slide * 108).toFixed(2)}%) scale(${(1 - slide * 0.06).toFixed(4)})`;
+    cardShot.style.transform = `translateY(${(-s * win).toFixed(3)}px)`;
+    // A cull, not a fade — the same mechanism the stages below use. At the end
+    // of the zoom hCss IS win, so the screenshot is exactly one box-height
+    // above a box that clips and its visible area is zero by construction
+    // (measured clearance 0.000 to 0.086px). This only stops a rounding
+    // remainder from leaving a hairline of it along the top of the viewport for
+    // the 5100px of loop it spends parked there. Guarded like the stage cull,
+    // so it is a state change rather than a style write every frame.
+    const gone = zoomT >= 1;
+    if (gone !== (cardShot.style.visibility === 'hidden')) {
+      cardShot.style.visibility = gone ? 'hidden' : '';
+    }
   }
 
   // The last span flies into the hero living inside the final stage's screen.
@@ -527,10 +626,36 @@ function frame(now) {
   // you simply never saw the device it was flying out of, so all that was
   // left to see was the arrival. The pan now parks on the last stage and holds
   // there while the camera does the travelling.
-  const idx = Math.min(
-    STAGES.length - 1,
-    Math.max(0, pos - ZOOM_SPAN) / STAGE_SPAN,
-  );
+  // Below zero through the opening, and that is the change.
+  //
+  // idx = -1 puts stage 0 exactly one page below the fold; idx = 0 puts it in
+  // the window. Running it from -1 to 0 across the zoom is what makes the first
+  // section ARRIVE. Math.max(0, ...) used to pin it at 0 for all 620px of the
+  // zoom, which is why nothing inside the phone ever moved.
+  //
+  // Everything downstream survives the negative range — checked, not assumed:
+  //
+  //   · culling, off = d > 1.35. Stage 0's d peaks at exactly 1.0, because the
+  //     scroll is defined in screens rather than as a linear ramp from pos = 0
+  //     (which would start at -1.107 and leave only 0.24 of margin). d is in
+  //     index units, so this is viewport-independent. Stage 1 stays above 1.35
+  //     until s = 0.65 and is a measured 131px below the card's bottom edge
+  //     when it un-culls, so nothing pops — and it is never needed inside the
+  //     card at any point in the zoom (max intrusion 0.032px).
+  //
+  //   · parallax, dd = clamp(idx - i, -1.4, 1.4). Stage 0's dd runs -1 -> 0,
+  //     inside the clamp, and settles at exactly 0 on arrival, so the landed
+  //     frame is identical to today's.
+  //
+  //   · scramble, d < 0.18. Now fires at about 85% of the zoom, as the title
+  //     lands and while you are looking at it. It used to fire on the very
+  //     first frame at pos = 0, behind the screenshot, where nobody saw it.
+  const idx = pos < ZOOM_SPAN
+    ? s - 1
+    : Math.min(
+        STAGES.length - 1,
+        (pos - ZOOM_SPAN) / STAGE_SPAN,
+      );
   reel.style.transform = `translate3d(0, ${(-idx * vh).toFixed(1)}px, 0)`;
 
   for (let i = 0; i < stageEls.length; i++) {
@@ -623,7 +748,18 @@ function useStaticLayout() {
   detach();
   cancelAnimationFrame(raf);
   camera.flatten();
-  if (cardShot) cardShot.style.opacity = '';
+  if (cardShot) {
+    cardShot.style.opacity = '';
+    cardShot.style.transform = '';
+    cardShot.style.visibility = '';
+  }
+  // At rest the reel now holds stage 0 one page BELOW the fold rather than
+  // sitting at translate 0, so switching into reduced motion mid-session has to
+  // clear it or the whole strip lands a viewport low. `.plane` is already
+  // covered by `transform: none !important` under .static-layout; `.reel` and
+  // `.reel-zoom` are not.
+  reel.style.transform = '';
+  reelZoom.style.transform = '';
   for (const s of stageEls) {
     s.style.cssText = '';
     s.removeAttribute('aria-hidden');

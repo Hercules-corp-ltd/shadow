@@ -84,13 +84,32 @@
       <div class="phone">
         <div class="phone__glow" aria-hidden="true"></div>
         <div class="phone__body">
-          <span class="phone__frame" aria-hidden="true"></span>
-          <span class="phone__screen" aria-hidden="true"></span>
+          <!--
+            By id, both of them. The last stage holds a deep clone of this whole
+            column, and the camera's `querySelectorAll('.phone__frame, …')` ran
+            AFTER the reel was appended to the plane — so it matched six
+            elements, not three, and drove the miniature phone inside the page
+            with the same scale as the real one. Ids are stripped from the clone
+            when it is built, so getElementById can only ever reach these.
+
+            .phone__screen used to sit here. It has no rule in styles.css at
+            all, so it computed to display:inline with a 0x0 box — and a
+            non-replaced inline element is not transformable. The scale the
+            camera wrote to it every frame has never done anything.
+          -->
+          <span class="phone__frame" id="phoneFrame" aria-hidden="true"></span>
           <div class="card" id="card">
             <main class="plane" id="plane"></main>
             <img class="card__shot" id="cardShot" src="assets/shots/home.png" alt="Shadow's home screen: an arched recess with a search slot beneath it." width="1080" height="2400">
+            <!--
+              The reflection is on the glass, so it lives INSIDE the glass. It
+              was a sibling at inset:6px — the same box to the pixel, measured
+              175.19x403.97 at (791.81, 177.52) — but nothing clipped it there,
+              and a highlight that may not fade has to be able to slide out of
+              frame.
+            -->
+            <span class="phone__gloss" id="phoneGloss" aria-hidden="true"></span>
           </div>
-          <span class="phone__gloss" aria-hidden="true"></span>
         </div>
       </div>
     </div>
