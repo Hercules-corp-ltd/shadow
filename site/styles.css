@@ -246,11 +246,19 @@ body::before {
 
 /* -------------------------------------------------------------- stages -- */
 
+/*
+  A cell in the strip, not a layer in a stack. Absolutely positioned at its
+  own multiple of 100% and never transformed or faded individually — the reel
+  above it does all the moving, so sections travel past each other with hard
+  edges instead of dissolving into one another.
+*/
+.reel-zoom { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
+.reel { position: absolute; top: 0; left: 0; width: 100%; will-change: transform; }
 .stage {
-  position: absolute; inset: 0;
+  position: absolute; left: 0; width: 100%;
   display: grid; place-items: center;
   padding: max(80px, 10vh) clamp(22px, 5vw, 80px) max(96px, 12vh);
-  will-change: transform, opacity; backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 .stage__inner {
   position: relative; z-index: 2; width: min(760px, 100%);
@@ -505,4 +513,104 @@ body.static-layout .panel { position: fixed; }
 @media (max-width: 820px) {
   .wall { gap: 8px; }
   .wall__item { width: 26vw; }
+}
+
+/* ============================================================== the slab == */
+
+/*
+  One full-bleed panel of the accent in an otherwise black scroll. It exists to
+  change the temperature once — a long dark page needs a moment that resets the
+  eye, or every section starts to read the same however good each one is.
+*/
+.stage--features { padding: 0; }
+.stage--features .stage__inner {
+  width: 100%; max-width: none; height: 100%;
+  display: grid; grid-template-rows: auto auto 1fr; gap: 0;
+  background: linear-gradient(150deg, #ff5000, #d63c00 62%, #b83100);
+  color: #fff;
+}
+.stage--features .eyebrow { color: rgba(255,255,255,0.62); }
+.stage--features .stage__title {
+  color: #fff; max-width: 15ch;
+  font-size: clamp(30px, 4vw, 54px);
+}
+.stage--features > .stage__inner > .eyebrow,
+.stage--features > .stage__inner > .stage__title {
+  padding-left: clamp(22px, 5vw, 68px); padding-right: clamp(22px, 5vw, 68px);
+}
+.stage--features > .stage__inner > .eyebrow { padding-top: clamp(28px, 6vh, 60px); }
+.stage--features > .stage__inner > .stage__title { padding-bottom: clamp(18px, 4vh, 40px); }
+
+.ledger {
+  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+  border-top: 1px solid rgba(255,255,255,0.16);
+}
+.ledger__cell {
+  position: relative;
+  padding: clamp(20px, 3.4vh, 38px) clamp(22px, 4vw, 54px);
+  border-right: 1px solid rgba(255,255,255,0.16);
+  border-bottom: 1px solid rgba(255,255,255,0.16);
+  display: flex; flex-direction: column; gap: 9px;
+}
+.ledger__cell:nth-child(2n) { border-right: 0; }
+.ledger__cell:nth-child(n+3) { border-bottom: 0; padding-bottom: 84px; }
+.ledger__num {
+  position: absolute; top: clamp(20px, 3.4vh, 38px); right: clamp(22px, 4vw, 54px);
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.5);
+}
+.ledger__head { margin: 0; font-size: clamp(16px, 1.5vw, 20px); font-weight: 500; letter-spacing: -0.02em; }
+.ledger__body { margin: 0; font-size: clamp(13px, 1.05vw, 15px); line-height: 1.55; color: rgba(255,255,255,0.82); max-width: 42ch; }
+
+@media (max-width: 820px) {
+  .ledger { grid-template-columns: 1fr; grid-template-rows: repeat(4, 1fr); }
+  .ledger__cell { border-right: 0; }
+  .ledger__cell:nth-child(n+3) { border-bottom: 1px solid rgba(255,255,255,0.16); }
+  .ledger__cell:last-child { border-bottom: 0; }
+}
+
+/* ========================================================== the recursion == */
+
+/*
+  The page inside the page. `.again__screen` holds a live clone of the hero
+  column, and the last span of the loop flies into it until the clone sits
+  exactly where the real hero sits — then the wrap swaps them.
+*/
+/* Copy above, screen below — centred over each other put the headline
+   straight across the miniature hero it is describing. */
+.stage--recursion { align-content: start; }
+.stage--recursion .stage__inner {
+  align-items: center; text-align: center;
+  gap: 10px; padding-top: clamp(10px, 3vh, 34px);
+}
+/* An explicit band under the copy. Sizing the screen by WIDTH let it grow
+   taller than the space left for it and climb back over the headline. */
+.again {
+  position: absolute; left: 0; right: 0;
+  top: 46%; bottom: clamp(58px, 9vh, 92px);
+  display: grid; place-items: center; pointer-events: none; z-index: 0;
+}
+.again__screen {
+  position: relative;
+  height: 100%; width: auto;
+  aspect-ratio: 16 / 10;
+  max-width: min(70vw, 900px);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--edge);
+  box-shadow: 0 50px 110px -40px rgba(0,0,0,0.95), 0 0 90px -30px rgba(255,80,0,0.25);
+}
+/* The clone is laid out at a fraction of real size so it reads as a screen. */
+.again__screen .column {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.42);
+  transform-origin: 50% 50%;
+  width: var(--col);
+}
+.stage--recursion .stage__inner { position: relative; z-index: 2; pointer-events: none; }
+.stage--recursion .stage__title,
+.stage--recursion .eyebrow,
+.stage--recursion .stage__lead {
+  text-shadow: 0 2px 30px rgba(0,0,0,0.9);
 }

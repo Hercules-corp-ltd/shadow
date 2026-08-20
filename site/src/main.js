@@ -120,6 +120,18 @@ function buildStage(stage, i) {
     inner.append(wall);
   }
 
+  if (stage.cards) {
+    const grid = el('div', 'ledger');
+    for (const [n, head, body] of stage.cards) {
+      const cell = el('div', 'ledger__cell');
+      cell.append(el('span', 'ledger__num', n));
+      cell.append(el('h3', 'ledger__head', head));
+      cell.append(el('p', 'ledger__body', body));
+      grid.append(cell);
+    }
+    inner.append(grid);
+  }
+
   if (stage.platforms) {
     const grid = el('div', 'platforms');
     for (const p of stage.platforms) {
@@ -133,6 +145,23 @@ function buildStage(stage, i) {
     inner.append(grid);
   }
   if (stage.note) inner.append(el('p', 'stage__note', stage.note));
+
+  if (stage.kind === 'recursion') {
+    const dev = el('div', 'again');
+    const screen = el('div', 'again__screen');
+    screen.id = 'againScreen';
+    // A live clone rather than a screenshot, so the thing you fly into can
+    // never drift out of date with the thing it turns into. Inert and hidden
+    // from assistive tech — it is scenery, and the real one is a tab stop away.
+    const clone = document.querySelector('.column').cloneNode(true);
+    clone.removeAttribute('id');
+    for (const n of clone.querySelectorAll('[id]')) n.removeAttribute('id');
+    clone.setAttribute('aria-hidden', 'true');
+    clone.inert = true;
+    screen.append(clone);
+    dev.append(screen);
+    s.append(dev);
+  }
 
   s.append(inner);
   return s;
@@ -156,8 +185,25 @@ for (const [name, depth] of [['colonnade-far', 0.10], ['colonnade-near', 0.34]])
 }
 planeEl.append(plates);
 
+/*
+ * One reel, panned.
+ *
+ * Stages used to be stacked on top of each other and cross-faded with a blur.
+ * That is the thing that made the whole middle of the site feel like a
+ * slideshow: nothing ever travels, it just swaps. They are laid end to end in
+ * a strip now and the strip is translated, so one section genuinely leads to
+ * the next and their edges meet. No opacity, no blur, anywhere.
+ */
+const reelZoom = el('div', 'reel-zoom');
+const reel = el('div', 'reel');
 const stageEls = STAGES.map(buildStage);
-stageEls.forEach((s) => planeEl.append(s));
+// Offsets are set in PIXELS by measure(), not percentages: a percentage top
+// resolves against the REEL height (N viewports), so stage 5 landed at five
+// times eight viewports instead of five, and every section past the first was
+// parked miles below the fold.
+stageEls.forEach((s) => reel.append(s));
+reelZoom.append(reel);
+planeEl.append(reelZoom);
 
 /* Nav */
 const nav = el('nav', 'nav');
@@ -173,6 +219,115 @@ const navButtons = NAV.map((n) => {
   return b;
 });
 document.body.append(nav);
+
+/**
+ * The recursive close.
+ *
+ * The last stage contains a device whose screen holds a live clone of the
+ * hero. This flies into that screen so the clone grows until it sits exactly
+ * where the real hero sits — same width, same centre — at which point the loop
+ * wraps and the real one takes over. Nothing fades and nothing cuts: the end
+ * of the page literally contains its beginning.
+ *
+ * The target is measured against the REAL hero column rather than the
+ * viewport, because that is what has to match at the seam. Matching the
+ * viewport instead would land the clone at the right size but the wrong
+ * position whenever the column is not exactly centred.
+ */
+function createRecursion(zoomEl) {
+  let base = null;   // { cx, cy, w } of the clone column, unzoomed
+
+  function measure() {
+    base = null;
+  }
+
+  /**
+   * Everything is measured with the zoom off, and in the zoom element's OWN
+   * coordinates — offsets from its top-left corner.
+   *
+   * The first version passed viewport coordinates to `transform-origin`, which
+   * is resolved against the element's own box. `.reel-zoom` sits inside a plane
+   * that is itself translated and scaled by the camera, so its box is nowhere
+   * near the viewport origin, and the scale pivoted around a point thousands of
+   * pixels away: the clone finished 5827px wide instead of 736 and ten thousand
+   * pixels above the fold.
+   */
+  function ensure() {
+    // Deliberately NOT cached.
+    //
+    // The baseline depends on the camera's scale, the reel's pan and the
+    // viewport, and caching it meant one measurement taken on the wrong frame
+    // poisoned the whole close — the clone was measured at 39px instead of
+    // 309 (the camera happened to be shut) and the fly-in then overshot by a
+    // factor of eight. This costs one extra layout per frame, and only during
+    // the 900px of scroll the close actually occupies.
+    const prev = zoomEl.style.transform;
+    zoomEl.style.transform = 'none';
+    const clone = zoomEl.querySelector('.again__screen .column');
+    if (!clone) { zoomEl.style.transform = prev; return null; }
+    const z0 = zoomEl.getBoundingClientRect();
+    const b = clone.getBoundingClientRect();
+    base = {
+      // Local to the zoom element, not the viewport.
+      cx: b.left + b.width / 2 - z0.left,
+      cy: b.top + b.height / 2 - z0.top,
+      w: Math.max(1, b.width),
+      originLeft: z0.left,
+      originTop: z0.top,
+    };
+    zoomEl.style.transform = prev;
+    return base;
+  }
+
+  function apply(u) {
+    if (u <= 0) { zoomEl.style.transform = 'none'; return; }
+    const b = ensure();
+    if (!b) return;
+    const real = document.querySelector('.scene .column');
+    if (!real) return;
+
+    // Measured with the scene transform OFF.
+    //
+    // This is the whole seam. The target is not where the real hero is *now* —
+    // during the close the camera is fully pushed in, so the hero column reads
+    // as 5829px wide. It is where the hero will be one frame after the wrap,
+    // when the camera is back at rest and the column is its plain 736px. Aiming
+    // at the live rect matched that 5829 exactly and was, by construction,
+    // eight times too big at the only instant that matters.
+    const sceneEl_ = document.getElementById('scene');
+    const prevScene = sceneEl_.style.transform;
+    sceneEl_.style.transform = 'none';
+    const tb = real.getBoundingClientRect();
+    const t = { left: tb.left, top: tb.top, width: tb.width, height: tb.height };
+    sceneEl_.style.transform = prevScene;
+
+    // Same asymmetric ease as the opening, so both ends move with one hand.
+    const e = u >= 1 ? 1 : (() => {
+      const n = Math.pow(u, 2.6);
+      return n / (n + Math.pow(1 - u, 1.5));
+    })();
+
+    const Z = Math.max(1, t.width) / b.w;
+    const z = Math.pow(Z, e);
+
+    // Target centre, in the same local space as `base`.
+    const tx = t.left + t.width / 2 - b.originLeft;
+    const ty = t.top + t.height / 2 - b.originTop;
+
+    // Solve the translate directly with the origin pinned at 0 0, rather than
+    // fighting transform-origin: a point p maps to translate + p*z, so to send
+    // the clone's centre to the target centre, translate = target - centre*z.
+    // Interpolated by e so it starts at rest.
+    const dx = (tx - b.cx * z) * e;
+    const dy = (ty - b.cy * z) * e;
+
+    zoomEl.style.transformOrigin = '0 0';
+    zoomEl.style.transform =
+      `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px) scale(${z.toFixed(5)})`;
+  }
+
+  return { apply, measure };
+}
 
 /* ------------------------------------------------------------------- loop */
 
@@ -196,6 +351,7 @@ const camera = createCamera({
             document.querySelector('.lead'), document.querySelector('.cta'),
             document.querySelector('.cta__note')].filter(Boolean),
 });
+const recursion = createRecursion(reelZoom);
 const backdrop = createBackdrop(canvas, TUNE);
 if (!backdrop) document.body.classList.add('no-webgl');
 
@@ -246,6 +402,13 @@ function measure() {
   vw = window.innerWidth;
   vh = window.innerHeight;
   camera.measure();
+  recursion.measure();
+  // One viewport per stage, in real pixels.
+  for (let i = 0; i < stageEls.length; i++) {
+    stageEls[i].style.top = `${i * vh}px`;
+    stageEls[i].style.height = `${vh}px`;
+  }
+  reel.style.height = `${stageEls.length * vh}px`;
 }
 measure();
 window.addEventListener('resize', measure);
@@ -279,61 +442,40 @@ function frame(now) {
   // zero — that was the earlier bug, and it made the camera snap all the way
   // out halfway round the loop, which is what turned the whole thing into a
   // fade.
+  // The opening rectangle only ever OPENS. It used to run backwards over the
+  // last span to close, which is the one camera move with no forward momentum
+  // and is why the ending read as a fade. The way back is the recursion below.
   const closeFrom = LOOP_LENGTH - CLOSE_SPAN;
-  let zoomT;
-  if (pos < ZOOM_SPAN) zoomT = pos / ZOOM_SPAN;
-  else if (pos < closeFrom) zoomT = 1;
-  else zoomT = 1 - (pos - closeFrom) / CLOSE_SPAN;
+  const zoomT = pos < ZOOM_SPAN ? pos / ZOOM_SPAN : 1;
   camera.apply(zoomT);
-  // The section pill belongs to the inside, not the landing page. It used to
-  // sit on top of the lead paragraph and the download buttons on the hero.
-  const navIn = Math.max(0, Math.min(1, (zoomT - 0.55) / 0.35));
-  nav.style.opacity = String(navIn);
-  nav.style.pointerEvents = navIn > 0.9 ? 'auto' : 'none';
-  nav.style.transform = `translateX(-50%) translateY(${((1 - navIn) * 14).toFixed(1)}px)`;
-  // The app screen clears as the page behind it takes over, and comes back as
-  // the rectangle closes.
-  // Cleared against the EASED progress the camera actually uses, not the raw
-  // scroll — the two diverge a lot under a slow-in ease, and driving the
-  // screenshot off the raw value uncovered the page long before the opening
-  // had taken its shape.
   if (cardShot) {
-    const eNow = camera.progress;
-    cardShot.style.opacity = String(1 - Math.min(1, Math.max(0, eNow / 0.3)));
+    cardShot.style.opacity = String(1 - Math.min(1, Math.max(0, camera.progress / 0.3)));
   }
 
-  // ---- stages ----------------------------------------------------------
+  // The last span flies into the hero living inside the final stage's screen.
+  recursion.apply(pos < closeFrom ? 0 : (pos - closeFrom) / CLOSE_SPAN);
+
+  // ---- the reel --------------------------------------------------------
+  // A single translate. Fractional index in, pixels out.
+  const idx = Math.max(0, pos - ZOOM_SPAN) / STAGE_SPAN;
+  reel.style.transform = `translate3d(0, ${(-idx * vh).toFixed(1)}px, 0)`;
+
   for (let i = 0; i < stageEls.length; i++) {
-    const d = loop.distanceTo(stagePosition(i));
-    const t = d / STAGE_SPAN;
-    const a = Math.abs(t);
-    const s = stageEls[i];
-
-    if (a > 1.2) {
-      if (s.style.visibility !== 'hidden') { s.style.visibility = 'hidden'; s.setAttribute('aria-hidden', 'true'); }
-      continue;
+    const d = Math.abs(idx - i);
+    const st = stageEls[i];
+    // Culling only — never opacity. A stage is either in the strip or it is
+    // not worth painting.
+    const off = d > 1.35;
+    if (off !== (st.style.visibility === 'hidden')) {
+      st.style.visibility = off ? 'hidden' : '';
+      if (off) st.setAttribute('aria-hidden', 'true');
+      else st.removeAttribute('aria-hidden');
     }
-    if (s.style.visibility === 'hidden') { s.style.visibility = ''; s.removeAttribute('aria-hidden'); }
-
-    const y = t * vh * TUNE.stageTravel;
-    const scale = 1 - Math.min(0.12, a * TUNE.stageShrink);
-    const opacity = Math.max(0, 1 - Math.pow(a / TUNE.stageFade, 2));
-    s.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0) scale(${scale.toFixed(4)})`;
-    s.style.opacity = opacity.toFixed(3);
-    s.style.filter = a > 0.55 ? `blur(${((a - 0.55) * TUNE.stageBlur).toFixed(2)}px)` : '';
-
-    if (a < 0.16 && !scrambled.has(s) && !reduced.matches) {
-      scrambled.add(s);
-      const h = s.querySelector('[data-scramble]');
+    if (d < 0.18 && !scrambled.has(st) && !reduced.matches) {
+      scrambled.add(st);
+      const h = st.querySelector('[data-scramble]');
       if (h) scramble(h, h.dataset.scramble, TUNE);
     }
-  }
-
-  // ---- colonnade plates ------------------------------------------------
-  for (const pl of plates.children) {
-    const depth = +pl.dataset.depth;
-    pl.style.transform = 
-      `translate3d(0, ${(-pos * depth * 0.05).toFixed(1)}px, 0) scale(${(1 + depth * 0.1).toFixed(3)})`;
   }
 
   // ---- magnets ---------------------------------------------------------

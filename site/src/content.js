@@ -143,6 +143,30 @@ export const STAGES = [
     ],
   },
   {
+    // The loud one.
+    //
+    // Every other section is black with one warm light. This is a full-bleed
+    // slab of the accent with the type knocked out of it, and it exists
+    // because a long dark scroll needs one moment that changes the
+    // temperature of the whole page — otherwise the sections blur into one
+    // another however good each is on its own.
+    id: 'ledger',
+    navLabel: 'What it does',
+    kind: 'features',
+    eyebrow: 'FOUR THINGS, NO MORE',
+    title: 'Built out of what it refuses to keep.',
+    cards: [
+      ['01', 'Nothing derived is stored',
+       'Passwords, usernames and addresses are computed from your phrase when you unlock and thrown away when you lock. There is no vault file to steal.'],
+      ['02', 'A different you per site',
+       'Every site gets its own credential set. A breach at one leaks something that opens nothing anywhere else.'],
+      ['03', 'Addresses you can burn',
+       'Sign-ups get an address belonging to that site alone. When one starts drawing spam, replace it and leave the rest untouched.'],
+      ['04', 'Trackers stopped at the request',
+       'Blocked before they load rather than hidden afterwards, and Settings reports what your device actually did — including when it cannot tell.'],
+    ],
+  },
+  {
     id: 'download',
     kind: 'download',
     god: null,
@@ -175,6 +199,34 @@ export const STAGES = [
       },
     ],
     note: 'Neither build is public yet. These buttons do nothing on purpose — we would rather they said so.',
+  },
+  {
+    /**
+     * The way back to the beginning, and the reason the loop is a loop.
+     *
+     * The previous version ran the opening camera backwards to close: the page
+     * shrank into a phone and the wrap put you at the top. It works, and it
+     * reads as a fade, because reversing a zoom is the one camera move that
+     * has no forward momentum.
+     *
+     * This is what the reference actually does, and it is much better. It
+     * shows you a device, and inside that device is THIS PAGE. You keep
+     * scrolling forward, you keep zooming in, and the page inside the screen
+     * grows until it is the page you are looking at — which is the page you
+     * started on. You never reverse and you never cut. The loop closes because
+     * the end contains the beginning.
+     *
+     * The screen holds a live clone of the hero markup rather than a picture,
+     * so it can never drift out of date with the thing it becomes.
+     */
+    id: 'recursion',
+    navLabel: 'Again',
+    kind: 'recursion',
+    eyebrow: 'AND ROUND',
+    title: 'A browser, browsing itself.',
+    lead:
+      'Shadow renders this page like any other — no account, no trackers, ' +
+      'nothing kept. Keep going and you will end up where you came in.',
   },
 ];
 
