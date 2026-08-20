@@ -1,9 +1,58 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../theme/shadow_colors.dart';
 import '../theme/shadow_typography.dart';
 import '../widgets/grid_background.dart';
+
+/// Says something when boot does not finish.
+///
+/// The router holds the user on the splash for exactly as long as
+/// WalletProvider reports isLoading, and _bootstrap has no catch — so a throw
+/// in there leaves isLoading true for ever. The screen showed a spinner and
+/// nothing else, identically, whether boot was in progress or dead.
+class _SlowBootNotice extends StatefulWidget {
+  const _SlowBootNotice();
+
+  @override
+  State<_SlowBootNotice> createState() => _SlowBootNoticeState();
+}
+
+class _SlowBootNoticeState extends State<_SlowBootNotice> {
+  Timer? _timer;
+  bool _slow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Long enough that a cold start on a slow phone never sees it.
+    _timer = Timer(const Duration(seconds: 10), () {
+      if (mounted) setState(() => _slow = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_slow) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: Text(
+        'This is taking longer than it should. If it does not move, close '
+        'Shadow and open it again — your wallet and phrase are untouched.',
+        textAlign: TextAlign.center,
+        style: ShadowTypography.bodySm,
+      ),
+    );
+  }
+}
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -57,6 +106,13 @@ class SplashScreen extends StatelessWidget {
                   color: ShadowColors.primary,
                 ),
               ),
+              // The router pins the user here for as long as the wallet
+              // provider reports isLoading, and this screen had no way to say
+              // anything but "working". If bootstrap throws, isLoading is
+              // never cleared and the spinner turns for ever with no text, no
+              // retry, and no way out. After ten seconds it says so.
+              const SizedBox(height: 20),
+              const _SlowBootNotice(),
             ],
           ),
         ),

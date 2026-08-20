@@ -67,6 +67,7 @@ class _DomainRegisterScreenState extends State<DomainRegisterScreen> {
                 const SizedBox(height: 8),
                 TextField(
                   controller: _domainCtrl,
+                  autocorrect: false,
                   decoration: const InputDecoration(
                     hintText: 'yourname.shadow',
                   ),
@@ -111,13 +112,33 @@ class _DomainRegisterScreenState extends State<DomainRegisterScreen> {
             ),
           ],
           const SizedBox(height: 20),
-          ShadowButton(
-            label: _submitting ? 'Registering...' : 'Register on-chain',
-            size: ShadowButtonSize.lg,
-            trailing: Icons.rocket_launch_rounded,
-            isLoading: _submitting,
-            onPressed:
-                _submitting || wallet.isEmpty ? null : () => _submit(wallet),
+          // Say why it is disabled. The button greyed out with no wallet and
+          // nothing on the screen explained it, so the whole form was fillable
+          // and the only action was dead for a reason the user could not see.
+          if (wallet.isEmpty) ...[
+            Text(
+              'Registering writes an owner on-chain, so it needs a wallet. '
+              'Create or import one first.',
+              style: ShadowTypography.bodySm,
+            ),
+            const SizedBox(height: 12),
+          ],
+          // Enabled only when there is something to register. Nothing used to
+          // stop this firing with an empty field — the enabled state ignored
+          // the text entirely and the field had no onChanged — which POSTed a
+          // registration for the empty string.
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _domainCtrl,
+            builder: (context, value, _) => ShadowButton(
+              label: _submitting ? 'Registering...' : 'Register on-chain',
+              size: ShadowButtonSize.lg,
+              trailing: Icons.rocket_launch_rounded,
+              isLoading: _submitting,
+              onPressed:
+                  _submitting || wallet.isEmpty || value.text.trim().isEmpty
+                      ? null
+                      : () => _submit(wallet),
+            ),
           ),
         ],
       ),

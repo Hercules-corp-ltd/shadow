@@ -53,6 +53,16 @@ class _DeployUploadScreenState extends State<DeployUploadScreen> {
       // it, so arriving here twice with the same selection is a no-op instead
       // of doubling the upload.
       final provider = context.read<DeployProvider>();
+      // DeployProvider.updateFiles opens with `if (_project == null) return;`,
+      // so arriving here without one — this is a top-level route, so a deep
+      // link or a resumed session reaches it — silently discarded the whole
+      // selection and pushed on to a review screen with nothing in it.
+      if (provider.project == null) {
+        setState(() => _error =
+            'Start a deployment first — this step needs a project to attach '
+            'the files to.');
+        return;
+      }
       final existing = provider.project?.files ?? const <DeployFile>[];
       final merged = <String, DeployFile>{
         for (final f in existing) f.path: f,

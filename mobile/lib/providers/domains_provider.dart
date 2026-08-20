@@ -38,7 +38,15 @@ class DomainsProvider with ChangeNotifier {
     }
   }
 
+  /// The last query passed to [search].
+  ///
+  /// The results screen labels its failure action "Try again"; without this
+  /// it had nothing to try, and used to pop the screen instead.
+  String get lastQuery => _lastQuery;
+  String _lastQuery = '';
+
   Future<void> search(String query) async {
+    _lastQuery = query;
     _isLoading = true;
     _error = null;
     notifyListeners();

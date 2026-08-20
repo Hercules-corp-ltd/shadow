@@ -85,12 +85,22 @@ class _DomainFindScreenState extends State<DomainFindScreen> {
           const SizedBox(height: 24),
           Text('Your domains', style: ShadowTypography.h3),
           const SizedBox(height: 12),
+          // Without a wallet, loadMine is never called at all — so the list
+          // stays empty and "No domains yet" was an assertion about the
+          // registry made by an app that had not asked it anything.
+          if (context.watch<WalletProvider>().walletAddress == null)
+            const EmptyState(
+              icon: Icons.account_balance_wallet_outlined,
+              title: 'No wallet connected',
+              message: 'Domains are held by a wallet, so Shadow cannot tell '
+                  'which are yours until one exists.',
+            )
           // DomainsProvider.loadMine swallows the exception, records it on
           // `error` and substitutes an empty list — so a dead backend, a
           // timeout, or the 401 this backend returns for every authenticated
           // route all used to render as "No domains yet", inviting the user to
           // register a first domain they may already own.
-          if (p.error != null)
+          else if (p.error != null)
             EmptyState(
               icon: Icons.cloud_off_rounded,
               tone: EmptyStateTone.error,

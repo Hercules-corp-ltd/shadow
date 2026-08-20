@@ -79,7 +79,13 @@ class _DomainRenewScreenState extends State<DomainRenewScreen> {
       _error = null;
     });
     try {
-      await context.read<DomainsProvider>().renew(widget.domain, years: _years);
+      final provider = context.read<DomainsProvider>();
+      await provider.renew(widget.domain, years: _years);
+      // Reload before leaving. renew() posted and returned without touching
+      // any state, and the details screen loads once in initState — so the
+      // user was told the expiry had moved while the screen behind still
+      // showed the old one.
+      await provider.load(widget.domain);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Renewed ${widget.domain} for $_years year(s)')),

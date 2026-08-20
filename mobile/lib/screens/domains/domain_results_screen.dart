@@ -19,12 +19,23 @@ class DomainResultsScreen extends StatelessWidget {
 
     return ShadowScaffold(
       title: 'Search Results',
-      subtitle: '${p.searchResults.length} matches',
+      // A count is a claim. DomainsProvider.search substitutes an empty list
+      // on any failure, so a dead backend used to report "0 matches" — a
+      // factual statement about the registry, made by a request that never
+      // completed.
+      subtitle: p.error != null
+          ? 'Search did not complete'
+          : p.isLoading
+              ? 'Searching…'
+              : '${p.searchResults.length} matches',
       body: LoadStateView(
         isLoading: p.isLoading,
         isEmpty: p.searchResults.isEmpty,
         error: p.error,
-        onRetry: () => context.pop(),
+        // LoadStateView labels this "Try again", so it has to actually try
+        // again. It used to pop the screen, which is the one thing a user who
+        // asked to retry did not ask for.
+        onRetry: () => p.search(p.lastQuery),
         emptyIcon: Icons.search_off_rounded,
         emptyTitle: 'No matching domains',
         // The search only returns registered, verified domains, so an empty

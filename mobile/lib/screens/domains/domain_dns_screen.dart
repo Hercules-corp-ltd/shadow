@@ -233,11 +233,13 @@ class _AddDnsSheetState extends State<_AddDnsSheet> {
           const SizedBox(height: 12),
           TextField(
             controller: _nameCtrl,
+            autocorrect: false,
             decoration: const InputDecoration(hintText: 'Name (@, www, ...)'),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _valueCtrl,
+            autocorrect: false,
             decoration: const InputDecoration(hintText: 'Value'),
           ),
           const SizedBox(height: 12),
@@ -257,10 +259,20 @@ class _AddDnsSheetState extends State<_AddDnsSheet> {
             ],
           ),
           const SizedBox(height: 16),
-          ShadowButton(
-            label: _saving ? 'Saving...' : 'Save record',
-            isLoading: _saving,
-            onPressed: _saving ? null : _save,
+          // Both fields have to say something. Save was enabled from the
+          // moment the sheet opened and _save validated nothing, so it would
+          // happily PUT a record with an empty name and an empty value.
+          ListenableBuilder(
+            listenable: Listenable.merge(<Listenable>[_nameCtrl, _valueCtrl]),
+            builder: (context, _) {
+              final ready = _nameCtrl.text.trim().isNotEmpty &&
+                  _valueCtrl.text.trim().isNotEmpty;
+              return ShadowButton(
+                label: _saving ? 'Saving...' : 'Save record',
+                isLoading: _saving,
+                onPressed: _saving || !ready ? null : _save,
+              );
+            },
           ),
         ],
       ),

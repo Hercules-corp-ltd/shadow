@@ -11,6 +11,7 @@ import '../../services/fetch_outcome.dart';
 import '../../services/resolve_service.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
+import '../../widgets/empty_state.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/shadow_button.dart';
 import '../../widgets/shadow_scaffold.dart';
@@ -81,11 +82,21 @@ class _ResolveResultScreenState extends State<ResolveResultScreen> {
 
     final site = _site;
     if (site == null) {
+      // Every failure arm above navigates away, so reaching here means the
+      // route was entered without an id, or the widget rebuilt after a pop.
+      // It used to be a bare centred sentence in body type — the flat
+      // not-an-error-not-an-empty state EmptyState exists to replace — with
+      // no way onward.
       return ShadowScaffold(
-        title: 'Not found',
-        body: Center(
-          child:
-              Text('Site could not be resolved', style: ShadowTypography.body),
+        title: 'Nothing to show',
+        body: EmptyState(
+          icon: Icons.travel_explore_rounded,
+          tone: EmptyStateTone.error,
+          title: 'No site was resolved',
+          message: 'This screen shows the result of a lookup, and there is no '
+              'finished lookup to show.',
+          actionLabel: 'Try a name',
+          onAction: () => context.go('/resolve'),
         ),
       );
     }

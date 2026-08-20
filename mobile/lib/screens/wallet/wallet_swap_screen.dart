@@ -58,6 +58,21 @@ class _WalletSwapScreenState extends State<WalletSwapScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
+          // Same provider contract as the send screen: an unreachable RPC
+          // silently reduced both dropdowns to ['SOL'], which is
+          // indistinguishable from a wallet that really holds only SOL.
+          if (tokens.error != null) ...[
+            GlassCard.lit(
+              accent: ShadowColors.error,
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Balances could not be loaded (${tokens.error}), so the assets '
+                'below may be incomplete.',
+                style: ShadowTypography.bodySm,
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           if (!_swapImplemented) ...[
             GlassCard(
               padding: const EdgeInsets.all(16),

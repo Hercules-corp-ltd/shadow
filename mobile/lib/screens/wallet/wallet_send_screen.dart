@@ -55,6 +55,21 @@ class _WalletSendScreenState extends State<WalletSendScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
+          // TokensProvider.error was never read here, and its own doc says
+          // screens must show it rather than let an unreachable RPC look like
+          // a wallet holding only SOL.
+          if (tokens.error != null) ...[
+            GlassCard.lit(
+              accent: ShadowColors.error,
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Balances could not be loaded (${tokens.error}), so this list '
+                'may be missing assets you hold.',
+                style: ShadowTypography.bodySm,
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           if (!_sendingImplemented) ...[
             GlassCard(
               padding: const EdgeInsets.all(16),
