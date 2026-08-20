@@ -1,0 +1,21 @@
+# What not to ship.
+#
+# assets/gen/ holds the generation masters — the full-size PNGs Higgsfield
+# returned, plus the shell scripts that made them and the node script that
+# builds the changelog. 51MB of the 54MB in this directory, and the site never
+# asks for any of it: everything served comes from assets/img/, which is the
+# same art through ffmpeg's libwebp encoder at 836KB the lot. The one mention
+# of `assets/gen` in src/ is a comment in panel.js saying where the changelog
+# came from.
+#
+# They are gitignored too, so this is belt and braces — the CLI uploads from
+# disk, not from the index, and would have shipped all 51MB.
+assets/gen/
+
+# Never referenced. Grepped index.html and styles.css: the faces actually
+# loaded are Geist, GeistMono and Cinzel.
+assets/fonts/Inter-Variable.ttf
+
+# Local Vercel state and the OIDC token it writes.
+.vercel
+.env*
