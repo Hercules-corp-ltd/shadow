@@ -245,24 +245,38 @@ export const STAGES = [
  * conceit, and it is the reason the loop exists rather than decoration.
  */
 /**
- * Scroll spent closing the rectangle again at the far end.
+ * Scroll spent travelling INTO the closing device — beat three of the ending,
+ * and only beat three.
  *
- * Without it the loop simply teleports from the last stage back to the hero.
- * With it the camera pulls back out, the page shrinks into a phone screen
- * again, and the wrap happens at the exact instant the rectangle is a phone —
- * so you arrive back at the landing page having walked out the way you came
- * in. It is the same transform run backwards, which is why it costs nothing.
+ * Note what this number is not. `closeFrom` is `LOOP_LENGTH - CLOSE_SPAN`,
+ * which expands to `ZOOM_SPAN + STAGES.length * STAGE_SPAN` — it does not
+ * depend on this constant at all. So changing it moves the far end of the loop
+ * and nothing else: the approach and the hold come out of the stage pan and are
+ * paid for by scroll that already existed.
  */
-// Longer than the opening, deliberately.
+// Shorter than it was, and the reason is arithmetic rather than taste.
 //
-// "It literally just shows the landing page when you scroll to the last part"
-// was an arithmetic problem, not a taste one. At 620px the closing device was
-// on screen for about six wheel notches before the camera was already inside
-// it -- there was no stretch where you simply LOOKED at the thing you were
-// about to travel into. The reference gives its ending roughly half again as
-// much scroll as its opening and spends it holding still on a device you can
-// read. You have to be somewhere before you can travel from it.
-export const CLOSE_SPAN = 980;
+// 980 was chosen when the thing inside the browser mock was a 0.32-scale clone
+// of the hero column, which made the close a 3.125x push. The canvas now holds
+// a miniature of the whole page fitted to it, so Z_close = vw / canvasW, which
+// is about 1.82 at 1280x720 and 1.81 at 1920x1080.
+//
+// The same 980px would then carry 1.82x at a peak rate of 8.2e-4 e-folds per
+// scroll pixel against the opening's 6.5e-3. That is a drift, not a flight.
+// 700 puts the peak at ln(1.818) * 1.35135 / 700 = 1.15e-3 — a little under a
+// fifth of the opening's, which is the right relationship. You punch through a
+// phone; you walk into a browser.
+//
+// The ending did not need more scroll. It needed BEATS, and it now has three:
+//
+//   3980 -> 4792   approach   the device rises from under the fold and grows
+//   4792 -> 5100   hold       308px of it simply standing there, legible
+//   5100 -> 5800   entry      the camera travels into the canvas   <- this
+//
+// DO NOT cut this without the miniature. With the 0.32-scale clone still in
+// place Z stays 3.125 and 700px makes the close 40% faster in average rate,
+// which is the exact thing the ending was already being criticised for.
+export const CLOSE_SPAN = 700;
 
 export const LOOP_LENGTH = ZOOM_SPAN + STAGES.length * STAGE_SPAN + CLOSE_SPAN;
 export const stagePosition = (i) => ZOOM_SPAN + i * STAGE_SPAN;

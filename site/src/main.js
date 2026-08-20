@@ -293,6 +293,108 @@ planeEl.append(reelZoom);
  * and the arrows; see the keydown handler below.
  */
 
+/* -------------------------------------------------------------- easing --- */
+
+/*
+ * Four shapes, and the reason there are exactly four.
+ *
+ * Everything in the ending is driven from `pos`, and `pos` is a loop. What
+ * keeps the seam invisible is not that each value lands on the right number —
+ * it is that each value lands on it at the right SPEED. A quantity that arrives
+ * correct but moving stutters once per lap, and the join at LOOP_LENGTH is the
+ * one join on this page where a stutter is unforgivable.
+ *
+ * The ease already in camera.js — n / (n + (1-t)^1.5) — is C1 but not C2 at its
+ * top end. 1-e behaves like (1-t)^1.5, so e' vanishes like a square root while
+ * e'' diverges: measured -5.66 at t = 0.9, -24.04 at 0.999, -75.14 at 0.9999,
+ * unbounded. That is a move which holds its speed to the last pixel and then
+ * hits a wall, which is precisely what the close felt like. None of the shapes
+ * below have that property; each is flat to second order at both ends.
+ */
+
+/** Integral of `smoother` from 0 to x. The building block for flat-ended ramps. */
+const rampArea = (x) => { const q = x * x * x * x; return q * (x * x - 3 * x + 2.5); };
+
+/** Smootherstep: 0 and 1 at the ends, zero FIRST AND SECOND derivative at both. */
+const smoother = (x) =>
+  x <= 0 ? 0 : x >= 1 ? 1 : x * x * x * (x * (x * 6 - 15) + 10);
+
+/**
+ * A trapezoid velocity profile, integrated.
+ *
+ * Accelerates over `rIn`, holds a CONSTANT rate through the middle, bleeds off
+ * over `rOut`. Both ramps are smootherstep, so the whole thing starts and stops
+ * with zero speed and zero acceleration. `v` is exactly the constant that makes
+ * the three branches agree in value and slope at both interior joins.
+ *
+ * The flat middle is the entire point. An ease whose velocity is a single hump
+ * spends nearly all of its span either speeding up or slowing down; travel only
+ * reads as travel when the rate is steady, and for a zoom "steady" means a
+ * constant d(ln scale) / d(scroll). At (0.18, 0.34) the rate is dead flat
+ * across 48% of the span at 1.35135x the average, and the last third is a long
+ * clean deceleration into the wrap.
+ */
+function ramp(u, rIn, rOut) {
+  if (u <= 0) return 0;
+  if (u >= 1) return 1;
+  const v = 1 / (1 - (rIn + rOut) / 2);   // peak rate; normalises the integral to 1
+  if (u < rIn) return v * rIn * rampArea(u / rIn);
+  if (u > 1 - rOut) return 1 - v * rOut * rampArea((1 - u) / rOut);
+  return v * (rIn * 0.5 + (u - rIn));
+}
+
+/**
+ * One late bump: zero value and zero slope at both ends, peaking at exactly 1.0
+ * when x = 0.75. Added on top of a ramp it becomes a settle — the thing goes a
+ * hair past its size and comes back, which is what makes an arrival read as
+ * weight rather than as a number reaching its maximum.
+ *
+ * 89.9 is 1 / (0.75^6 * 0.25^2) = 89.897, i.e. whatever normalises the peak.
+ */
+const overshoot = (x) =>
+  x <= 0 || x >= 1 ? 0 : 89.9 * x * x * x * x * x * x * (1 - x) * (1 - x);
+
+/**
+ * The reel's pan, landing instead of stopping.
+ *
+ * `idx` used to be `Math.min(cap, raw)`. That is continuous and its derivative
+ * is not: the pan runs at vh/STAGE_SPAN — 1.286 px of travel per px of scroll
+ * at 720p — right up to the clamp and is zero on the very next frame. It is the
+ * largest velocity discontinuity on the page and it fires at the exact instant
+ * the last section arrives, which is why the ending opened with a jolt and then
+ * sat still for 560px.
+ *
+ * This bleeds the rate to zero instead. Velocity is (1 - smoother), because
+ * rampArea' IS smoother, so the curve leaves the linear region at exactly rate
+ * 1 and reaches exactly `cap` at rate 0, with zero acceleration at both ends. A
+ * profile that starts at rate 1 and only ever decreases covers less ground than
+ * it is given, so the landing borrows input: it spends 2L of `raw` to cover the
+ * last L of `idx`. There is spare — `raw` reaches 9.25 by the end of the loop
+ * and this needs 7.45.
+ */
+function softLand(raw, cap, L) {
+  const from = cap - L;
+  if (raw <= from) return raw;
+  const span = 2 * L;
+  const x = Math.min(span, raw - from);
+  return from + x - span * rampArea(x / span);
+}
+
+/* The ending, in four numbers. Derived, not guessed — see the beat-one block in
+ * frame() where each one is spent. */
+const STAGE_LAND = 0.45;        // stage-spans of pan the last arrival lands over
+const AGAIN_S0 = 0.45;          // device scale where the approach begins
+const AGAIN_LAG = 0.30;         // viewport heights it trails the reel by at the start
+const AGAIN_GROW_FROM = 0.45;   // fraction of the approach spent before it grows
+
+/* Where the last stage actually comes to rest now that the pan lands rather
+ * than clamping. stagePosition(7) = 4540 is where the OLD clamp bit; softLand
+ * needs 2*STAGE_LAND of input to cover STAGE_LAND of output, so idx reaches
+ * STAGES.length - 1 here instead. Aiming End at 4540 would leave the recursion
+ * section (7 - 6.9297) * vh = 50.6px low at 720p. */
+const LAST_STAGE_AT =
+  ZOOM_SPAN + (STAGES.length - 1 + STAGE_LAND) * STAGE_SPAN;   // 4792
+
 /**
  * The recursive close.
  *
@@ -336,8 +438,21 @@ function createRecursion(zoomEl) {
     // the 900px of scroll the close actually occupies.
     const prev = zoomEl.style.transform;
     zoomEl.style.transform = 'none';
+    // `.again` now carries the approach's own transform, and it is written
+    // AFTER this call in frame(). It is identity for every pos >= 4792, so in
+    // steady state this is a no-op — but a single frame that steps from before
+    // the hold to inside the close (a hard flick, or glideTo, a 308px jump)
+    // would otherwise measure the clone at grow < 1 and inflate Z for that
+    // frame: grow = 0.7 gives Z = 2.60 instead of 1.818, a one-frame size pop.
+    const dev = zoomEl.querySelector('.again');
+    const prevDev = dev ? dev.style.transform : '';
+    if (dev) dev.style.transform = 'none';
     const clone = zoomEl.querySelector('.again__screen .column');
-    if (!clone) { zoomEl.style.transform = prev; return null; }
+    if (!clone) {
+      zoomEl.style.transform = prev;
+      if (dev) dev.style.transform = prevDev;
+      return null;
+    }
     const z0 = zoomEl.getBoundingClientRect();
     const b = clone.getBoundingClientRect();
     base = {
@@ -349,6 +464,7 @@ function createRecursion(zoomEl) {
       originTop: z0.top,
     };
     zoomEl.style.transform = prev;
+    if (dev) dev.style.transform = prevDev;
     return base;
   }
 
@@ -374,11 +490,29 @@ function createRecursion(zoomEl) {
     const t = { left: tb.left, top: tb.top, width: tb.width, height: tb.height };
     sceneEl_.style.transform = prevScene;
 
-    // Same asymmetric ease as the opening, so both ends move with one hand.
-    const e = u >= 1 ? 1 : (() => {
-      const n = Math.pow(u, 2.6);
-      return n / (n + Math.pow(1 - u, 1.5));
-    })();
+    // The same ramp the rest of the ending is built on: a constant zoom rate
+    // through the middle, flat to second order at both ends.
+    //
+    // It replaces n / (n + (1-u)^1.5). That one was C1 here — e'(1) = 0, so it
+    // did meet the wrap at zero speed — but its SECOND derivative diverged:
+    // -24.0 at u = 0.999, -75.1 at 0.9999. It kept 7.7% of peak rate at u = 0.99
+    // and then arrested inside the last seven pixels of scroll. On screen that
+    // is a camera that flies at you and then is grabbed.
+    //
+    // ramp'(1) = ramp''(1) = 0 with everything bounded, so the rate now bleeds
+    // away over the last third. That is also what matches the far side of the
+    // seam: camera.js's ease goes as t^2.6 near t = 0, so the opening leaves
+    // rest at zero speed AND zero acceleration. Zero meets zero, twice over.
+    //
+    // The honest cost: ramp(0.95) = 0.999553, so the last 35px of the close
+    // change the scale by 0.05% — 0.12px of clone width — and the first ~60px
+    // after the wrap are equally still. Roughly 100px of scroll around the seam
+    // with no perceptible motion. A soft arrival at a join that must be
+    // invisible is worth more than momentum through it.
+    //
+    // Exact at the endpoint where it matters: ramp(u >= 1) returns 1 by branch,
+    // and ramp(0.999) = 1 - 2.2e-10 against the old ease's 1 - 3.2e-5.
+    const e = ramp(u, 0.18, 0.34);
 
     const Z = Math.max(1, t.width) / b.w;
     const z = Math.pow(Z, e);
@@ -464,7 +598,10 @@ window.addEventListener('keydown', (e) => {
     case 'ArrowUp': case 'PageUp':
       e.preventDefault(); loop.nudge(e.key === 'PageUp' ? -page : -150); break;
     case 'Home': e.preventDefault(); loop.glideTo(0, { ms: TUNE.navGlideMs }); break;
-    case 'End': e.preventDefault(); loop.glideTo(stagePosition(STAGES.length - 1), { ms: TUNE.navGlideMs }); break;
+    // LAST_STAGE_AT, not stagePosition(7). The pan lands over 2*STAGE_LAND of
+    // input, so idx reaches 7 at 4792, not at the 4540 the old clamp bit at —
+    // aiming at 4540 parks the recursion section 50.6px low at 720p.
+    case 'End': e.preventDefault(); loop.glideTo(LAST_STAGE_AT, { ms: TUNE.navGlideMs }); break;
   }
 });
 
@@ -473,7 +610,9 @@ window.addEventListener('keydown', (e) => {
 planeEl.addEventListener('focusin', (e) => {
   const s = e.target.closest('.stage');
   if (!s) return;
-  const at = stagePosition(+s.dataset.index);
+  const i = +s.dataset.index;
+  // Same correction as End above: only the last stage's resting position moved.
+  const at = i === STAGES.length - 1 ? LAST_STAGE_AT : stagePosition(i);
   if (Math.abs(loop.distanceTo(at)) > 40) loop.glideTo(at, { ms: 420 });
 });
 
@@ -613,6 +752,15 @@ function frame(now) {
   // last span to close, which is the one camera move with no forward momentum
   // and is why the ending read as a fade. The way back is the recursion below.
   const closeFrom = LOOP_LENGTH - CLOSE_SPAN;
+  // The close's own clock, raw and eased.
+  //
+  // Everything that has to be extinguished before the wrap is driven from
+  // `into` rather than from the raw fraction, so it reaches zero with zero SPEED
+  // as well as zero value. On the far side of the seam it is zero and static, so
+  // zero meets zero. Driving it linearly, as the motes were, lands the right
+  // number at the wrong rate and kinks once per lap.
+  const closeU = pos < closeFrom ? 0 : Math.min(1, (pos - closeFrom) / CLOSE_SPAN);
+  const into = ramp(closeU, 0.18, 0.34);
   // Clamped at zero, and that clamp is load-bearing now.
   //
   // `pos` can be negative. loop.glideTo() takes the short way round and does
@@ -677,8 +825,10 @@ function frame(now) {
     }
   }
 
-  // The last span flies into the hero living inside the final stage's screen.
-  recursion.apply(pos < closeFrom ? 0 : (pos - closeFrom) / CLOSE_SPAN);
+  // Beat three. The last span flies into the hero living inside the final
+  // stage's screen. It is handed the raw 0..1 and eases it internally, so this
+  // call site stays a plain statement of where we are in the close.
+  recursion.apply(closeU);
 
   // ---- the reel --------------------------------------------------------
   // A single translate. Fractional index in, pixels out.
@@ -723,10 +873,22 @@ function frame(now) {
   //     first frame at pos = 0, behind the screenshot, where nobody saw it.
   const idx = pos < ZOOM_SPAN
     ? s - 1
-    : Math.min(
-        STAGES.length - 1,
-        (pos - ZOOM_SPAN) / STAGE_SPAN,
-      );
+    //
+    // And on the far branch it LANDS rather than clamping. Math.min was right
+    // and the way it clamped was wrong: d(idx)/d(pos) is 1/560 below the clamp
+    // and 0 above it, so the pan ran at 1.286 px per scroll px and stopped
+    // between one frame and the next, at pos 4540 — the exact moment the last
+    // section arrives. That jolt, and the 560px of frozen nothing behind it,
+    // are most of what "the ending animation is 0% there" was describing. The
+    // fly-in after it was never the problem.
+    //
+    // softLand covers the last 0.45 of a stage-span over 0.90 of scroll input
+    // with a (1 - smoother) velocity profile: linear to pos 4288, landing 4288
+    // -> 4792, parked after. The last section decelerates into place instead of
+    // being caught, and the section before it decelerates out of frame the same
+    // way — the two are one pan. It also leaves the near branch's C1 join
+    // untouched, because softLand is the identity at raw = 0.
+    : softLand((pos - ZOOM_SPAN) / STAGE_SPAN, STAGES.length - 1, STAGE_LAND);
   reel.style.transform = `translate3d(0, ${(-idx * vh).toFixed(1)}px, 0)`;
 
   for (let i = 0; i < stageEls.length; i++) {
@@ -759,8 +921,66 @@ function frame(now) {
       if (beam) {
         // Sweeps left to right across the section as it passes, and is only
         // bright while the section is near the middle of the screen.
+        //
+        // Deliberately NOT multiplied by (1 - into), which was the obvious way
+        // to stop the recursion section's beam sitting at --lit 1.000 across the
+        // whole viewport at LOOP_LENGTH and vanishing at pos 0. `--lit` is bound
+        // straight to `opacity` on a plus-lighter layer, so that would have been
+        // a 700px opacity ramp. It is unnecessary: `.again` and `.stage__beam`
+        // are both z-index:0 positioned siblings and the beam is appended first,
+        // so `.again` paints above it — and at the wrap `.again__canvas` covers
+        // the whole viewport with an opaque var(--bg) ground. The beam is
+        // completely occluded on the one frame it would have shown.
         beam.style.setProperty('--sweep', `${(50 - dd * 78).toFixed(1)}%`);
         beam.style.setProperty('--lit', (Math.max(0, 1 - Math.abs(dd) * 1.25)).toFixed(3));
+      }
+
+      // ---- beat one: the closing device arrives ------------------------
+      //
+      // Every other section slides past at the reel's rate with its parts
+      // separated by a few percent. This one is not a section you read past, it
+      // is a thing you walk up to, so it gets an arrival instead of a parallax
+      // offset: it comes up from under the fold, grows, goes three quarters of
+      // a percent past its size and settles. Only then does the camera start
+      // travelling into it.
+      //
+      // `a` is 1 + dd — 0 when the section's top edge is exactly at the bottom
+      // of the frame, 1 when it is centred. Same clock as everything else in
+      // this block, and because `idx` now lands rather than stopping, da/dpos is
+      // 0 at a = 1. Both terms below are also flat at a = 1, so the whole
+      // transform arrives at zero speed and the 308px hold that follows is a
+      // continuation of the deceleration rather than a stop.
+      //
+      // Nothing here is faded. The device is smaller and lower, then bigger and
+      // higher; at no point is any part of it more or less opaque.
+      //
+      // Do NOT add will-change: transform. This scales a large cloned-text
+      // subtree from 0.45 to 1.00 over 500px of scroll; without the hint the
+      // browser re-rasterises per frame and the type stays crisp, with it Chrome
+      // is liable to rasterise once near 0.45 and stretch. .reel-zoom already
+      // carries the hint for the entry.
+      const again = st.querySelector('.again');
+      if (again) {
+        const a = Math.max(0, Math.min(1, 1 + dd));
+        // Trails the reel by 0.30vh and closes the gap on a smootherstep, so it
+        // rises INTO the frame rather than arriving with the wall behind it.
+        // Composite on-screen y is (1-a)*vh from the reel plus this; both terms
+        // have zero slope in pos at a = 1, because smoother'(1) = 0.
+        const lift = AGAIN_LAG * vh * (1 - smoother(a));
+        // Growth is held back until a = 0.45. The device's top edge crosses the
+        // bottom of the frame at about a = 0.55, and every bit of growth spent
+        // before that happens off-screen and is thrown away. Held back, the
+        // device enters at ~0.50 and does all of its growing in front of you.
+        //
+        // Trapezoid so the growth is steady rather than a lunge, plus one 4.5%
+        // bump whose own peak is at b = 0.75 and which returns to exactly 1.0000
+        // at a = 1. That is the settle: a few px of device height, taken back
+        // over the last ~65px of scroll. Felt, not seen.
+        const b = (a - AGAIN_GROW_FROM) / (1 - AGAIN_GROW_FROM);
+        const grow = AGAIN_S0 + (1 - AGAIN_S0)
+          * (ramp(b, 0.25, 0.30) + 0.045 * overshoot(b));
+        again.style.transform =
+          `translate3d(0, ${lift.toFixed(1)}px, 0) scale(${grow.toFixed(4)})`;
       }
     }
 
@@ -791,10 +1011,17 @@ function frame(now) {
   // Ramping down across the close makes the value continuous across the wrap,
   // and it is the honest reading too: you are leaving the room the device is
   // standing in.
+  //
+  // Both halves of that ramp were linear, which got the values right and the
+  // rates wrong. `up` saturated at closeFrom while `into` started there:
+  // measured +4.4e-4 per pixel at 5099 against -7.6e-4 at 5101, a kink at the
+  // exact join. And it arrived at the wrap still falling, to meet a value that
+  // is flat. Smootherstep on the way up and the close's own ramp on the way
+  // down make both slopes zero where they meet anything. `into` is now the
+  // shared one declared at the top of frame().
   if (motes) {
     const from = stagePosition(5);
-    const up = Math.max(0, Math.min(1, (pos - from) / Math.max(1, closeFrom - from)));
-    const into = pos < closeFrom ? 0 : (pos - closeFrom) / CLOSE_SPAN;
+    const up = smoother((pos - from) / Math.max(1, closeFrom - from));
     motes.resize(vw, vh);
     motes.draw(dt, 0.26 + 0.74 * up * (1 - into), Math.min(1, speedEMA * 0.9));
   }
@@ -834,6 +1061,12 @@ function useStaticLayout() {
   for (const s of stageEls) {
     s.style.cssText = '';
     s.removeAttribute('aria-hidden');
+    // The closing device's arrival is written to .again, not to the stage, and
+    // `body.static-layout .stage { transform: none !important }` does not reach
+    // a child. Left behind, the last section would render its browser mock at
+    // 45% in a layout that has no camera to fly it anywhere.
+    const again = s.querySelector('.again');
+    if (again) again.style.transform = '';
   }
   for (const h of document.querySelectorAll('[data-scramble]')) h.textContent = h.dataset.scramble;
   if (backdrop) { backdrop.resize(vw, vh, 1); backdrop.draw(0, 0); }
