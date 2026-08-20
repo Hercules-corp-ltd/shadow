@@ -910,3 +910,111 @@ body.static-layout .again__page .card__shot { position: absolute; height: 100%; 
 }
 body.static-layout #motes { display: none; }
 @media (prefers-reduced-motion: reduce) { #motes { display: none; } }
+
+
+/* ============================================================== rails === */
+
+/*
+  Hairline rails, and the light that travels along them. See src/rails.js for
+  the arithmetic; this file only describes what the light looks like.
+
+  · z-index 21 — above .scene (20), below #motes (22), the download bar (70)
+    and the panel (120). It cannot go below the scene: `.card` is
+    `background: #000` and from the moment the camera is pushed in it covers the
+    entire viewport, so anything under .scene is invisible for five sixths of
+    the loop.
+
+  · No mix-blend-mode. #motes is plus-lighter, and a blend mode composites
+    against its backdrop, so leaving the rails as ordinary alpha means the dust
+    blends OVER them for free and the page keeps one full-viewport blend group
+    instead of two. At these alphas over a near-black ground, source-over and
+    plus-lighter are the same picture.
+
+  · No mask on the layer. The outward falloff `.grid` gets from a full-viewport
+    radial mask is folded into each rail's own alpha in JS instead — a mask over
+    a container whose children move every frame is a viewport-sized surface that
+    has to keep up with them.
+
+  Nothing here animates the `opacity` property; the travelling segment's alpha
+  lives inside its own gradient stops, so what changes is how much light it
+  emits. (Note .stage__beam DOES drive `opacity` from `pos` — it has since
+  before this layer existed. This one deliberately does not follow that
+  precedent.)
+*/
+.rails {
+  position: fixed; inset: 0; z-index: 21; pointer-events: none;
+  overflow: hidden;
+  --hot: 0.3;       /* segment brightness, written per frame by rails.js */
+  --seg-h: 128px;   /* segment length, written once by rails.js */
+}
+
+/*
+  The rails ARE the column's hairlines while the loop is running, so the column
+  must not draw its own. Two hairlines cannot coincide by being drawn twice:
+  0.055 over 0.055 composites to 0.107, which puts a band twice as bright as the
+  rail on exactly the column's vertical extent, top and bottom edges and all.
+
+  All columns, not `#scene > .column`. The recursion clone is a `.column` too,
+  and at the seam it renders at exactly 1:1 — leaving its borders in would hand
+  a short hard hairline over to a full-height gradient one frame later.
+
+  .static-layout keeps its borders: there are no rails there, only rules.
+*/
+body:not(.static-layout) .column { border-color: transparent; }
+
+/*
+  Positioned with `left`, never with a transform.
+
+  These are 1px rules. A transform lands one at a fractional device pixel and the
+  browser resolves that by painting two grey columns instead of one bright one —
+  rails.js snaps `left` to a whole device pixel for the same reason. Only the
+  segments move, and only in Y, so a hairline is never resampled across its own
+  width.
+*/
+.rail {
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, var(--rail-a, 0.03)) 13%,
+    rgba(255, 255, 255, var(--rail-a, 0.03)) 87%,
+    rgba(255, 255, 255, 0) 100%);
+}
+/* The two the layout genuinely hangs off. Their alpha is --rule's, unattenuated
+   by the outward falloff, because they are structure rather than atmosphere. */
+.rail--spine {
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, var(--rail-a, 0.055)) 6%,
+    rgba(255, 255, 255, var(--rail-a, 0.055)) 94%,
+    rgba(255, 255, 255, 0) 100%);
+}
+
+/*
+  A head and a tail, in the grid's own amber rather than a new colour. Parked one
+  segment-length above the top of its rail so that phase 0 and phase 1 are both
+  off-screen — which is what makes the recycle, and therefore the loop's wrap,
+  invisible. The travel is the transform; the shape never changes.
+
+  `calc()` inside an rgba alpha invalidates the whole `background` declaration if
+  it is not understood, not just one stop — so on an ancient WebView the
+  segments simply do not paint and the base hairlines survive. A sane failure,
+  but a silent one.
+*/
+.rail__seg {
+  position: absolute; left: 0; width: 1px;
+  top: calc(var(--seg-h) * -1); height: var(--seg-h);
+  transform-origin: 50% 50%;
+  will-change: transform;
+  background: linear-gradient(180deg,
+    rgba(255, 208, 168, 0) 0%,
+    rgba(255, 208, 168, calc(var(--hot) * var(--seg-a, 1) * 0.95)) 10%,
+    rgba(255, 122,  40, calc(var(--hot) * var(--seg-a, 1) * 0.60)) 26%,
+    rgba(255, 122,  40, calc(var(--hot) * var(--seg-a, 1) * 0.15)) 64%,
+    rgba(255, 122,  40, 0) 100%);
+}
+
+/* Reduced motion, and the no-script/static layout: the rules stay, because they
+   are drawing, not motion. Only the travelling light stops. */
+.rails.is-still .rail__seg { display: none; }
+@media (prefers-reduced-motion: reduce) { .rail__seg { display: none; } }
+body.static-layout .rails { position: absolute; height: 100%; }

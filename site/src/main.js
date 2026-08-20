@@ -1,5 +1,6 @@
 import { createLoop, approach } from './loop.js';
 import { createMotes } from './motes.js';
+import { createRails } from './rails.js';
 import { createBackdrop } from './backdrop.js';
 import { createCamera } from './camera.js';
 import { createPanel } from './panel.js';
@@ -577,6 +578,15 @@ const againPageEl = document.querySelector('.again__page');
 const againCanvasEl = document.querySelector('.again__canvas');
 const motesEl = document.getElementById('motes');
 const motes = motesEl && !reduced.matches ? createMotes(motesEl) : null;
+// Built unconditionally: under reduced motion the rules are still worth having
+// as drawing, and only the travelling light is switched off (see flatten()).
+const rails = createRails({
+  length: LOOP_LENGTH,
+  // The direct child, not `.scene .column` — the recursion clone is a
+  // `.column` too, and it lives inside this one.
+  columnEl: document.querySelector('#scene > .column'),
+  sceneEl,
+});
 const backdrop = createBackdrop(canvas, TUNE);
 if (!backdrop) document.body.classList.add('no-webgl');
 
@@ -632,6 +642,9 @@ function measure() {
   vh = window.innerHeight;
   camera.measure();
   recursion.measure();
+  // After the camera, because both briefly clear the scene transform to take a
+  // rest-state measurement and each restores whatever it found.
+  rails.measure(vw, vh);
   // One viewport per stage, in real pixels.
   for (let i = 0; i < stageEls.length; i++) {
     stageEls[i].style.top = `${i * vh}px`;
@@ -997,6 +1010,20 @@ function frame(now) {
     m.tick(dt);
   }
 
+  // ---- rails -----------------------------------------------------------
+  //
+  // Driven by where you are, plus a slow drift so the page is never quite dead,
+  // plus speed for how bright and how long the light is. The travel is a phase,
+  // frac(n * pos / LOOP_LENGTH), with n a whole number of laps per loop — so it
+  // is continuous across the wrap by construction rather than by being covered.
+  //
+  // Called unconditionally, unlike the backdrop below, and that has a cost worth
+  // knowing: the drift term changes every frame from the clock alone, at 10-35
+  // px/s, so the compositor never reaches idle and TUNE.idleFps buys nothing
+  // here. That is the intent — a page that is completely still at rest reads as
+  // a screenshot — but it is a battery cost, not a free one.
+  rails.tick(pos, now, speedEMA);
+
   // ---- motes -----------------------------------------------------------
   //
   // Lit by where you are, not by a timer. The field builds through the last
@@ -1046,6 +1073,7 @@ function useStaticLayout() {
   detach();
   cancelAnimationFrame(raf);
   camera.flatten();
+  rails.flatten();
   if (cardShot) {
     cardShot.style.opacity = '';
     cardShot.style.transform = '';
@@ -1093,4 +1121,4 @@ document.body.classList.remove('is-loading');
 
 /* Exposed for verification: the browser pane cannot composite while hidden, so
  * rAF never runs there and the only way to check the geometry is to step it. */
-window.__shadow = { loop, camera, frame, stageEls, recursion, motes };
+window.__shadow = { loop, camera, frame, stageEls, recursion, motes, rails };
