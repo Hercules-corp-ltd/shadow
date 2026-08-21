@@ -7,7 +7,7 @@
 <meta name="description" content="One phrase becomes your wallet, a different password for every site and a different address for every sign-up. Nothing is stored — Shadow derives it again each time you unlock.">
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="assets/brand/shadow-mark.png" type="image/png">
-<link rel="canonical" href="https://shadow-pi-six.vercel.app/">
+<link rel="canonical" href="https://www.shadowzkp.website/">
 
 <!--
   The link preview.
@@ -33,6 +33,13 @@
   twitter:* set. Twitter falls back to og:* for most fields, but not reliably
   for the image, so both are stated.
 
+  These are pinned to www.shadowzkp.website, not to the deployment host. Vercel
+  308s the apex to www, so www IS the canonical origin and the one a scraper
+  will be handed; pointing og:url at the other would make every share advertise
+  a URL that immediately redirects. If the domain ever moves, these four lines
+  and the canonical above move with it -- they are absolute because scrapers
+  drop relative ones, which is the whole reason this block exists.
+
   93KB rather than the 587KB the same card weighs as a PNG. The content is
   photographic and nearly black, so JPEG is both the right format and six times
   lighter — and scrapers time out on heavy images, which is a silent failure
@@ -40,10 +47,10 @@
 -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Shadow">
-<meta property="og:url" content="https://shadow-pi-six.vercel.app/">
+<meta property="og:url" content="https://www.shadowzkp.website/">
 <meta property="og:title" content="Shadow — forget me, on purpose">
 <meta property="og:description" content="Every site meets a different you. One phrase derives the wallet, the password and the address — and Shadow keeps none of it.">
-<meta property="og:image" content="https://shadow-pi-six.vercel.app/assets/img/og-card.jpg">
+<meta property="og:image" content="https://www.shadowzkp.website/assets/img/og-card.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -52,7 +59,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Shadow — forget me, on purpose">
 <meta name="twitter:description" content="Every site meets a different you. One phrase derives the wallet, the password and the address — and Shadow keeps none of it.">
-<meta name="twitter:image" content="https://shadow-pi-six.vercel.app/assets/img/og-card.jpg">
+<meta name="twitter:image" content="https://www.shadowzkp.website/assets/img/og-card.jpg">
 <meta name="twitter:image:alt" content="A marble bust lit by a single shaft of amber light, its far side breaking apart into drifting fragments and disappearing into the dark.">
 
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/Geist-Variable.woff2" crossorigin>
