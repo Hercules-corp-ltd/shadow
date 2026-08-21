@@ -5,9 +5,12 @@ use solana_client::rpc_client::RpcClient;
 use solana_sdk::pubkey::Pubkey;
 use std::str::FromStr;
 
-// Program IDs (should match programs/shadow-registry and programs/shadow-profiles)
-const REGISTRY_PROGRAM_ID: &str = "7Y8Zx9qR3sN2mP1wV5tU4fG6hK8jL0dA";
-const PROFILES_PROGRAM_ID: &str = "8Z9Ax0rS4tN3nQ2xW6uV5gH7iL9kM1eB";
+// Program IDs (must be valid base58 32-byte pubkeys — the previous placeholders
+// contained `0` and were too short, so Pubkey::from_str failed at process start).
+// Override with SHADOW_REGISTRY_PROGRAM_ID / SHADOW_PROFILES_PROGRAM_ID after a
+// real deploy (`anchor keys list`).
+const REGISTRY_PROGRAM_ID: &str = "8Mc4gjS1y6SZUGQGydtqoHAsjRwCmeux1KjKFYDKqTtu";
+const PROFILES_PROGRAM_ID: &str = "55VcSJ49rjAqYjxxFKwX9w6tzRUGLgMofGGD9mAGPkff";
 
 pub struct AnchorClient {
     rpc_url: String,
@@ -37,10 +40,15 @@ pub struct ProfileAccount {
 
 impl AnchorClient {
     pub fn new(rpc_url: String) -> Result<Self, String> {
-        let registry_program = Pubkey::from_str(REGISTRY_PROGRAM_ID)
+        let registry_id = std::env::var("SHADOW_REGISTRY_PROGRAM_ID")
+            .unwrap_or_else(|_| REGISTRY_PROGRAM_ID.to_string());
+        let profiles_id = std::env::var("SHADOW_PROFILES_PROGRAM_ID")
+            .unwrap_or_else(|_| PROFILES_PROGRAM_ID.to_string());
+
+        let registry_program = Pubkey::from_str(&registry_id)
             .map_err(|e| format!("Invalid registry program ID: {}", e))?;
         
-        let profiles_program = Pubkey::from_str(PROFILES_PROGRAM_ID)
+        let profiles_program = Pubkey::from_str(&profiles_id)
             .map_err(|e| format!("Invalid profiles program ID: {}", e))?;
 
         Ok(Self {

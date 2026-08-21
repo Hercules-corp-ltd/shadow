@@ -36,7 +36,7 @@ async function search(query: string): Promise<SearchResult[]> {
         id: `token-${tokenAddress}`,
         label: shortenAddress(tokenAddress) + (sublink ? `/${sublink}` : ""),
         icon: <Globe className="w-4 h-4" />,
-        link: `/token/${tokenAddress}${subpath}`,
+        link: `/site/${tokenAddress}${subpath}`,
         description: sublink ? `Sublink: ${sublink}` : "Token address",
         type: "site" as const,
       })
@@ -66,7 +66,7 @@ async function search(query: string): Promise<SearchResult[]> {
           id: `solana-${solana.data.address}`,
           label: shortenAddress(solana.data.address),
           icon: solana.type === "program" ? <Globe className="w-4 h-4" /> : <User className="w-4 h-4" />,
-          link: solana.type === "program" ? `/token/${solana.data.address}` : `/profile/${solana.data.address}`,
+          link: solana.type === "program" ? `/site/${solana.data.address}` : `/profile/${solana.data.address}`,
           description: solana.type === "program" ? "Token/Site" : "Solana account",
           type: solana.type === "program" ? "site" : "profile",
         })

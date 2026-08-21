@@ -1,0 +1,36 @@
+{
+  "name": "shadow-sdk",
+  "version": "0.1.0",
+  "description": "Hermes SDK — convert and deploy sites for the Shadow browser",
+  "bin": {
+    "shadow-sdk": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@solana/spl-token": "^0.4.9",
+    "@solana/web3.js": "^1.95.8",
+    "axios": "^1.7.9",
+    "bs58": "^6.0.0",
+    "chalk": "^4.1.2",
+    "commander": "^12.1.0",
+    "form-data": "^4.0.1",
+    "fs-extra": "^11.2.0",
+    "glob": "^11.0.0",
+    "ora": "^5.4.1",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.17.10",
+    "typescript": "^5.7.2"
+  }
+}

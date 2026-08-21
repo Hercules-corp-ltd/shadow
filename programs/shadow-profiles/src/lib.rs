@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("8Z9Ax0rS4tN3nQ2xW6uV5gH7iL9kM1eB");
+declare_id!("55VcSJ49rjAqYjxxFKwX9w6tzRUGLgMofGGD9mAGPkff");
 
 #[program]
 pub mod shadow_profiles {

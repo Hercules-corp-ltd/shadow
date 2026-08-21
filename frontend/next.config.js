@@ -1,8 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
   images: {
-    domains: ['gateway.pinata.cloud', 'arweave.net'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'gateway.pinata.cloud' },
+      { protocol: 'https', hostname: 'arweave.net' },
+    ],
   },
   webpack: (config) => {
     config.resolve.fallback = {
@@ -17,4 +21,3 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
-

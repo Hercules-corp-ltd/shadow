@@ -58,7 +58,9 @@ out/
 
 # Rust
 **/*.rs.bk
+# Virtual workspace: keep the root lockfile for reproducible backend/CI builds.
 Cargo.lock
+!/Cargo.lock
 
 # Flutter / Dart
 **/.dart_tool/
