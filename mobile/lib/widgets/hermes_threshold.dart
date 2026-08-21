@@ -5,11 +5,20 @@ import '../theme/shadow_colors.dart';
 import '../theme/shadow_typography.dart';
 import 'grid_background.dart';
 
-/// How long the Greek doors take to part (slow-motion threshold).
-const kHermesGateOpenDuration = Duration(milliseconds: 3200);
+/// How long the Greek doors take to part.
+///
+/// Was 3200ms, with a 5800ms hold on top. Nearly six seconds is a fine length
+/// for a title card and a terrible one for a lock screen: it is paid on every
+/// single unlock, by someone who has already proved who they are and is now
+/// waiting to be let in. A flourish that cannot be skipped stops being a
+/// flourish the second time you see it.
+///
+/// 1200 + a 400ms beat keeps the gesture — the doors still part, the seam still
+/// glows — at a length that reads as deliberate rather than as a loading screen.
+const kHermesGateOpenDuration = Duration(milliseconds: 1200);
 
-/// Total time on the gate screen after biometrics — open animation + a beat.
-const kHermesGateHold = Duration(milliseconds: 5800);
+/// Total time on the gate screen — the doors parting, plus a beat to land on.
+const kHermesGateHold = Duration(milliseconds: 1600);
 
 /// Hermes at the gate — full-screen Greek doors, closed then parting.
 class HermesThreshold extends StatefulWidget {

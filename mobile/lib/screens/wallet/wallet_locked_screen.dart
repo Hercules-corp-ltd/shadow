@@ -7,6 +7,7 @@ import '../../services/quick_unlock.dart';
 import '../../theme/shadow_colors.dart';
 import '../../theme/shadow_typography.dart';
 import '../../widgets/grid_background.dart';
+import '../../widgets/hermes_threshold.dart';
 import '../../widgets/shadow_button.dart';
 
 class WalletLockedScreen extends StatefulWidget {
@@ -26,6 +27,15 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
   bool _canRemember = false;
   bool _armed = false;
 
+  /// True while the Hermes gate is on screen.
+  bool _gate = false;
+
+  /// Held from initState rather than read from `context` on the way out:
+  /// dispose() runs after the element is defunct, and looking a provider up
+  /// through a defunct context throws. This is the reference the safety net at
+  /// the bottom of dispose() uses.
+  late final WalletProvider _wallet = context.read<WalletProvider>();
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +45,12 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
   @override
   void dispose() {
     _password.dispose();
+    // The gate is a flag on a provider that outlives this screen, and while it
+    // is set the router will not move an unlocked user off the lock screen. If
+    // this widget goes away mid-animation — a lifecycle event, a hot reload, a
+    // route replaced underneath it — nothing else would ever lower it, and the
+    // app would sit unlocked on the lock screen with no way forward.
+    _wallet.closeGate();
     super.dispose();
   }
 
@@ -86,23 +102,54 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
       return;
     }
 
+    // The gate goes up BEFORE the wallet opens, and the order is the whole
+    // trick. unlockWallet() flips the lifecycle to unlocked and notifies, the
+    // router is listening, and its redirect would replace this screen on that
+    // same frame. Raising the flag first tells the redirect to hold.
+    //
+    // Only on this path. Typing a password gets you in immediately — the gate
+    // is the answer to being recognised without the word, so it belongs to the
+    // gesture that skipped the word.
+    _wallet.openGate();
+    if (mounted) setState(() => _gate = true);
+    final startedAt = DateTime.now();
+
     try {
-      await context.read<WalletProvider>().unlockWallet(result.passphrase!);
-      if (!mounted) return;
-      context.go('/home');
+      await _wallet.unlockWallet(result.passphrase!);
     } catch (_) {
       // The stored password no longer opens this wallet — changed, or the
       // wallet was replaced. Drop it rather than going on offering a
       // fingerprint that cannot work again.
+      _wallet.closeGate();
       await _quick.disable();
       if (!mounted) return;
       setState(() {
+        _gate = false;
         _armed = false;
         _loading = false;
         _error = 'The remembered password no longer opens this wallet, so '
             'Shadow has forgotten it. Type it instead.';
       });
+      return;
     }
+
+    // Whatever is left of the animation. Decrypting is local and takes a few
+    // milliseconds, so this is nearly the whole hold — but it is written as a
+    // remainder rather than a fixed sleep so a slow device spends its time
+    // working instead of adding to it.
+    final spent = DateTime.now().difference(startedAt);
+    final remaining = kHermesGateHold - spent;
+    if (remaining > Duration.zero) {
+      await Future<void>.delayed(remaining);
+    }
+
+    // Lowering the flag is what actually completes the journey: the router
+    // re-evaluates, sees an unlocked wallet on the lock screen, and sends us
+    // home. The explicit go() below is for the case where this screen is
+    // somehow no longer the one being redirected.
+    _wallet.closeGate();
+    if (!mounted) return;
+    context.go('/home');
   }
 
   Future<void> _unlock() async {
@@ -142,6 +189,11 @@ class _WalletLockedScreenState extends State<WalletLockedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // The gate replaces the screen rather than covering it. It is opaque and
+    // full-bleed, so stacking it would only mean laying out a password form
+    // nobody can see behind an animation.
+    if (_gate) return const HermesThreshold(key: ValueKey('hermes-gate'));
+
     final wallet = context.watch<WalletProvider>();
     final addr = wallet.walletAddress ?? '';
 

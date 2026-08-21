@@ -16,6 +16,8 @@ class WalletProvider with ChangeNotifier {
   /// below to notice that it finished for a wallet that no longer exists.
   int _walletGeneration = 0;
 
+  bool _gateOpen = false;
+
   Ed25519HDKeyPair? _wallet;
   String? _walletAddress;
   bool _isLoading = true;
@@ -28,6 +30,35 @@ class WalletProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isConnected => _state == WalletLifecycle.unlocked;
   WalletLifecycle get state => _state;
+
+  /// True while the unlock gate is playing on the lock screen.
+  ///
+  /// The router's redirect moves an unlocked user off `/wallet/locked` the
+  /// instant the state changes, which is correct every other time and fatal
+  /// here: unlocking is what starts the animation, so without this the gate
+  /// would be torn down on the very frame it began. This says "the screen you
+  /// are about to redirect away from is mid-sentence".
+  ///
+  /// Deliberately on the provider rather than local to the screen, because the
+  /// thing that has to see it is the router, and the router already listens to
+  /// this object.
+  bool get gateOpen => _gateOpen;
+
+  void openGate() {
+    if (_gateOpen) return;
+    _gateOpen = true;
+    notifyListeners();
+  }
+
+  /// Idempotent, and safe to call from dispose() — hence no notifyListeners()
+  /// when nothing changed. A gate left open would pin an unlocked user to the
+  /// lock screen, so every exit from the animation calls this, including the
+  /// ones that are on fire.
+  void closeGate() {
+    if (!_gateOpen) return;
+    _gateOpen = false;
+    notifyListeners();
+  }
 
 
   /// Whether the tour has been seen or explicitly skipped.
@@ -169,11 +200,13 @@ class WalletProvider with ChangeNotifier {
     _wallet = null;
     _state = WalletLifecycle.locked;
     _walletGeneration++;
+    _gateOpen = false;
     notifyListeners();
   }
 
   Future<void> deleteWallet() async {
     _walletGeneration++;
+    _gateOpen = false;
     await _walletService.deleteWallet();
     await _authService.signOut();
     _wallet = null;

@@ -103,7 +103,15 @@ class AppRouter {
         }
 
         // Unlocked — leave splash, onboarding, and the lock screen.
-        if (onSplash || onOnboarding || path == '/wallet/locked') {
+        //
+        // Except while the unlock gate is playing. Unlocking is what starts
+        // that animation, so this redirect and the gate fire on the same
+        // frame; without the guard the screen is replaced before the doors
+        // have moved and the animation is never seen. The lock screen closes
+        // the gate when it is done, which lets this run and completes the
+        // navigation on its own.
+        final gating = wallet.gateOpen && path == '/wallet/locked';
+        if (!gating && (onSplash || onOnboarding || path == '/wallet/locked')) {
           return '/home';
         }
         return null;
