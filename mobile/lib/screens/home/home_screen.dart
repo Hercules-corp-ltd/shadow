@@ -405,7 +405,27 @@ class _ThresholdState extends State<_Threshold> {
                 padding: const EdgeInsets.fromLTRB(20, 62, 20, 16),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 188),
-                  child: _words(identity),
+                  // scaleDown, because the recess is a fixed height and one of
+                  // the four identity states does not fit in it.
+                  //
+                  // The empty state carries the most copy — headline, three
+                  // lines of explanation, a button AND a footnote — and it
+                  // overflowed the card by 32px. In debug that is the striped
+                  // banner; in release it is silent, and what it eats is the
+                  // last line, "You can browse without it", which is the one
+                  // sentence telling a new user they are not obliged to set up
+                  // an identity at all.
+                  //
+                  // scaleDown only ever shrinks, so the three states that
+                  // already fit are untouched, and it holds for any text scale
+                  // rather than for the one this was eyeballed at. The cost is
+                  // that the empty state renders a few per cent smaller than
+                  // its siblings; a clipped sentence is worse.
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.topLeft,
+                    child: _words(identity),
+                  ),
                 ),
               ),
             ],
