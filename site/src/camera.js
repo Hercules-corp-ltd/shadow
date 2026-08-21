@@ -75,7 +75,23 @@
  * eased value at 0.57 by the time the raw one reached 0.5 — the headline was
  * off-frame before half the gesture was done.
  */
-function ease(t, easeIn = 2.6, easeOut = 1.5) {
+/*
+ * easeIn 2.6 -> 2.0.
+ *
+ * 2.6 was chosen to keep the front of the zoom slow, which is right — the first
+ * third is where the phone still reads as a phone and is worth spending scroll
+ * on. But t**2.6 is very nearly flat near zero, and zero is where the loop
+ * WRAPS. Measured: the first 50px after the seam moved the hero 0.4px in total.
+ * Together with the close arriving at a standstill it made ~75px of scroll in
+ * which nothing visibly happened — a pause, right at the join the whole design
+ * is built to hide.
+ *
+ * 2.0 still starts slower than linear (e = 0.414 at t = 0.5, against 0.318 at
+ * 2.6 and 0.5 for linear), so the phone still holds its shape through the
+ * opening. It is nowhere near the 1.75 of attempt 2, which put e past 0.5 by
+ * half the gesture and threw the headline off-frame early.
+ */
+function ease(t, easeIn = 2.0, easeOut = 1.5) {
   if (t <= 0) return 0;
   if (t >= 1) return 1;
   const n = Math.pow(t, easeIn);
