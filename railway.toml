@@ -3,8 +3,9 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "sh -c 'cd backend && cargo run --release'"
-healthcheckPath = "/health"
+# Image already contains the compiled binary; cargo is not installed at runtime.
+startCommand = "/app/backend/shadow-backend"
+healthcheckPath = "/api/health"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10

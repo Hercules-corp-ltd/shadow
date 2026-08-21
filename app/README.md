@@ -19,7 +19,7 @@ npm run dev
 
 ## For Designers
 
-See `DESIGNER_NOTES.md` for detailed information about what can be changed and what should remain intact.
+The web app is themed through CSS variables in the component layer. Wallet generation, encryption, and Solana address handling in `src/lib/` should stay intact when restyling.
 
 ## Features
 

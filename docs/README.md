@@ -68,11 +68,8 @@ Shadow's backend is organized around Greek gods, each handling specific responsi
 
 ## Quick Links
 
-- [Getting Started](getting-started/installation.md)
-- [Architecture Overview](architecture/overview.md)
-- [Feature Documentation](features/wallet-management.md)
-- [SDK Reference](sdk/overview.md)
-- [API Documentation](api-reference/endpoints.md)
+- [Running locally](running-locally.md)
+- [Persistence decision](decisions/0001-postgres-on-supabase.md)
 
 ---
 
@@ -82,7 +79,7 @@ Shadow's backend is organized around Greek gods, each handling specific responsi
 |-------|------------|
 | **Backend** | Rust + Actix-Web |
 | **Frontend** | Next.js 15 + React |
-| **Desktop** | Tauri + Vue |
+| **Desktop** | Vue + Vite |
 | **Mobile** | Flutter + Dart |
 | **Blockchain** | Solana + Anchor |
 | **Database** | MongoDB |

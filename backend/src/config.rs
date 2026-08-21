@@ -89,7 +89,9 @@ impl ShadowConfig {
             },
             storage: StorageConfig {
                 pinata_api_key: env::var("PINATA_API_KEY").ok(),
-                pinata_secret_key: env::var("PINATA_SECRET_KEY").ok(),
+                pinata_secret_key: env::var("PINATA_SECRET_KEY")
+                    .ok()
+                    .or_else(|| env::var("PINATA_SECRET").ok()),
                 bundlr_node_url: env::var("BUNDLR_NODE_URL").ok(),
                 bundlr_currency: env::var("BUNDLR_CURRENCY")
                     .ok()

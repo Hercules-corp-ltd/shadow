@@ -191,9 +191,8 @@ SOLANA_RPC_URL=https://api.devnet.solana.com
 
 ## Learn More
 
-- [Developer Guide](./DEVELOPER_GUIDE.md)
-- [Status Report](./STATUS.md)
-- [Examples](./EXAMPLES.md)
+- [Shadow docs](../docs/README.md)
+- [Running locally](../docs/running-locally.md)
 
 ---
 

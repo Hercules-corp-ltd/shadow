@@ -105,18 +105,18 @@ pub async fn create_profile_route(
     // Validate CID
     ApolloValidator::validate_ipfs_cid(&body.profile_cid)?;
 
-    // Verify authentication
-    if let Some(auth_header) = req.headers().get("X-Shadow-Auth") {
-        if let Ok(auth_str) = auth_header.to_str() {
-            if let Ok(auth) = AuthHeader::from_header(auth_str) {
-                if auth.wallet != body.wallet {
-                    return Err(ShadowError::Unauthorized.into());
-                }
-                auth.verify(&ares)
-                    .map_err(|_e| ShadowError::Unauthorized)?;
-            }
-        }
+    // Verify authentication — creating a profile must prove wallet ownership
+    let auth_header = req.headers().get("X-Shadow-Auth")
+        .ok_or_else(|| ShadowError::Unauthorized)?
+        .to_str()
+        .map_err(|_| ShadowError::Unauthorized)?;
+
+    let auth = AuthHeader::from_header(auth_header)?;
+    if auth.wallet != body.wallet {
+        return Err(ShadowError::Unauthorized.into());
     }
+    auth.verify(&ares)
+        .map_err(|_| ShadowError::Unauthorized)?;
 
     db::create_or_update_user(
         &db,
@@ -288,9 +288,33 @@ pub async fn update_site(
     db: web::Data<Database>,
     path: web::Path<String>,
     body: web::Json<RegisterSiteRequest>,
+    ares: web::Data<AresAuth>,
+    _apollo: web::Data<ApolloValidator>,
+    req: HttpRequest,
 ) -> ActixResult<HttpResponse, ShadowError> {
     let program_address = path.into_inner();
-    
+
+    ApolloValidator::validate_pubkey(&body.owner_pubkey)?;
+    ApolloValidator::validate_ipfs_cid(&body.storage_cid)?;
+
+    let auth_header = req.headers().get("X-Shadow-Auth")
+        .ok_or_else(|| ShadowError::Unauthorized)?
+        .to_str()
+        .map_err(|_| ShadowError::Unauthorized)?;
+
+    let auth = AuthHeader::from_header(auth_header)?;
+    if auth.wallet != body.owner_pubkey {
+        return Err(ShadowError::Unauthorized.into());
+    }
+    auth.verify(&ares)
+        .map_err(|_| ShadowError::Unauthorized)?;
+
+    if let Some(existing) = db::get_site(&db, &program_address).await? {
+        if existing.owner_pubkey != body.owner_pubkey {
+            return Err(ShadowError::Unauthorized.into());
+        }
+    }
+
     db::create_or_update_site(
         &db,
         &program_address,
@@ -335,8 +359,18 @@ pub async fn get_site_content(
 
 pub async fn upload_ipfs(
     pinata: web::Data<PinataStorage>,
+    ares: web::Data<AresAuth>,
+    req: HttpRequest,
     body: web::Bytes,
 ) -> ActixResult<HttpResponse, ShadowError> {
+    let auth_header = req.headers().get("X-Shadow-Auth")
+        .ok_or_else(|| ShadowError::Unauthorized)?
+        .to_str()
+        .map_err(|_| ShadowError::Unauthorized)?;
+    let auth = AuthHeader::from_header(auth_header)?;
+    auth.verify(&ares)
+        .map_err(|_| ShadowError::Unauthorized)?;
+
     let cid = pinata.upload(&body, "upload").await
         .map_err(|e| ShadowError::Storage(e))?;
 
@@ -347,8 +381,18 @@ pub async fn upload_ipfs(
 
 pub async fn upload_arweave(
     bundlr: web::Data<BundlrStorage>,
+    ares: web::Data<AresAuth>,
+    req: HttpRequest,
     body: web::Bytes,
 ) -> ActixResult<HttpResponse, ShadowError> {
+    let auth_header = req.headers().get("X-Shadow-Auth")
+        .ok_or_else(|| ShadowError::Unauthorized)?
+        .to_str()
+        .map_err(|_| ShadowError::Unauthorized)?;
+    let auth = AuthHeader::from_header(auth_header)?;
+    auth.verify(&ares)
+        .map_err(|_| ShadowError::Unauthorized)?;
+
     let tx_id = bundlr.upload(&body, vec![]).await
         .map_err(|e| ShadowError::Storage(e))?;
 

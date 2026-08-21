@@ -10,7 +10,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Cargo files
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml ./
+COPY Cargo.lock* ./
 
 # Copy source
 COPY src ./src
@@ -30,9 +31,6 @@ RUN apt-get update && apt-get install -y \
 
 # Copy binary
 COPY --from=builder /app/target/release/shadow-backend /app/shadow-backend
-
-# Copy migrations
-COPY ../migrations ./migrations
 
 EXPOSE 8080
 

@@ -10,7 +10,9 @@ impl PinataStorage {
     pub fn new() -> Self {
         Self {
             api_key: env::var("PINATA_API_KEY").ok(),
-            secret: env::var("PINATA_SECRET").ok(),
+            secret: env::var("PINATA_SECRET")
+                .ok()
+                .or_else(|| env::var("PINATA_SECRET_KEY").ok()),
         }
     }
 

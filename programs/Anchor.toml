@@ -6,8 +6,8 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-shadow_registry = "7Y8Zx9qR3sN2mP1wV5tU4fG6hK8jL0dA"
-shadow_profiles = "8Z9Ax0rS4tN3nQ2xW6uV5gH7iL9kM1eB"
+shadow_registry = "8Mc4gjS1y6SZUGQGydtqoHAsjRwCmeux1KjKFYDKqTtu"
+shadow_profiles = "55VcSJ49rjAqYjxxFKwX9w6tzRUGLgMofGGD9mAGPkff"
 
 [registry]
 url = "https://api.apr.dev"

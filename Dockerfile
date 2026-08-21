@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy backend files
-COPY backend/Cargo.toml backend/Cargo.lock ./
+COPY backend/Cargo.toml ./
 COPY backend/src ./src
 
 # Build backend
