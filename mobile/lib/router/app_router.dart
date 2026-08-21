@@ -212,13 +212,12 @@ class AppRouter {
         ),
 
         // Home
-        GoRoute(
-          path: '/home',
-          pageBuilder: (context, state) => NoTransitionPage<void>(
-            key: state.pageKey,
-            child: const HomeScreen(),
-          ),
-        ),
+        //
+        // A plain builder, deliberately. This was briefly a NoTransitionPage so
+        // that one unlock animation could hand over to it without a cross-fade,
+        // which cost every other route in the app its transition into /home to
+        // serve a single flow — and that flow is not wired.
+        GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
 
         // History
         GoRoute(path: '/history', builder: (_, __) => const HistoryScreen()),

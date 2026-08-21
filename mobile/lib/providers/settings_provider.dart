@@ -17,9 +17,25 @@ class SettingsProvider with ChangeNotifier {
 
   /// One shared load for the process — cold start and the lock screen must
   /// not each race a separate [load] and read defaults mid-flight.
-  Future<void> ensureLoaded() {
-    _loadFuture ??= load();
-    return _loadFuture!;
+  ///
+  /// A FAILED load is not cached. Storing the rejected future meant one bad
+  /// read — a corrupted preferences file, a platform channel not up yet on a
+  /// cold start — pinned settings at their defaults for the life of the
+  /// process, and every later caller got handed the same dead future and the
+  /// same defaults. Clearing it lets the next caller try again.
+  ///
+  /// The error is swallowed rather than rethrown because the callers do not
+  /// await: main.dart builds the provider with `..ensureLoaded()`. Rethrowing
+  /// into a cascade is an unhandled async error, which on Flutter is a red
+  /// screen for a settings read.
+  Future<void> ensureLoaded() => _loadFuture ??= _loadOnce();
+
+  Future<void> _loadOnce() async {
+    try {
+      await load();
+    } catch (_) {
+      _loadFuture = null;
+    }
   }
 
   Future<void> load() async {

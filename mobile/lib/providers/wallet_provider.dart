@@ -3,7 +3,6 @@ import 'package:solana/solana.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/auth_service.dart';
-import '../services/biometric_service.dart';
 import '../services/wallet_service.dart';
 
 enum WalletLifecycle { uninitialized, noWallet, locked, unlocked }
@@ -11,34 +10,25 @@ enum WalletLifecycle { uninitialized, noWallet, locked, unlocked }
 class WalletProvider with ChangeNotifier {
   final WalletService _walletService = WalletService();
   final AuthService _authService = AuthService();
-  final BiometricService _biometricService = BiometricService();
+
+  /// Bumped whenever the wallet this provider represents stops being the one it
+  /// represented — locked, deleted, replaced. Read by the background sign-in
+  /// below to notice that it finished for a wallet that no longer exists.
+  int _walletGeneration = 0;
 
   Ed25519HDKeyPair? _wallet;
   String? _walletAddress;
   bool _isLoading = true;
   bool _onboardingComplete = false;
   WalletLifecycle _state = WalletLifecycle.uninitialized;
-  bool _hermesTransition = false;
+
 
   Ed25519HDKeyPair? get wallet => _wallet;
   String? get walletAddress => _walletAddress;
   bool get isLoading => _isLoading;
   bool get isConnected => _state == WalletLifecycle.unlocked;
   WalletLifecycle get state => _state;
-  bool get hermesTransition => _hermesTransition;
 
-  /// Keeps the Hermes threshold visible across route swaps after biometrics.
-  void beginHermesTransition() {
-    if (_hermesTransition) return;
-    _hermesTransition = true;
-    notifyListeners();
-  }
-
-  void endHermesTransition() {
-    if (!_hermesTransition) return;
-    _hermesTransition = false;
-    notifyListeners();
-  }
 
   /// Whether the tour has been seen or explicitly skipped.
   ///
@@ -143,24 +133,47 @@ class WalletProvider with ChangeNotifier {
     _signInInBackground(keypair);
   }
 
+  /// Signs the session in without holding up the unlock.
+  ///
+  /// Taking this off the unlock path is right — nothing on the home screen
+  /// needs the session, it is all local derivation, and a slow network should
+  /// not stand between a correct password and the wallet.
+  ///
+  /// But an unawaited network call outlives the thing that started it. Delete
+  /// the wallet while this is in flight and the order becomes: signOut() clears
+  /// the token, then this resolves and AuthService writes a fresh one to
+  /// SharedPreferences — a live session belonging to a wallet the user just
+  /// destroyed, sitting on disk until something happens to overwrite it.
+  ///
+  /// So it checks whether it still speaks for the current wallet before letting
+  /// the token stand, and signs out again if it does not. The generation counter
+  /// rather than comparing keypairs: re-importing the same seed phrase is a new
+  /// session even though the key is identical.
   void _signInInBackground(Ed25519HDKeyPair keypair) {
+    final generation = _walletGeneration;
     Future<void>(() async {
       try {
         await _authService.signInWithSolana(wallet: keypair);
-      } catch (_) {}
+      } catch (_) {
+        return;
+      }
+      if (generation != _walletGeneration || _wallet == null) {
+        try {
+          await _authService.signOut();
+        } catch (_) {}
+      }
     });
   }
 
   void lock() {
     _wallet = null;
     _state = WalletLifecycle.locked;
-    endHermesTransition();
+    _walletGeneration++;
     notifyListeners();
   }
 
   Future<void> deleteWallet() async {
-    endHermesTransition();
-    await _biometricService.clearStoredPassword();
+    _walletGeneration++;
     await _walletService.deleteWallet();
     await _authService.signOut();
     _wallet = null;

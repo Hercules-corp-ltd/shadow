@@ -163,7 +163,7 @@ class _HermesThresholdState extends State<HermesThreshold>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'The gate opens — no password, only your sign.',
+                    'Your device vouched for you.',
                     textAlign: TextAlign.center,
                     style: ShadowTypography.bodySm,
                   ),
@@ -252,7 +252,7 @@ class _GreekGateDoorPainter extends CustomPainter {
     );
 
     // Outer column pilaster on the screen edge
-    final colW = 26.0;
+    const colW = 26.0;
     final colRect = isLeft
         ? Rect.fromLTWH(0, 0, colW, size.height)
         : Rect.fromLTWH(size.width - colW, 0, colW, size.height);
