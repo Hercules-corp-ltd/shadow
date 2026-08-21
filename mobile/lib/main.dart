@@ -36,7 +36,7 @@ class ShadowApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => WalletProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()..ensureLoaded()),
         ChangeNotifierProvider(create: (_) => HistoryProvider()),
         ChangeNotifierProvider(create: (_) => BookmarksProvider()),
         ChangeNotifierProvider(create: (_) => DownloadsProvider()),

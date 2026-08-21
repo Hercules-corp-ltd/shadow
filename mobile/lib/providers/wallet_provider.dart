@@ -3,6 +3,7 @@ import 'package:solana/solana.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/auth_service.dart';
+import '../services/biometric_service.dart';
 import '../services/wallet_service.dart';
 
 enum WalletLifecycle { uninitialized, noWallet, locked, unlocked }
@@ -10,18 +11,34 @@ enum WalletLifecycle { uninitialized, noWallet, locked, unlocked }
 class WalletProvider with ChangeNotifier {
   final WalletService _walletService = WalletService();
   final AuthService _authService = AuthService();
+  final BiometricService _biometricService = BiometricService();
 
   Ed25519HDKeyPair? _wallet;
   String? _walletAddress;
   bool _isLoading = true;
   bool _onboardingComplete = false;
   WalletLifecycle _state = WalletLifecycle.uninitialized;
+  bool _hermesTransition = false;
 
   Ed25519HDKeyPair? get wallet => _wallet;
   String? get walletAddress => _walletAddress;
   bool get isLoading => _isLoading;
   bool get isConnected => _state == WalletLifecycle.unlocked;
   WalletLifecycle get state => _state;
+  bool get hermesTransition => _hermesTransition;
+
+  /// Keeps the Hermes threshold visible across route swaps after biometrics.
+  void beginHermesTransition() {
+    if (_hermesTransition) return;
+    _hermesTransition = true;
+    notifyListeners();
+  }
+
+  void endHermesTransition() {
+    if (!_hermesTransition) return;
+    _hermesTransition = false;
+    notifyListeners();
+  }
 
   /// Whether the tour has been seen or explicitly skipped.
   ///
@@ -122,18 +139,28 @@ class WalletProvider with ChangeNotifier {
     _walletAddress = keypair.publicKey.toBase58();
     _state = WalletLifecycle.unlocked;
     notifyListeners();
-    try {
-      await _authService.signInWithSolana(wallet: keypair);
-    } catch (_) {}
+    // Session sign-in hits the network — must not block unlock navigation.
+    _signInInBackground(keypair);
+  }
+
+  void _signInInBackground(Ed25519HDKeyPair keypair) {
+    Future<void>(() async {
+      try {
+        await _authService.signInWithSolana(wallet: keypair);
+      } catch (_) {}
+    });
   }
 
   void lock() {
     _wallet = null;
     _state = WalletLifecycle.locked;
+    endHermesTransition();
     notifyListeners();
   }
 
   Future<void> deleteWallet() async {
+    endHermesTransition();
+    await _biometricService.clearStoredPassword();
     await _walletService.deleteWallet();
     await _authService.signOut();
     _wallet = null;
