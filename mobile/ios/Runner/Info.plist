@@ -71,5 +71,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Shadow uses Face ID to unlock your wallet and your identity, so you do not have to type your passphrase every time.</string>
 </dict>
 </plist>
