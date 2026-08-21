@@ -194,10 +194,14 @@ pub struct RegisterSiteRequest {
 pub async fn search_sites(
     db: web::Data<Database>,
     query: web::Query<SearchQuery>,
+    _apollo: web::Data<ApolloValidator>,
     metrics: web::Data<MetricsCollector>,
 ) -> ActixResult<HttpResponse, ShadowError> {
+    ApolloValidator::validate_search_query(&query.q)?;
+    let limit = ApolloValidator::validate_limit(query.limit)?;
+
     metrics.record_database_query();
-    let sites = db::search_sites(&db, &query.q, query.limit.unwrap_or(10))
+    let sites = db::search_sites(&db, &query.q, limit)
         .await?;
 
     Ok(HttpResponse::Ok().json(sites))
