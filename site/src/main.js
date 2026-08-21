@@ -594,7 +594,16 @@ function createRecursion(zoomEl) {
     //
     // Exact at the endpoint where it matters: ramp(u >= 1) returns 1 by branch,
     // and ramp(0.999) = 1 - 2.2e-10 against the old ease's 1 - 3.2e-5.
-    const e = ramp(u, 0.18, 0.34);
+    //
+    // rOut 0.34 -> 0.20. The long tail was bleeding the close to a standstill
+    // roughly 50px before the wrap, and the opening on the far side was equally
+    // flat, so the two dead stretches met and formed one ~75px pause. Shortening
+    // the deceleration keeps the arrival soft — ramp'(1) is still exactly 0, so
+    // the seam is still C1 — while spending far less scroll getting there.
+    //
+    // rIn 0.18 -> 0.16 for the same reason at the other end: the close begins
+    // right after a 308px hold, and it should not need 126px to get moving.
+    const e = ramp(u, 0.16, 0.20);
 
     const Z = Math.max(1, t.width) / b.w;
     const z = Math.pow(Z, e);
@@ -746,7 +755,40 @@ let calmFor = 0;
 let lastDraw = 0;
 let vw = 0, vh = 0;
 
+/**
+ * Set when measure() was asked to run against a viewport of zero.
+ *
+ * A hidden tab, a browser pane that has not been displayed, or a load that
+ * beats first layout all report innerWidth/innerHeight as 0. measure() used to
+ * take that at face value, and the result does not degrade gracefully — it
+ * poisons the layout permanently:
+ *
+ *   · every stage gets `top: 0px; height: 0px`, so the reel is a strip of
+ *     nothing and the sections are stacked on each other;
+ *   · `.again__page` is sized from `Math.max(1, sceneEl.offsetWidth)`, so it
+ *     comes out 1px wide;
+ *   · the closing device's width is (bandH - CHROME) / (frac * need) where
+ *     `need` is vh/vw — 0/0 — so `--again-dev-w` is written as literally
+ *     "NaNpx" and the mock collapses to 2px;
+ *   · and the fly-in then has nothing to scale, so the whole last span of the
+ *     loop is a scale(1) no-op. The ending does not look wrong, it looks
+ *     ABSENT: a stretch of scroll where nothing moves at all.
+ *
+ * And nothing recovered, because measure() only ever ran again on `resize`.
+ * Load the page in a background tab, come back to it, and it stayed broken
+ * until the window was dragged.
+ */
+let needsMeasure = false;
+
 function measure() {
+  // Refuse a zero viewport rather than writing it out. camera.js has had this
+  // guard since the card's height law was rewritten; this is the same argument
+  // one level up, and it is the level that was actually doing the damage.
+  if (!window.innerWidth || !window.innerHeight) {
+    needsMeasure = true;
+    return;
+  }
+  needsMeasure = false;
   vw = window.innerWidth;
   vh = window.innerHeight;
   camera.measure();
@@ -907,6 +949,14 @@ function pageScroll(u) {
 }
 
 function frame(now) {
+  // Recover from a measurement that was refused.
+  //
+  // rAF does not run in a hidden tab, so the first frame after the page becomes
+  // visible is exactly the first moment the viewport can be trusted — and it is
+  // this line. No listener, no polling: the thing that needs a real viewport is
+  // the frame loop, so the frame loop is where the retry belongs.
+  if (needsMeasure && window.innerWidth && window.innerHeight) measure();
+
   // Clamped at BOTH ends. The upper bound stops a backgrounded tab resuming
   // with a two-second step; the lower one is the interesting half.
   //
@@ -965,7 +1015,10 @@ function frame(now) {
   // zero meets zero. Driving it linearly, as the motes were, lands the right
   // number at the wrong rate and kinks once per lap.
   const closeU = pos < closeFrom ? 0 : Math.min(1, (pos - closeFrom) / CLOSE_SPAN);
-  const into = ramp(closeU, 0.18, 0.34);
+  // Same shape as the fly-in above, deliberately: the motes fade out on the
+  // camera's own clock, so if these two ever drifted apart the dust would still
+  // be thinning after the doors had stopped moving.
+  const into = ramp(closeU, 0.16, 0.20);
   // Clamped at zero, and that clamp is load-bearing now.
   //
   // `pos` can be negative. loop.glideTo() takes the short way round and does
