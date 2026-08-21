@@ -97,6 +97,19 @@ class AppRouter {
           return wallet.onboardingComplete ? '/wallet/choose' : '/welcome';
         }
 
+        // The gate is playing on the lock screen — leave it alone, whatever the
+        // lifecycle says.
+        //
+        // This has to sit ABOVE the locked branch, not inside the unlocked one,
+        // and that was the bug. openGate() notifies while the wallet is still
+        // LOCKED, so the branch below fired first and re-navigated to the route
+        // already on screen. GoRouter rebuilt the page, WalletLockedScreen got a
+        // fresh State with _gate back to false, and the animation was destroyed on
+        // the frame it was created — while the async continuation carried on
+        // against the dead State and landed home 300ms later. Every test passed;
+        // a screen recording of the real unlock is what caught it.
+        if (wallet.gateOpen && path == '/wallet/locked') return null;
+
         if (wallet.state == WalletLifecycle.locked) {
           if (onWalletSetup) return null;
           return '/wallet/locked';
@@ -110,8 +123,7 @@ class AppRouter {
         // have moved and the animation is never seen. The lock screen closes
         // the gate when it is done, which lets this run and completes the
         // navigation on its own.
-        final gating = wallet.gateOpen && path == '/wallet/locked';
-        if (!gating && (onSplash || onOnboarding || path == '/wallet/locked')) {
+        if (onSplash || onOnboarding || path == '/wallet/locked') {
           return '/home';
         }
         return null;
