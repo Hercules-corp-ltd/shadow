@@ -3,6 +3,7 @@ import 'package:solana/solana.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/auth_service.dart';
+import '../services/quick_unlock.dart';
 import '../services/wallet_service.dart';
 
 enum WalletLifecycle { uninitialized, noWallet, locked, unlocked }
@@ -10,6 +11,12 @@ enum WalletLifecycle { uninitialized, noWallet, locked, unlocked }
 class WalletProvider with ChangeNotifier {
   final WalletService _walletService = WalletService();
   final AuthService _authService = AuthService();
+
+  /// The wallet's remembered password, if the user armed one.
+  ///
+  /// Held here so that deleting the wallet can destroy it. Injectable only so a
+  /// test can hand in an in-memory store; nothing in the app passes it.
+  final QuickUnlock _walletQuick;
 
   /// Bumped whenever the wallet this provider represents stops being the one it
   /// represented — locked, deleted, replaced. Read by the background sign-in
@@ -75,7 +82,9 @@ class WalletProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  WalletProvider() {
+  WalletProvider({QuickUnlock? walletQuickUnlock})
+      : _walletQuick =
+            walletQuickUnlock ?? QuickUnlock(slot: QuickUnlockSlot.wallet) {
     _bootstrap();
   }
 
@@ -207,6 +216,30 @@ class WalletProvider with ChangeNotifier {
   Future<void> deleteWallet() async {
     _walletGeneration++;
     _gateOpen = false;
+    // Destroy the remembered password BEFORE the thing it opens.
+    //
+    // WalletService.deleteWallet() removes seven SharedPreferences keys and the
+    // quick-unlock secret is not one of them — it lives in secure storage under
+    // `shadow_wallet_quick_password`. So "Forgot password? Delete wallet", the
+    // gesture offered to somebody locked out of their own wallet, left the
+    // password that opened it sitting on the device.
+    //
+    // It self-healed eventually: the stored password will not open the NEXT
+    // wallet, and wallet_locked_screen catches that and disarms. But "delete"
+    // has to mean the secret is gone at the moment it is asked for, not after a
+    // future failure happens to notice.
+    //
+    // Only the wallet slot. The identity passphrase is a separate secret with a
+    // separate lifecycle — nothing here deletes the identity, so nothing here
+    // may delete the shortcut to it.
+    //
+    // Guarded, and the order matters: a corrupted Android keystore throws
+    // PlatformException from a secure-storage delete, and a user who asked to
+    // destroy their wallet must not be refused because the keystore is unwell.
+    // The wallet still goes; the worst case is a secret that opens nothing.
+    try {
+      await _walletQuick.disable();
+    } catch (_) {}
     await _walletService.deleteWallet();
     await _authService.signOut();
     _wallet = null;
