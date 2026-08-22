@@ -45,6 +45,14 @@ Thumbs.db
 !.vscode/*.json
 !**/assets/**/*.json
 !mobile/ios/Runner.xcodeproj/**/*.json
+# Asset catalogues. Every .xcassets folder is DEFINED by its Contents.json —
+# the PNGs beside it are inert without one, so a clean clone had 19 tracked
+# icon images and no catalogue telling Xcode what any of them were. This is
+# the same failure the comment above describes, recurring in a new directory,
+# and it went unnoticed for the same reason: the files exist on the machine
+# that generated them. Matched on *.xcassets rather than the one path, so
+# macOS or a second asset set cannot reintroduce it.
+!**/*.xcassets/**/*.json
 test-ledger/
 .anchor/
 
